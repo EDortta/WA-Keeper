@@ -1,0 +1,15 @@
+# Build outputs
+build/
+app/build/
+.gradle/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+
+# Chaves e config local — nunca versionar (SEC-0066)
+local.properties
+*.jks
+*.keystore
+keystore.properties

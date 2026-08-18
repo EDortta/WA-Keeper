@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Speech bubble estilo WhatsApp com "WK" -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Bolha de fala (speech bubble) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,18 C34.1,18 18,32.4 18,50 C18,58.2 21.4,65.7 27,71.2 L24,90 L43.5,80.8 C46.9,81.6 50.4,82 54,82 C73.9,82 90,67.6 90,50 C90,32.4 73.9,18 54,18 Z"/>
+
+    <!-- W -->
+    <path
+        android:fillColor="#25D366"
+        android:pathData="M30,42 L36,42 L40,58 L44,42 L50,42 L54,58 L58,42 L64,42 L57,66 L51,66 L47,51 L43,66 L37,66 Z"/>
+
+    <!-- K -->
+    <path
+        android:fillColor="#25D366"
+        android:pathData="M67,42 L73,42 L73,52 L80,42 L87,42 L79,53 L87,66 L80,66 L73,55 L73,66 L67,66 Z"/>
+
+</vector>
