@@ -95,6 +95,104 @@
                 android:textColor="#8A8A8E"
                 android:textSize="12sp" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:layout_marginBottom="4dp"
+                android:text="Guardar áudios de voz recebidos"
+                android:textColor="#1C1C1E"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:text="Copia o áudio de voz recebido para o aparelho assim que ele chega — mesmo que a pessoa apague depois. Precisa da permissão de acesso a todos os arquivos."
+                android:textColor="#636366"
+                android:textSize="13sp" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#FFFFFF">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/swAudioWhatsapp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="56dp"
+                        android:paddingHorizontal="12dp"
+                        android:text="Guardar áudios — WhatsApp"
+                        android:textColor="#1C1C1E"
+                        android:textSize="16sp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginHorizontal="12dp"
+                        android:background="#E5E5EA" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/swAudioBusiness"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="56dp"
+                        android:paddingHorizontal="12dp"
+                        android:text="Guardar áudios — Business"
+                        android:textColor="#1C1C1E"
+                        android:textSize="16sp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginHorizontal="12dp"
+                        android:background="#E5E5EA" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/swAudioMotion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="56dp"
+                        android:paddingHorizontal="12dp"
+                        android:text="Tocar áudio recebido em movimento"
+                        android:textColor="#1C1C1E"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:id="@+id/tvAudioPermission"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="#FFF4E5"
+                android:foreground="?attr/selectableItemBackground"
+                android:padding="14dp"
+                android:text="⚠️  Toque para conceder “Acesso a todos os arquivos” — necessário para ler a pasta de áudios do WhatsApp."
+                android:textColor="#8A5A00"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Só áudios recebidos, e só o que já foi baixado. A correlação com o remetente é por horário, então pode falhar em rajada de áudios de vários contatos."
+                android:textColor="#8A8A8E"
+                android:textSize="12sp" />
+
         </LinearLayout>
 
     </ScrollView>

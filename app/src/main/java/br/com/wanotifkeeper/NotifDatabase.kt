@@ -14,7 +14,9 @@ data class NotifEntity(
     val timestamp: Long,
     val packageName: String = "com.whatsapp",
     /** Caminho no filesDir da imagem anexada à notificação, quando o WhatsApp a inclui. */
-    val imagePath: String? = null
+    val imagePath: String? = null,
+    /** Caminho no filesDir do áudio de voz recebido, copiado da mídia do WhatsApp. */
+    val audioPath: String? = null
 )
 
 /** Política de retenção de uma conversa. */
@@ -33,7 +35,16 @@ data class ConversationSettings(
 @Dao
 interface NotifDao {
     @Insert
-    suspend fun insert(notif: NotifEntity)
+    suspend fun insert(notif: NotifEntity): Long
+
+    @Query("UPDATE notifications SET audioPath = :path WHERE id = :id")
+    suspend fun setAudioPath(id: Long, path: String)
+
+    @Query("UPDATE notifications SET audioPath = NULL WHERE sender = :sender")
+    suspend fun clearAudioForSender(sender: String)
+
+    @Query("SELECT audioPath FROM notifications WHERE audioPath IS NOT NULL")
+    suspend fun allAudioPaths(): List<String>
 
     @Query("SELECT * FROM notifications ORDER BY timestamp DESC")
     fun allFlow(): Flow<List<NotifEntity>>
@@ -95,7 +106,7 @@ interface SettingsDao {
 
 @Database(
     entities = [NotifEntity::class, ConversationSettings::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class NotifDatabase : RoomDatabase() {
@@ -123,12 +134,19 @@ abstract class NotifDatabase : RoomDatabase() {
             }
         }
 
+        // v4: áudio de voz recebido copiado da mídia do WhatsApp
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE notifications ADD COLUMN audioPath TEXT")
+            }
+        }
+
         fun get(ctx: Context): NotifDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(
                 ctx.applicationContext,
                 NotifDatabase::class.java,
                 "wanotif.db"
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build().also { INSTANCE = it }
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build().also { INSTANCE = it }
         }
     }
 }

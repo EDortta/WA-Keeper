@@ -32,6 +32,17 @@ class RetentionActivity : AppCompatActivity() {
         if (sender.isBlank()) { finish(); return }
         binding.tvSender.text = sender
 
+        // Negação de áudio por contato — aplica na hora, independente do botão Salvar.
+        binding.swAudioBlock.isChecked = Prefs.isAudioBlocked(this, sender)
+        binding.swAudioBlock.setOnCheckedChangeListener { _, checked ->
+            Prefs.setAudioBlocked(this, sender, checked)
+            if (checked) lifecycleScope.launch {
+                // Apaga os áudios já guardados deste contato; a retenção varre os arquivos órfãos.
+                NotifDatabase.get(this@RetentionActivity).dao().clearAudioForSender(sender)
+                Retention.purge(this@RetentionActivity, System.currentTimeMillis())
+            }
+        }
+
         binding.spUnit.adapter = ArrayAdapter(
             this, android.R.layout.simple_spinner_dropdown_item, units.map { it.first }
         )

@@ -7,6 +7,7 @@ import android.service.notification.StatusBarNotification
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
@@ -23,8 +24,9 @@ class NotifListenerService : NotificationListenerService() {
     @Volatile private var lastPurge = 0L
 
     private val motion by lazy { MotionDetector(applicationContext) }
-    // TTS só é criado quando de fato há algo para ler — evita segurar o motor à toa.
+    // TTS e player de áudio só são criados quando há algo a reproduzir — sem segurar recursos à toa.
     private var speaker: Speaker? = null
+    private var audioPlayer: AudioPlayer? = null
 
     override fun onListenerConnected() {
         super.onListenerConnected()
@@ -36,6 +38,8 @@ class NotifListenerService : NotificationListenerService() {
         motion.stop()
         speaker?.shutdown()
         speaker = null
+        audioPlayer?.shutdown()
+        audioPlayer = null
         super.onListenerDisconnected()
     }
 
@@ -43,6 +47,8 @@ class NotifListenerService : NotificationListenerService() {
         motion.stop()
         speaker?.shutdown()
         speaker = null
+        audioPlayer?.shutdown()
+        audioPlayer = null
         super.onDestroy()
     }
 
@@ -60,8 +66,11 @@ class NotifListenerService : NotificationListenerService() {
 
         if (NoiseFilter.isNoise(title, text)) return
 
-        // Leitura em voz alta: só quando em movimento e com o switch da conta ligado.
-        if (Prefs.isTtsEnabled(applicationContext, sbn.packageName) && motion.isInMotion()) {
+        val isVoice = MediaVault.looksLikeVoiceMessage(text)
+
+        // Leitura em voz alta do TEXTO: só quando em movimento, com o switch da conta ligado,
+        // e apenas para mensagens de texto — mensagem de voz é tratada pelo player de áudio.
+        if (!isVoice && Prefs.isTtsEnabled(applicationContext, sbn.packageName) && motion.isInMotion()) {
             speak(title, text.trim())
         }
 
@@ -73,7 +82,7 @@ class NotifListenerService : NotificationListenerService() {
         scope.launch {
             val imagePath = picture?.let { savePicture(it, sbn.postTime) }
             val db = NotifDatabase.get(applicationContext)
-            db.dao().insert(
+            val rowId = db.dao().insert(
                 NotifEntity(
                     sender = title,
                     text = text.trim(),
@@ -82,9 +91,34 @@ class NotifListenerService : NotificationListenerService() {
                     imagePath = imagePath
                 )
             )
+            if (isVoice &&
+                Prefs.isAudioCaptureEnabled(applicationContext, sbn.packageName) &&
+                !Prefs.isAudioBlocked(applicationContext, title)
+            ) {
+                captureAudio(rowId, sbn.packageName, sbn.postTime)
+            }
             runPurge()
         }
     }
+
+    /**
+     * O arquivo de voz pode aparecer alguns instantes após a notificação (download);
+     * tentamos algumas vezes com espera crescente até copiá-lo.
+     */
+    private suspend fun captureAudio(rowId: Long, pkg: String, postTime: Long) {
+        for (wait in longArrayOf(300, 1200, 3000, 6000)) {
+            delay(wait)
+            val path = MediaVault.captureLatest(applicationContext, pkg, postTime) ?: continue
+            NotifDatabase.get(applicationContext).dao().setAudioPath(rowId, path)
+            if (Prefs.isAudioPlayInMotion(applicationContext) && motion.isInMotion()) {
+                player().play(path)
+            }
+            return
+        }
+    }
+
+    private fun player(): AudioPlayer =
+        audioPlayer ?: AudioPlayer().also { audioPlayer = it }
 
     private fun speak(sender: String, text: String) {
         val s = speaker ?: Speaker(applicationContext).also { speaker = it }

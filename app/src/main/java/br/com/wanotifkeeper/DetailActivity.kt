@@ -1,6 +1,7 @@
 package br.com.wanotifkeeper
 
 import android.graphics.BitmapFactory
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -17,6 +18,7 @@ class DetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailBinding
     private val fmt = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+    private var audioPreview: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +47,32 @@ class DetailActivity : AppCompatActivity() {
                 // O WhatsApp anuncia a imagem no texto mas nem sempre embute o bitmap.
                 looksLikeMedia(item.text) -> binding.tvNoImage.visibility = View.VISIBLE
             }
+
+            val audio = item.audioPath?.let(::File)?.takeIf { it.exists() }
+            if (audio != null) {
+                binding.btnPlayAudio.visibility = View.VISIBLE
+                binding.btnPlayAudio.setOnClickListener { playAudio(audio) }
+            }
         }
+    }
+
+    private fun playAudio(file: File) {
+        audioPreview?.release()
+        audioPreview = MediaPlayer().apply {
+            setOnCompletionListener { it.release(); if (audioPreview === it) audioPreview = null }
+            setOnErrorListener { mp, _, _ -> mp.release(); if (audioPreview === mp) audioPreview = null; true }
+            setOnPreparedListener { it.start() }
+            runCatching {
+                setDataSource(file.absolutePath)
+                prepareAsync()
+            }.onFailure { release(); audioPreview = null }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        audioPreview?.release()
+        audioPreview = null
     }
 
     private fun looksLikeMedia(text: String) = Regex(

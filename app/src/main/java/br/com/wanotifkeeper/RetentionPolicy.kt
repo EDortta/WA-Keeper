@@ -53,6 +53,7 @@ object Retention {
         )
 
         sweepOrphanImages(ctx, dao.allImagePaths().toSet())
+        sweepOrphanAudio(ctx, dao.allAudioPaths().toSet())
         return before - dao.count()
     }
 
@@ -60,6 +61,13 @@ object Retention {
     private fun sweepOrphanImages(ctx: Context, referenced: Set<String>) {
         val dir = imageDir(ctx)
         dir.listFiles()?.forEach { f ->
+            if (f.absolutePath !in referenced) f.delete()
+        }
+    }
+
+    /** Apaga áudios copiados que não são mais referenciados por nenhuma linha. */
+    private fun sweepOrphanAudio(ctx: Context, referenced: Set<String>) {
+        MediaVault.audioDir(ctx).listFiles()?.forEach { f ->
             if (f.absolutePath !in referenced) f.delete()
         }
     }

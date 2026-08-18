@@ -85,6 +85,16 @@
                         android:textIsSelectable="true"
                         android:textSize="16sp" />
 
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPlayAudio"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:text="▶  Tocar áudio"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#25D366"
+                        android:visibility="gone" />
+
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>

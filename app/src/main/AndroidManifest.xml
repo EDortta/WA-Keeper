@@ -4,6 +4,14 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Guarda de áudio: a pasta "WhatsApp Voice Notes" fica sob Android/media com
+         .nomedia (não indexada pelo MediaStore). Ler outro app exige All Files Access
+         no Android 11+; abaixo disso, leitura direta de arquivo. -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+
     <!-- SEC-0066: banco local espelha conversas do WhatsApp (dados sensíveis de
          terceiros). Backup/transfer desabilitados para impedir extração via
          auto-backup Google Drive, migração device-to-device e adb backup. -->
