@@ -217,6 +217,10 @@
           <div class="step-num">4</div>
           <div class="step-body"><h3 data-i18n="how4_h"></h3><p data-i18n="how4_p"></p></div>
         </div>
+        <div class="flow-step">
+          <div class="step-num">5</div>
+          <div class="step-body"><h3 data-i18n="how5_h"></h3><p data-i18n="how5_p"></p></div>
+        </div>
       </div>
     </div>
   </section>
@@ -233,6 +237,7 @@
         <div class="card"><span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M4 16l4.5-4 3.5 3 3-2.5L20 17"/></svg></span><h3 data-i18n="f6_h"></h3><p data-i18n="f6_p"></p></div>
         <div class="card"><span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg></span><h3 data-i18n="f7_h"></h3><p data-i18n="f7_p"></p></div>
         <div class="card"><span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9"/><path d="M6.5 7a8 8 0 1 0 11 0"/></svg></span><h3 data-i18n="f8_h"></h3><p data-i18n="f8_p"></p></div>
+        <div class="card"><span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0"/><path d="M12 17v4"/></svg></span><h3 data-i18n="f9_h"></h3><p data-i18n="f9_p"></p></div>
       </div>
     </div>
   </section>
@@ -301,6 +306,9 @@ const I18N = {
     f6_h: 'Imagens preservadas',         f6_p: 'A imagem embutida na notificação é salva junto, sem depender do WhatsApp mais tarde.',
     f7_h: 'Sem anúncios, sem rastreio',  f7_p: 'Nenhum SDK de publicidade, nenhum identificador, nenhuma telemetria.',
     f8_h: 'Reinicia com o telefone',     f8_p: 'Volta a escutar sozinho depois do boot; não há nada para reativar à mão.',
+    f9_h: 'Áudios recebidos, guardados',  f9_p: 'Copia o .opus da mensagem de voz antes que apaguem — por conta (WhatsApp e Business), com negação por contato.',
+    how5_h: 'Guarda os áudios recebidos',
+    how5_p: 'Com a guarda ligada para a conta, o áudio de voz recebido é copiado para o aparelho assim que chega — mesmo que a pessoa apague depois — e, em movimento, pode tocar sozinho. Dá para negar por contato, direto na conversa dentro do app.',
     spec_h2: 'Especificações',
     spec_col1: 'Componente',
     spec_col2: 'Detalhe',
@@ -313,6 +321,7 @@ const I18N = {
       ['Voz',          'TextToSpeech nativo, canal de assistente; gatilho TYPE_SIGNIFICANT_MOTION'],
       ['Privacidade',  'allowBackup=false, extração desabilitada, release não-debuggable'],
       ['Rede',         'Nenhuma — o app não acessa a internet'],
+      ['Áudio recebido', 'Copiado de "WhatsApp Voice Notes" (.opus); exige Acesso a todos os arquivos'],
       ['Distribuição', 'APK sideload, fora da Play Store'],
     ],
     warn_p: 'Sideload é sua responsabilidade: instale só o APK que você mesmo compilou ou confia, mantenha-o fora do alcance de terceiros e respeite a privacidade de quem conversa com você. É uma ferramenta pessoal, não um app de vigilância.',
@@ -356,6 +365,9 @@ const I18N = {
     f6_h: 'Images preserved',               f6_p: 'The picture embedded in the notification is saved with it, without depending on WhatsApp later.',
     f7_h: 'No ads, no tracking',            f7_p: 'No advertising SDK, no identifiers, no telemetry.',
     f8_h: 'Restarts with the phone',        f8_p: 'It resumes listening on its own after boot; there is nothing to re-enable by hand.',
+    f9_h: 'Received audio, kept',            f9_p: 'Copies the voice message’s .opus before it is deleted — per account (WhatsApp and Business), with per-contact opt-out.',
+    how5_h: 'Archives received voice notes',
+    how5_p: 'With capture on for the account, an incoming voice message is copied to the device the moment it arrives — even if the sender deletes it later — and, in motion, it can play on its own. It can be denied per contact, right in the conversation inside the app.',
     spec_h2: 'Specifications',
     spec_col1: 'Component',
     spec_col2: 'Detail',
@@ -368,6 +380,7 @@ const I18N = {
       ['Voice',        'Native TextToSpeech, assistant channel; TYPE_SIGNIFICANT_MOTION trigger'],
       ['Privacy',      'allowBackup=false, extraction disabled, non-debuggable release'],
       ['Network',      'None — the app does not touch the internet'],
+      ['Received audio', 'Copied from “WhatsApp Voice Notes” (.opus); needs All Files Access'],
       ['Distribution', 'Sideloaded APK, outside the Play Store'],
     ],
     warn_p: 'Sideloading is on you: install only an APK you built or trust, keep it out of other people’s hands, and respect the privacy of whoever talks to you. This is a personal tool, not surveillance software.',
@@ -411,6 +424,9 @@ const I18N = {
     f6_h: 'Imágenes preservadas',          f6_p: 'La imagen incrustada en la notificación se guarda junto a ella, sin depender de WhatsApp después.',
     f7_h: 'Sin anuncios, sin rastreo',     f7_p: 'Ningún SDK de publicidad, ningún identificador, ninguna telemetría.',
     f8_h: 'Se reinicia con el teléfono',   f8_p: 'Vuelve a escuchar solo tras el arranque; no hay nada que reactivar a mano.',
+    f9_h: 'Audios recibidos, guardados',   f9_p: 'Copia el .opus del mensaje de voz antes de que lo borren — por cuenta (WhatsApp y Business), con exclusión por contacto.',
+    how5_h: 'Guarda los audios recibidos',
+    how5_p: 'Con la guarda activada para la cuenta, el audio de voz recibido se copia al dispositivo en cuanto llega — aunque la persona lo borre después — y, en movimiento, puede reproducirse solo. Se puede denegar por contacto, en la propia conversación dentro de la app.',
     spec_h2: 'Especificaciones',
     spec_col1: 'Componente',
     spec_col2: 'Detalle',
@@ -423,6 +439,7 @@ const I18N = {
       ['Voz',           'TextToSpeech nativo, canal de asistente; disparador TYPE_SIGNIFICANT_MOTION'],
       ['Privacidad',    'allowBackup=false, extracción deshabilitada, release no depurable'],
       ['Red',           'Ninguna — la app no accede a internet'],
+      ['Audio recibido', 'Copiado de “WhatsApp Voice Notes” (.opus); requiere Acceso a todos los archivos'],
       ['Distribución',  'APK sideload, fuera de la Play Store'],
     ],
     warn_p: 'El sideload es tu responsabilidad: instala solo el APK que compilaste o en el que confías, mantenlo fuera del alcance de terceros y respeta la privacidad de quien te escribe. Es una herramienta personal, no software de vigilancia.',
