@@ -1,6 +1,8 @@
 package br.com.wanotifkeeper
 
 import android.app.Notification
+import android.app.PendingIntent
+import android.app.RemoteInput
 import android.graphics.Bitmap
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
@@ -11,10 +13,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import java.util.concurrent.ConcurrentHashMap
 
 class NotifListenerService : NotificationListenerService() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    companion object {
+        private const val TAG = "WAK-ReplyAction"
+        private const val DEDUP_WINDOW_MS = 2000L
+    }
 
     private val watchedPackages = setOf(
         "com.whatsapp",
@@ -37,6 +45,29 @@ class NotifListenerService : NotificationListenerService() {
     private sealed class PendingPlayback {
         data class Text(val sender: String, val text: String) : PendingPlayback()
         data class Audio(val path: String) : PendingPlayback()
+    }
+
+    // Ação de "resposta rápida" que o próprio WhatsApp publica na notificação — guardada
+    // pra um futuro comando de voz reenviar sem precisar de API nenhuma do WhatsApp.
+    // Só em memória: um PendingIntent não sobrevive (nem faria sentido sobreviver) a um
+    // reinício do processo. Chave "pacote|remetente" pra não confundir contas.
+    private val replyActions = ConcurrentHashMap<String, CachedReply>()
+
+    private class CachedReply(
+        val actionIntent: PendingIntent,
+        val remoteInputs: Array<RemoteInput>,
+        val resultKey: String,
+        val notificationKey: String
+    )
+
+    private val recentPosts = ConcurrentHashMap<String, Long>()
+
+    /** true se pacote+remetente+texto idênticos já passaram por aqui há pouco (repost do WhatsApp). */
+    private fun isDuplicateRepost(pkg: String, sender: String, text: String): Boolean {
+        val now = System.currentTimeMillis()
+        recentPosts.entries.removeAll { now - it.value > DEDUP_WINDOW_MS }
+        val lastSeen = recentPosts.put("$pkg|$sender|$text", now)
+        return lastSeen != null && now - lastSeen < DEDUP_WINDOW_MS
     }
 
     override fun onListenerConnected() {
@@ -84,6 +115,12 @@ class NotifListenerService : NotificationListenerService() {
 
         if (NoiseFilter.isNoise(title, text)) return
 
+        // O WhatsApp costuma repostar/atualizar a mesma notificação poucos ms depois, com
+        // texto idêntico — sem isso, toda mensagem seria lida em voz alta e guardada em dobro.
+        if (isDuplicateRepost(sbn.packageName, title, text.trim())) return
+
+        cacheReplyAction(sbn, title)
+
         val isVoice = MediaVault.looksLikeVoiceMessage(text)
 
         // Leitura em voz alta do TEXTO: só quando em movimento, com o switch da conta ligado,
@@ -122,6 +159,34 @@ class NotifListenerService : NotificationListenerService() {
             }
             runPurge()
         }
+    }
+
+    override fun onNotificationRemoved(sbn: StatusBarNotification) {
+        if (sbn.packageName in watchedPackages) invalidateReplyAction(sbn.key)
+    }
+
+    /**
+     * Guarda a ação de resposta rápida (se a notificação trouxer uma) pra essa conversa.
+     * Notificação mais nova sempre substitui a mais velha; se esta em particular não trouxer
+     * a ação (acontece em reposts de atualização), a entrada anterior é mantida como está.
+     */
+    private fun cacheReplyAction(sbn: StatusBarNotification, sender: String) {
+        val action = sbn.notification.actions?.firstOrNull { !it.remoteInputs.isNullOrEmpty() } ?: return
+        val remoteInputs = action.remoteInputs ?: return
+        val actionIntent = action.actionIntent ?: return
+        replyActions["${sbn.packageName}|$sender"] = CachedReply(
+            actionIntent = actionIntent,
+            remoteInputs = remoteInputs,
+            resultKey = remoteInputs.first().resultKey,
+            notificationKey = sbn.key
+        )
+        android.util.Log.d(TAG, "Reply action cached for ${sbn.packageName}|$sender (key=${remoteInputs.first().resultKey})")
+    }
+
+    /** A notificação some (lida, apagada, substituída sem ação) — a resposta cacheada não vale mais. */
+    private fun invalidateReplyAction(notificationKey: String) {
+        val stale = replyActions.entries.firstOrNull { it.value.notificationKey == notificationKey }?.key ?: return
+        replyActions.remove(stale)
     }
 
     /**

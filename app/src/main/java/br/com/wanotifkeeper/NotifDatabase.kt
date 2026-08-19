@@ -58,8 +58,16 @@ interface NotifDao {
     @Query("SELECT DISTINCT sender FROM notifications ORDER BY sender ASC")
     fun sendersFlow(): Flow<List<String>>
 
+    /** Escopado por pacote: contatos com o mesmo nome de exibição no WhatsApp e no Business não se confundem. */
+    @Query("SELECT DISTINCT sender FROM notifications WHERE packageName = :pkg ORDER BY sender ASC")
+    suspend fun sendersByPackage(pkg: String): List<String>
+
     @Query("SELECT * FROM notifications WHERE sender = :sender ORDER BY timestamp DESC")
     fun bySenderFlow(sender: String): Flow<List<NotifEntity>>
+
+    /** Para "leia as últimas mensagens de X" — mais recentes primeiro, já escopado por conta. */
+    @Query("SELECT * FROM notifications WHERE sender = :sender AND packageName = :pkg ORDER BY timestamp DESC LIMIT :limit")
+    suspend fun lastNForSender(sender: String, pkg: String, limit: Int): List<NotifEntity>
 
     @Query("SELECT * FROM notifications WHERE id = :id")
     suspend fun byId(id: Long): NotifEntity?
