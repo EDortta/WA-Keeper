@@ -4,7 +4,9 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Leitura em voz alta via TTS nativo do Android.
@@ -19,6 +21,9 @@ class Speaker(context: Context) {
     private var tts: TextToSpeech? = null
     @Volatile private var ready = false
     private val pending = ArrayDeque<Utterance>()
+    // Conta utterances faladas OU só enfileiradas (ainda não despachadas ao motor) — usado
+    // pelo motor de comandos de voz pra nunca escutar por cima da própria fala do app.
+    private val inFlight = AtomicInteger(0)
 
     private data class Utterance(val phrase: String, val volume: Float)
 
@@ -32,6 +37,12 @@ class Speaker(context: Context) {
                         .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                         .build()
                 )
+                tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onStart(utteranceId: String?) {}
+                    override fun onDone(utteranceId: String?) { inFlight.decrementAndGet() }
+                    @Deprecated("Deprecated in Java")
+                    override fun onError(utteranceId: String?) { inFlight.decrementAndGet() }
+                })
                 ready = true
                 synchronized(pending) {
                     while (pending.isNotEmpty()) {
@@ -64,7 +75,16 @@ class Speaker(context: Context) {
         }
     }
 
+    /** Fala um aviso/pergunta do motor de comandos de voz, sem prefixo de remetente. */
+    fun say(text: String) {
+        speak(text, NORMAL_VOLUME)
+    }
+
+    /** Ainda tem fala pendente ou em andamento — o motor de comandos não deve escutar agora. */
+    fun isBusy(): Boolean = inFlight.get() > 0
+
     private fun speak(phrase: String, volume: Float) {
+        inFlight.incrementAndGet()
         if (ready) enqueue(phrase, volume)
         else synchronized(pending) { pending.addLast(Utterance(phrase, volume)) }
     }

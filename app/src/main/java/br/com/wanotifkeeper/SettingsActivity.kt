@@ -126,6 +126,8 @@ class SettingsActivity : AppCompatActivity() {
         binding.tvVoicePermission.setOnClickListener {
             requestVoicePermissions.launch(voicePermissions())
         }
+
+        binding.tvVoiceSpeechPackMissing.setOnClickListener { openVoiceInputSettings() }
     }
 
     /** Abaixo da API 31 não existe reconhecimento on-device garantido — a seção some, sem meio-termo. */
@@ -143,6 +145,12 @@ class SettingsActivity : AppCompatActivity() {
         }
         refreshVoiceTimerStatus()
         refreshVoicePermissionBanner()
+        binding.tvVoiceSpeechPackMissing.visibility =
+            if (Prefs.isSpeechPackMissing(this)) View.VISIBLE else View.GONE
+    }
+
+    private fun openVoiceInputSettings() {
+        runCatching { startActivity(Intent(Settings.ACTION_VOICE_INPUT_SETTINGS)) }
     }
 
     private fun refreshVoiceTimerStatus() {

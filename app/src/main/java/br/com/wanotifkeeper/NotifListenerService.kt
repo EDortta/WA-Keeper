@@ -58,10 +58,29 @@ class NotifListenerService : NotificationListenerService() {
     private var audioPlayer: AudioPlayer? = null
     private var beeper: Beeper? = null
 
-    // Janela de ativação dos comandos de voz (Fase 2 do plano): microfone só liga aqui dentro.
-    // O motor de reconhecimento em si (Fase 3) ainda não existe — por enquanto isto só decide
-    // quando o serviço vira foreground e mostra o aviso de "ouvindo".
+    // Janela de ativação dos comandos de voz: microfone só liga aqui dentro (ver runVoiceGateLoop).
     @Volatile private var voiceListening = false
+
+    private val voiceEngine by lazy {
+        VoiceCommandEngine(
+            context = applicationContext,
+            scope = scope,
+            dao = NotifDatabase.get(applicationContext).dao(),
+            say = { text -> sayPrompt(text) },
+            announce = { sender, text -> speak(sender, text) },
+            isSpeakerBusy = { speaker?.isBusy() ?: false },
+            defaultAccountPkg = { Prefs.voiceDefaultAccountPkg(applicationContext) },
+            onSpeechPackMissing = {
+                Prefs.setSpeechPackMissing(applicationContext, true)
+                android.util.Log.d(TAG_VOICE_GATE, "pacote de voz pt-BR indisponível — comandos desligados nesta sessão")
+            },
+            onRecognitionWorking = {
+                if (Prefs.isSpeechPackMissing(applicationContext)) {
+                    Prefs.setSpeechPackMissing(applicationContext, false)
+                }
+            }
+        )
+    }
 
     // Mensagens que chegariam por voz durante uma ligação: em vez de falar por cima da
     // chamada, avisamos com um beep e lemos/tocamos tudo assim que ela terminar.
@@ -246,6 +265,12 @@ class NotifListenerService : NotificationListenerService() {
         s.announce(sender, text)
     }
 
+    /** Avisos/perguntas do motor de comandos de voz — sem prefixo de remetente. */
+    private fun sayPrompt(text: String) {
+        val s = speaker ?: Speaker(applicationContext).also { speaker = it }
+        s.say(text)
+    }
+
     private fun beeper(): Beeper =
         beeper ?: Beeper().also { beeper = it }
 
@@ -311,16 +336,16 @@ class NotifListenerService : NotificationListenerService() {
     private fun startVoiceListening() {
         voiceListening = true
         startForeground(NOTIF_ID_VOICE_LISTENING, buildListeningNotification())
+        voiceEngine.start()
         android.util.Log.d(TAG_VOICE_GATE, "ON (motion=${motion.isInMotion()}, manualUntil=${Prefs.manualListenUntil(applicationContext)})")
-        // Fase 3 liga o SpeechRecognizer aqui.
     }
 
     private fun stopVoiceListening() {
         if (!voiceListening) return
         voiceListening = false
         stopForeground(STOP_FOREGROUND_REMOVE)
+        voiceEngine.stop()
         android.util.Log.d(TAG_VOICE_GATE, "OFF")
-        // Fase 3 desliga o SpeechRecognizer aqui.
     }
 
     private fun buildListeningNotification(): Notification {

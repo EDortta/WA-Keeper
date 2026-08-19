@@ -445,6 +445,19 @@
                     android:textSize="13sp"
                     android:visibility="gone" />
 
+                <TextView
+                    android:id="@+id/tvVoiceSpeechPackMissing"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="#FFF4E5"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:padding="14dp"
+                    android:text="⚠️  Pacote de voz em português não encontrado no aparelho. Toque para abrir as configurações de voz do sistema e baixá-lo."
+                    android:textColor="#8A5A00"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
             </LinearLayout>
 
         </LinearLayout>
