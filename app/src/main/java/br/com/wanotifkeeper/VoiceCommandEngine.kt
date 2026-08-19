@@ -196,6 +196,7 @@ class VoiceCommandEngine(
             val choice = VoiceCommandParser.parseDisambiguationAnswer(raw, pending.candidates.size)
             if (choice == null) {
                 pending.attempts++
+                android.util.Log.d(TAG, "desambiguação: resposta \"$raw\" não bateu (tentativa ${pending.attempts})")
                 if (pending.attempts >= MAX_DISAMBIGUATION_ATTEMPTS) {
                     disambiguation = null
                     say("Não consegui identificar o destinatário. Tente de novo mais tarde.")
@@ -204,6 +205,7 @@ class VoiceCommandEngine(
                 }
                 return
             }
+            android.util.Log.d(TAG, "desambiguação: escolheu ${pending.candidates[choice - 1]}")
             disambiguation = null
             readLast(pending.candidates[choice - 1], pending.pkg, pending.count)
             return
@@ -218,15 +220,21 @@ class VoiceCommandEngine(
         android.util.Log.d(TAG, "comando reconhecido: alvo=\"${parsed.command.target}\" count=${parsed.command.count} pkg=$pkg")
         scope.launch {
             val senders = try { dao.sendersByPackage(pkg) } catch (e: Exception) { emptyList() }
+            android.util.Log.d(TAG, "remetentes conhecidos em $pkg: $senders")
             when (val result = VoiceSenderMatcher.match(parsed.command.target, senders)) {
-                is VoiceSenderMatcher.MatchResult.Confident ->
+                is VoiceSenderMatcher.MatchResult.Confident -> {
+                    android.util.Log.d(TAG, "casou com \"${result.sender}\"")
                     readLast(result.sender, pkg, parsed.command.count)
+                }
                 is VoiceSenderMatcher.MatchResult.Ambiguous -> {
+                    android.util.Log.d(TAG, "ambíguo: ${result.candidates}")
                     disambiguation = Disambiguation(result.candidates, pkg, parsed.command.count)
                     say(disambiguationPrompt(result.candidates))
                 }
-                VoiceSenderMatcher.MatchResult.NoMatch ->
+                VoiceSenderMatcher.MatchResult.NoMatch -> {
+                    android.util.Log.d(TAG, "nenhum remetente bateu com \"${parsed.command.target}\"")
                     say("Não encontrei nenhuma conversa com esse nome.")
+                }
             }
         }
     }
@@ -234,6 +242,7 @@ class VoiceCommandEngine(
     private fun readLast(sender: String, pkg: String, count: Int) {
         scope.launch {
             val messages = try { dao.lastNForSender(sender, pkg, count) } catch (e: Exception) { emptyList() }
+            android.util.Log.d(TAG, "lendo ${messages.size} mensagem(ns) de $sender")
             if (messages.isEmpty()) {
                 say("Não achei mensagens de $sender.")
             } else {
