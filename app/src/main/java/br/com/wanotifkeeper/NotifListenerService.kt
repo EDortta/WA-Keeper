@@ -24,31 +24,49 @@ class NotifListenerService : NotificationListenerService() {
     @Volatile private var lastPurge = 0L
 
     private val motion by lazy { MotionDetector(applicationContext) }
+    private val callDetector by lazy { CallDetector(applicationContext) { flushPendingAfterCall() } }
     // TTS e player de áudio só são criados quando há algo a reproduzir — sem segurar recursos à toa.
     private var speaker: Speaker? = null
     private var audioPlayer: AudioPlayer? = null
+    private var beeper: Beeper? = null
+
+    // Mensagens que chegariam por voz durante uma ligação: em vez de falar por cima da
+    // chamada, avisamos com um beep e lemos/tocamos tudo assim que ela terminar.
+    private val pendingDuringCall = mutableListOf<PendingPlayback>()
+
+    private sealed class PendingPlayback {
+        data class Text(val sender: String, val text: String) : PendingPlayback()
+        data class Audio(val path: String) : PendingPlayback()
+    }
 
     override fun onListenerConnected() {
         super.onListenerConnected()
         motion.start()
+        callDetector.start(scope)
         scope.launch { runPurge() }
     }
 
     override fun onListenerDisconnected() {
         motion.stop()
+        callDetector.stop()
         speaker?.shutdown()
         speaker = null
         audioPlayer?.shutdown()
         audioPlayer = null
+        beeper?.shutdown()
+        beeper = null
         super.onListenerDisconnected()
     }
 
     override fun onDestroy() {
         motion.stop()
+        callDetector.stop()
         speaker?.shutdown()
         speaker = null
         audioPlayer?.shutdown()
         audioPlayer = null
+        beeper?.shutdown()
+        beeper = null
         super.onDestroy()
     }
 
@@ -71,7 +89,12 @@ class NotifListenerService : NotificationListenerService() {
         // Leitura em voz alta do TEXTO: só quando em movimento, com o switch da conta ligado,
         // e apenas para mensagens de texto — mensagem de voz é tratada pelo player de áudio.
         if (!isVoice && Prefs.isTtsEnabled(applicationContext, sbn.packageName) && motion.isInMotion()) {
-            speak(title, text.trim())
+            if (callDetector.isInCall()) {
+                synchronized(pendingDuringCall) { pendingDuringCall.add(PendingPlayback.Text(title, text.trim())) }
+                beeper().beep()
+            } else {
+                speak(title, text.trim())
+            }
         }
 
         val picture = runCatching {
@@ -111,7 +134,12 @@ class NotifListenerService : NotificationListenerService() {
             val path = MediaVault.captureLatest(applicationContext, pkg, postTime) ?: continue
             NotifDatabase.get(applicationContext).dao().setAudioPath(rowId, path)
             if (Prefs.isAudioPlayInMotion(applicationContext) && motion.isInMotion()) {
-                player().play(path)
+                if (callDetector.isInCall()) {
+                    synchronized(pendingDuringCall) { pendingDuringCall.add(PendingPlayback.Audio(path)) }
+                    beeper().beep()
+                } else {
+                    player().play(path)
+                }
             }
             return
         }
@@ -123,6 +151,24 @@ class NotifListenerService : NotificationListenerService() {
     private fun speak(sender: String, text: String) {
         val s = speaker ?: Speaker(applicationContext).also { speaker = it }
         s.announce(sender, text)
+    }
+
+    private fun beeper(): Beeper =
+        beeper ?: Beeper().also { beeper = it }
+
+    /** Chamada termina: o que foi apenas avisado com beep agora é lido/tocado, na ordem de chegada. */
+    private fun flushPendingAfterCall() {
+        val items = synchronized(pendingDuringCall) {
+            val copy = pendingDuringCall.toList()
+            pendingDuringCall.clear()
+            copy
+        }
+        items.forEach { item ->
+            when (item) {
+                is PendingPlayback.Text -> speak(item.sender, item.text)
+                is PendingPlayback.Audio -> player().play(item.path)
+            }
+        }
     }
 
     /** Guarda a imagem embutida na notificação — sem depender do WhatsApp depois. */

@@ -4,6 +4,11 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Beep durante ligação (ver CallDetector/Beeper): toca no stream de voz da
+         chamada em andamento, permissão "normal" concedida na instalação, sem
+         diálogo de runtime. -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
     <!-- Guarda de áudio: a pasta "WhatsApp Voice Notes" fica sob Android/media com
          .nomedia (não indexada pelo MediaStore). Ler outro app exige All Files Access
          no Android 11+; abaixo disso, leitura direta de arquivo. -->
