@@ -207,7 +207,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:text="Escuta ativa só em movimento ou por um tempo manual, e nunca durante ligação. Reconhecimento 100% no aparelho — nenhum áudio sai daqui."
+                android:text="Diga “Jeeves” antes do comando (ex.: “Jeeves, leia as últimas mensagens de Fulano”). Escuta ativa só em movimento ou por um tempo manual, e nunca durante ligação. Reconhecimento 100% no aparelho — nenhum áudio sai daqui."
                 android:textColor="#636366"
                 android:textSize="13sp" />
 

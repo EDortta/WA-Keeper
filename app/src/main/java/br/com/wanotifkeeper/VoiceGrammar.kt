@@ -7,6 +7,14 @@ package br.com.wanotifkeeper
  */
 object VoiceGrammar {
 
+    /**
+     * Palavra de ativação ("Jeeves, leia as últimas mensagens de..."). Sem ela a frase é
+     * ignorada em silêncio — mesmo que bata com um padrão de comando — porque sem wake word
+     * nenhuma qualquer fala ambiente vira candidata, e isso deixa a intenção explícita.
+     * Várias grafias porque o reconhecedor transcreve nome estrangeiro de formas diferentes.
+     */
+    val WAKE_WORD_ALIASES = listOf("jeeves", "jives", "jivis", "gibs")
+
     /** "pelo whatsapp secundário" e variações — troca a conta só para aquele comando. */
     val ACCOUNT_OVERRIDE_PHRASES = listOf(
         "whatsapp secundario", "segundo whatsapp", "conta business", "whatsapp business", "pelo business"
