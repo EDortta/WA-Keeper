@@ -17,6 +17,15 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
 
+    <!-- Comandos de voz (ver NotifListenerService.runVoiceGateLoop): microfone só
+         ligado enquanto a janela de ativação (movimento/timer) está aberta, com
+         serviço em primeiro plano do tipo "microphone" — exigência do Android 14
+         pra captura de áudio em segundo plano. Reconhecimento é só on-device
+         (ver plano) — nenhum áudio sai do aparelho. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+
     <!-- SEC-0066: banco local espelha conversas do WhatsApp (dados sensíveis de
          terceiros). Backup/transfer desabilitados para impedir extração via
          auto-backup Google Drive, migração device-to-device e adb backup. -->
@@ -57,6 +66,7 @@
             android:name=".NotifListenerService"
             android:exported="true"
             android:label="WA Keeper"
+            android:foregroundServiceType="microphone"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />

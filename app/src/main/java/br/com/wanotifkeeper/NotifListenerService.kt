@@ -1,15 +1,23 @@
 package br.com.wanotifkeeper
 
+import android.Manifest
 import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.RemoteInput
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
@@ -21,7 +29,14 @@ class NotifListenerService : NotificationListenerService() {
 
     companion object {
         private const val TAG = "WAK-ReplyAction"
+        private const val TAG_VOICE_GATE = "WAK-VoiceGate"
         private const val DEDUP_WINDOW_MS = 2000L
+
+        /** Menor SDK em que SpeechRecognizer.createOnDeviceSpeechRecognizer existe. */
+        private const val MIN_SDK_VOICE_COMMANDS = Build.VERSION_CODES.S // 31
+        private const val VOICE_GATE_CHECK_MS = 7000L
+        private const val VOICE_CHANNEL_ID = "voice_commands"
+        private const val NOTIF_ID_VOICE_LISTENING = 42
     }
 
     private val watchedPackages = setOf(
@@ -32,11 +47,21 @@ class NotifListenerService : NotificationListenerService() {
     @Volatile private var lastPurge = 0L
 
     private val motion by lazy { MotionDetector(applicationContext) }
-    private val callDetector by lazy { CallDetector(applicationContext) { flushPendingAfterCall() } }
+    private val callDetector by lazy {
+        CallDetector(applicationContext) {
+            flushPendingAfterCall()
+            updateListeningState()
+        }
+    }
     // TTS e player de áudio só são criados quando há algo a reproduzir — sem segurar recursos à toa.
     private var speaker: Speaker? = null
     private var audioPlayer: AudioPlayer? = null
     private var beeper: Beeper? = null
+
+    // Janela de ativação dos comandos de voz (Fase 2 do plano): microfone só liga aqui dentro.
+    // O motor de reconhecimento em si (Fase 3) ainda não existe — por enquanto isto só decide
+    // quando o serviço vira foreground e mostra o aviso de "ouvindo".
+    @Volatile private var voiceListening = false
 
     // Mensagens que chegariam por voz durante uma ligação: em vez de falar por cima da
     // chamada, avisamos com um beep e lemos/tocamos tudo assim que ela terminar.
@@ -75,11 +100,13 @@ class NotifListenerService : NotificationListenerService() {
         motion.start()
         callDetector.start(scope)
         scope.launch { runPurge() }
+        scope.launch { runVoiceGateLoop() }
     }
 
     override fun onListenerDisconnected() {
         motion.stop()
         callDetector.stop()
+        stopVoiceListening()
         speaker?.shutdown()
         speaker = null
         audioPlayer?.shutdown()
@@ -92,6 +119,7 @@ class NotifListenerService : NotificationListenerService() {
     override fun onDestroy() {
         motion.stop()
         callDetector.stop()
+        stopVoiceListening()
         speaker?.shutdown()
         speaker = null
         audioPlayer?.shutdown()
@@ -234,6 +262,81 @@ class NotifListenerService : NotificationListenerService() {
                 is PendingPlayback.Audio -> player().play(item.path)
             }
         }
+    }
+
+    /** Enquanto conectado, decide a cada [VOICE_GATE_CHECK_MS] se a janela de ativação está aberta. */
+    private suspend fun runVoiceGateLoop() {
+        while (scope.isActive) {
+            updateListeningState()
+            delay(VOICE_GATE_CHECK_MS)
+        }
+    }
+
+    /**
+     * Abre a escuta por movimento (já em carro, mesmo sinal do TTS) OU por timer manual — mas
+     * nunca durante uma ligação. O timer manual libera a escuta mesmo parado (ex.: testar
+     * sentado no carro); porém, assim que o movimento é observado e depois cessa, o timer é
+     * cortado mesmo com tempo restante — corte de segurança para não continuar ouvindo depois
+     * que o carro para.
+     */
+    private fun updateListeningState() {
+        val enabled = Prefs.isVoiceCommandsEnabled(applicationContext) &&
+            Build.VERSION.SDK_INT >= MIN_SDK_VOICE_COMMANDS &&
+            ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.RECORD_AUDIO) ==
+                PackageManager.PERMISSION_GRANTED
+
+        val shouldListen = enabled && !callDetector.isInCall() && voiceGateOpen()
+
+        if (shouldListen && !voiceListening) startVoiceListening()
+        else if (!shouldListen && voiceListening) stopVoiceListening()
+    }
+
+    private fun voiceGateOpen(): Boolean {
+        val motionOpen = motion.isInMotion()
+        val now = System.currentTimeMillis()
+        var manualOpen = Prefs.manualListenUntil(applicationContext) > now
+
+        if (manualOpen) {
+            if (motionOpen) {
+                Prefs.setManualTimerMotionSeen(applicationContext, true)
+            } else if (Prefs.manualTimerMotionSeen(applicationContext)) {
+                // Movimento aconteceu durante a janela manual e já parou — corta o timer.
+                Prefs.setManualListenUntil(applicationContext, 0L)
+                manualOpen = false
+            }
+        }
+        return motionOpen || manualOpen
+    }
+
+    private fun startVoiceListening() {
+        voiceListening = true
+        startForeground(NOTIF_ID_VOICE_LISTENING, buildListeningNotification())
+        android.util.Log.d(TAG_VOICE_GATE, "ON (motion=${motion.isInMotion()}, manualUntil=${Prefs.manualListenUntil(applicationContext)})")
+        // Fase 3 liga o SpeechRecognizer aqui.
+    }
+
+    private fun stopVoiceListening() {
+        if (!voiceListening) return
+        voiceListening = false
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        android.util.Log.d(TAG_VOICE_GATE, "OFF")
+        // Fase 3 desliga o SpeechRecognizer aqui.
+    }
+
+    private fun buildListeningNotification(): Notification {
+        val manager = getSystemService(NotificationManager::class.java)
+        if (manager.getNotificationChannel(VOICE_CHANNEL_ID) == null) {
+            manager.createNotificationChannel(
+                NotificationChannel(VOICE_CHANNEL_ID, "Comandos de voz", NotificationManager.IMPORTANCE_LOW)
+                    .apply { setSound(null, null) }
+            )
+        }
+        return NotificationCompat.Builder(applicationContext, VOICE_CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+            .setContentTitle("WA Keeper ouvindo comandos de voz")
+            .setOngoing(true)
+            .setSilent(true)
+            .build()
     }
 
     /** Guarda a imagem embutida na notificação — sem depender do WhatsApp depois. */

@@ -16,6 +16,10 @@ object Prefs {
     private const val KEY_AUDIO_CAPTURE_PREFIX = "audio_capture_enabled_"
     private const val KEY_AUDIO_PLAY_MOTION = "audio_play_in_motion"
     private const val KEY_AUDIO_BLOCKED = "audio_blocked_senders"
+    private const val KEY_VOICE_COMMANDS_ENABLED = "voice_commands_enabled"
+    private const val KEY_VOICE_DEFAULT_ACCOUNT = "voice_default_account_pkg"
+    private const val KEY_MANUAL_LISTEN_UNTIL = "voice_manual_listen_until"
+    private const val KEY_MANUAL_TIMER_MOTION_SEEN = "voice_manual_timer_motion_seen"
 
     const val PKG_WHATSAPP = "com.whatsapp"
     const val PKG_BUSINESS = "com.whatsapp.w4b"
@@ -63,5 +67,40 @@ object Prefs {
 
     fun setAudioPlayInMotion(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_AUDIO_PLAY_MOTION, enabled).apply()
+    }
+
+    /** Switch mestre dos comandos de voz. Desligado por padrão. */
+    fun isVoiceCommandsEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_VOICE_COMMANDS_ENABLED, false)
+
+    fun setVoiceCommandsEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_VOICE_COMMANDS_ENABLED, enabled).apply()
+    }
+
+    /** Conta padrão dos comandos de voz — a frase "pelo whatsapp secundário" troca só naquele comando. */
+    fun voiceDefaultAccountPkg(context: Context): String =
+        prefs(context).getString(KEY_VOICE_DEFAULT_ACCOUNT, PKG_WHATSAPP) ?: PKG_WHATSAPP
+
+    fun setVoiceDefaultAccountPkg(context: Context, pkg: String) {
+        prefs(context).edit().putString(KEY_VOICE_DEFAULT_ACCOUNT, pkg).apply()
+    }
+
+    /** Epoch millis até quando a escuta manual (timer) fica liberada, mesmo parado. 0 = nenhum timer ativo. */
+    fun manualListenUntil(context: Context): Long =
+        prefs(context).getLong(KEY_MANUAL_LISTEN_UNTIL, 0L)
+
+    fun setManualListenUntil(context: Context, untilMillis: Long) {
+        prefs(context).edit()
+            .putLong(KEY_MANUAL_LISTEN_UNTIL, untilMillis)
+            .putBoolean(KEY_MANUAL_TIMER_MOTION_SEEN, false)
+            .apply()
+    }
+
+    /** Corte de segurança do timer manual: já viu movimento parar desde que o timer foi armado? */
+    fun manualTimerMotionSeen(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_MANUAL_TIMER_MOTION_SEEN, false)
+
+    fun setManualTimerMotionSeen(context: Context, seen: Boolean) {
+        prefs(context).edit().putBoolean(KEY_MANUAL_TIMER_MOTION_SEEN, seen).apply()
     }
 }
