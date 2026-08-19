@@ -104,22 +104,16 @@ class SettingsActivity : AppCompatActivity() {
             Prefs.setVoiceDefaultAccountPkg(this, pkg)
         }
 
-        val timerButtons = listOf(
-            binding.btnTimer15m to 15L,
-            binding.btnTimer30m to 30L,
-            binding.btnTimer1h to 60L,
-            binding.btnTimer2h to 120L,
-            binding.btnTimer4h to 240L,
-            binding.btnTimer8h to 480L
-        )
-        timerButtons.forEach { (button, minutes) ->
+        voiceTimerButtons().forEach { (button, minutes) ->
             button.setOnClickListener {
                 Prefs.setManualListenUntil(this, System.currentTimeMillis() + minutes * 60_000L)
+                Prefs.setManualDurationMinutes(this, minutes)
                 refreshVoiceTimerStatus()
             }
         }
         binding.btnVoiceTimerStop.setOnClickListener {
             Prefs.setManualListenUntil(this, 0L)
+            Prefs.setManualDurationMinutes(this, 0)
             refreshVoiceTimerStatus()
         }
 
@@ -153,12 +147,30 @@ class SettingsActivity : AppCompatActivity() {
         runCatching { startActivity(Intent(Settings.ACTION_VOICE_INPUT_SETTINGS)) }
     }
 
+    private fun voiceTimerButtons() = listOf(
+        binding.btnTimer15m to 15,
+        binding.btnTimer30m to 30,
+        binding.btnTimer1h to 60,
+        binding.btnTimer2h to 120,
+        binding.btnTimer4h to 240,
+        binding.btnTimer8h to 480
+    )
+
     private fun refreshVoiceTimerStatus() {
         val until = Prefs.manualListenUntil(this)
         val active = until > System.currentTimeMillis()
         binding.tvVoiceTimerStatus.text =
             if (active) "Ouvindo até ${timeFmt.format(Date(until))}" else "Timer manual desligado"
         binding.btnVoiceTimerStop.visibility = if (active) View.VISIBLE else View.GONE
+
+        val selectedMinutes = if (active) Prefs.manualDurationMinutes(this) else 0
+        voiceTimerButtons().forEach { (button, minutes) ->
+            val selected = minutes == selectedMinutes
+            button.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                if (selected) 0xFF25D366.toInt() else android.graphics.Color.TRANSPARENT
+            )
+            button.setTextColor(if (selected) 0xFFFFFFFF.toInt() else 0xFF25D366.toInt())
+        }
     }
 
     /** O aviso aparece só quando os comandos estão ligados mas falta microfone/notificação. */

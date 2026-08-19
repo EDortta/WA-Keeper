@@ -15,8 +15,8 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Motor de comandos de voz: liga o [SpeechRecognizer] on-device enquanto a janela de
  * ativação estiver aberta (ver NotifListenerService.runVoiceGateLoop) e interpreta o que
- * for reconhecido via [VoiceCommandParser]. Sem wake word — qualquer frase é candidata,
- * mas só age quando bate com um padrão conhecido; o resto é ignorado em silêncio.
+ * for reconhecido via [VoiceCommandParser]. Exige a palavra de ativação ("Godofredo") antes
+ * de qualquer comando; o resto da fala ambiente é ignorado em silêncio.
  *
  * Reconhecimento é sempre on-device (nunca cai pra nuvem): quem chama [start] já garante
  * SDK ≥ 31, então não há branch de fallback pra reconhecedor de rede aqui.
@@ -46,6 +46,12 @@ class VoiceCommandEngine(
     // e o motor entra num loop de reinício que nunca se estabiliza (visto em teste real).
     private val generation = AtomicInteger(0)
 
+    // Falar "Godofredo" e pausar antes do pedido é comportamento humano normal — cada pausa
+    // vira um turno de reconhecimento separado, então nenhum dos dois teria a palavra de
+    // ativação junto com o comando. Se um turno disser só a palavra, o turno seguinte (dentro
+    // da janela) é tentado como comando mesmo sem repeti-la.
+    @Volatile private var wakeWordArmedUntil = 0L
+
     @Volatile private var disambiguation: Disambiguation? = null
 
     private class Disambiguation(
@@ -59,6 +65,7 @@ class VoiceCommandEngine(
         if (active) return
         active = true
         errorStreak = 0
+        wakeWordArmedUntil = 0L
         main.post { createAndListen() }
     }
 
@@ -67,6 +74,7 @@ class VoiceCommandEngine(
         active = false
         generation.incrementAndGet()
         disambiguation = null
+        wakeWordArmedUntil = 0L
         main.post {
             recognizer?.let { runCatching { it.destroy() } }
             recognizer = null
@@ -190,6 +198,33 @@ class VoiceCommandEngine(
         }
     }
 
+    /**
+     * Resolve um comando a partir da transcrição, cobrindo o caso de "Godofredo" dito sozinho
+     * num turno e o pedido só chegar no próximo. Nunca reusa a janela de graça duas vezes:
+     * uma vez consumida (com sucesso ou não), fecha.
+     */
+    private fun resolveCommand(raw: String): ParsedVoiceCommand? {
+        VoiceCommandParser.parse(raw)?.let {
+            wakeWordArmedUntil = 0L
+            return it
+        }
+
+        if (wakeWordArmedUntil > System.currentTimeMillis()) {
+            wakeWordArmedUntil = 0L
+            VoiceCommandParser.parseCommandOnly(raw)?.let {
+                android.util.Log.d(TAG, "comando aceito sem repetir a palavra de ativação (janela de graça)")
+                return it
+            }
+        }
+
+        if (VoiceCommandParser.hasWakeWord(raw)) {
+            wakeWordArmedUntil = System.currentTimeMillis() + WAKE_WORD_GRACE_MS
+            android.util.Log.d(TAG, "palavra de ativação ouvida sozinha — aguardando o comando")
+        }
+
+        return null
+    }
+
     private fun handleTranscript(raw: String) {
         val pending = disambiguation
         if (pending != null) {
@@ -211,7 +246,7 @@ class VoiceCommandEngine(
             return
         }
 
-        val parsed = VoiceCommandParser.parse(raw)
+        val parsed = resolveCommand(raw)
         if (parsed == null) {
             android.util.Log.d(TAG, "não é comando, ignorando: \"$raw\"")
             return
@@ -264,5 +299,7 @@ class VoiceCommandEngine(
         private const val RETRY_MS = 600L
         private const val MAX_ERROR_STREAK = 5
         private const val MAX_DISAMBIGUATION_ATTEMPTS = 2
+        /** Quanto tempo depois de ouvir só a palavra de ativação o próximo turno ainda conta. */
+        private const val WAKE_WORD_GRACE_MS = 8000L
     }
 }

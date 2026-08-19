@@ -19,6 +19,7 @@ object Prefs {
     private const val KEY_VOICE_COMMANDS_ENABLED = "voice_commands_enabled"
     private const val KEY_VOICE_DEFAULT_ACCOUNT = "voice_default_account_pkg"
     private const val KEY_MANUAL_LISTEN_UNTIL = "voice_manual_listen_until"
+    private const val KEY_MANUAL_DURATION_MINUTES = "voice_manual_duration_minutes"
     private const val KEY_MANUAL_TIMER_MOTION_SEEN = "voice_manual_timer_motion_seen"
     private const val KEY_SPEECH_PACK_MISSING = "voice_speech_pack_missing"
 
@@ -95,6 +96,14 @@ object Prefs {
             .putLong(KEY_MANUAL_LISTEN_UNTIL, untilMillis)
             .putBoolean(KEY_MANUAL_TIMER_MOTION_SEEN, false)
             .apply()
+    }
+
+    /** Qual duração (minutos) está armada agora — só pra destacar o botão certo em Ajustes. */
+    fun manualDurationMinutes(context: Context): Int =
+        prefs(context).getInt(KEY_MANUAL_DURATION_MINUTES, 0)
+
+    fun setManualDurationMinutes(context: Context, minutes: Int) {
+        prefs(context).edit().putInt(KEY_MANUAL_DURATION_MINUTES, minutes).apply()
     }
 
     /** Corte de segurança do timer manual: já viu movimento parar desde que o timer foi armado? */
