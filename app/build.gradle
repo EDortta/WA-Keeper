@@ -67,4 +67,7 @@ dependencies {
 
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+
+    // Testes unitários locais (JVM puro, sem instrumentação) — ver VoiceGateDecisionTest.
+    testImplementation 'junit:junit:4.13.2'
 }

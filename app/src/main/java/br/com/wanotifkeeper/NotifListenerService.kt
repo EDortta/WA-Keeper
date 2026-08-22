@@ -6,6 +6,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.RemoteInput
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
@@ -60,6 +61,19 @@ class NotifListenerService : NotificationListenerService() {
 
     // Janela de ativação dos comandos de voz: microfone só liga aqui dentro (ver runVoiceGateLoop).
     @Volatile private var voiceListening = false
+
+    // Sem isso, desligar o switch em Ajustes só surtia efeito no próximo tick do
+    // runVoiceGateLoop (até VOICE_GATE_CHECK_MS depois) — o microfone/beep continuava indo
+    // nesse meio-tempo, e era fácil confundir com o recognizer não desligando de verdade.
+    // Referência forte de propósito: registerOnSharedPreferenceChangeListener só guarda uma
+    // fraca, um listener só em lambda local seria coletado e pararia de disparar.
+    private val voicePrefsListener =
+        SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == Prefs.KEY_VOICE_COMMANDS_ENABLED) {
+                android.util.Log.d(TAG_VOICE_GATE, "voice_commands_enabled mudou — reavaliando na hora")
+                scope.launch { updateListeningState() }
+            }
+        }
 
     private val voiceEngine by lazy {
         VoiceCommandEngine(
@@ -116,6 +130,7 @@ class NotifListenerService : NotificationListenerService() {
 
     override fun onListenerConnected() {
         super.onListenerConnected()
+        Prefs.registerChangeListener(applicationContext, voicePrefsListener)
         motion.start()
         callDetector.start(scope)
         scope.launch { runPurge() }
@@ -123,6 +138,7 @@ class NotifListenerService : NotificationListenerService() {
     }
 
     override fun onListenerDisconnected() {
+        Prefs.unregisterChangeListener(applicationContext, voicePrefsListener)
         motion.stop()
         callDetector.stop()
         stopVoiceListening()
@@ -136,6 +152,7 @@ class NotifListenerService : NotificationListenerService() {
     }
 
     override fun onDestroy() {
+        Prefs.unregisterChangeListener(applicationContext, voicePrefsListener)
         motion.stop()
         callDetector.stop()
         stopVoiceListening()
@@ -305,12 +322,29 @@ class NotifListenerService : NotificationListenerService() {
      * que o carro para.
      */
     private fun updateListeningState() {
-        val enabled = Prefs.isVoiceCommandsEnabled(applicationContext) &&
-            Build.VERSION.SDK_INT >= MIN_SDK_VOICE_COMMANDS &&
-            ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.RECORD_AUDIO) ==
-                PackageManager.PERMISSION_GRANTED
+        val masterEnabled = Prefs.isVoiceCommandsEnabled(applicationContext)
+        val sdkSupported = Build.VERSION.SDK_INT >= MIN_SDK_VOICE_COMMANDS
+        val hasRecordAudioPermission = ContextCompat.checkSelfPermission(
+            applicationContext, Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+        val inCall = callDetector.isInCall()
 
-        val shouldListen = enabled && !callDetector.isInCall() && voiceGateOpen()
+        // voiceGateOpen() tem efeito colateral (corta o timer manual quando o movimento para) —
+        // só chama quando as outras condições já deixam a escuta possível, senão o timer seria
+        // cortado por engano com o motor desligado. Preserva o short-circuit que existia antes
+        // de extrair a decisão pura pra VoiceGateDecision.
+        val gateOpen = masterEnabled && sdkSupported && hasRecordAudioPermission && !inCall && voiceGateOpen()
+
+        // gateOpen já embute as demais condições (só chega a true se todas já eram true), então
+        // esta chamada só está re-conferindo o resultado através da mesma regra pura que os
+        // testes exercitam — não custa nada e evita duas fontes de verdade pra decisão.
+        val shouldListen = VoiceGateDecision.shouldListen(
+            masterEnabled = masterEnabled,
+            sdkSupported = sdkSupported,
+            hasRecordAudioPermission = hasRecordAudioPermission,
+            inCall = inCall,
+            gateOpen = gateOpen
+        )
 
         if (shouldListen && !voiceListening) startVoiceListening()
         else if (!shouldListen && voiceListening) stopVoiceListening()

@@ -76,7 +76,15 @@ class VoiceCommandEngine(
         disambiguation = null
         wakeWordArmedUntil = 0L
         main.post {
-            recognizer?.let { runCatching { it.destroy() } }
+            // cancel() antes do destroy() é o que de fato aborta uma sessão de reconhecimento
+            // já em andamento junto do serviço on-device; destroy() sozinho só desconecta o
+            // client e devolve os recursos — vezes sem conta o serviço on-device (visto em
+            // Samsung) segue com o ciclo de escuta/beep já disparado até completar por conta
+            // própria, e só um force-stop do app derrubava de vez (bug real, não hipótese).
+            recognizer?.let {
+                runCatching { it.cancel() }
+                runCatching { it.destroy() }
+            }
             recognizer = null
         }
     }
@@ -139,7 +147,10 @@ class VoiceCommandEngine(
     /** Recria do zero: mais seguro que reusar um recognizer que acabou de dar BUSY/erro. */
     private fun recreate(gen: Int) {
         if (!active || gen != generation.get()) return
-        recognizer?.let { runCatching { it.destroy() } }
+        recognizer?.let {
+            runCatching { it.cancel() }
+            runCatching { it.destroy() }
+        }
         createAndListen()
     }
 

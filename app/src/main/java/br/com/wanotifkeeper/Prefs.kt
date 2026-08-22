@@ -1,6 +1,7 @@
 package br.com.wanotifkeeper
 
 import android.content.Context
+import android.content.SharedPreferences
 
 /**
  * Preferências simples do app (SharedPreferences).
@@ -16,7 +17,10 @@ object Prefs {
     private const val KEY_AUDIO_CAPTURE_PREFIX = "audio_capture_enabled_"
     private const val KEY_AUDIO_PLAY_MOTION = "audio_play_in_motion"
     private const val KEY_AUDIO_BLOCKED = "audio_blocked_senders"
-    private const val KEY_VOICE_COMMANDS_ENABLED = "voice_commands_enabled"
+    // Público: quem precisa reagir na hora (ver [registerChangeListener]) filtra por essa chave
+    // em vez de fazer polling — foi exatamente a falta disso que deixava o microfone ligado por
+    // até VOICE_GATE_CHECK_MS depois do switch desligar (ver NotifListenerService).
+    const val KEY_VOICE_COMMANDS_ENABLED = "voice_commands_enabled"
     private const val KEY_VOICE_DEFAULT_ACCOUNT = "voice_default_account_pkg"
     private const val KEY_MANUAL_LISTEN_UNTIL = "voice_manual_listen_until"
     private const val KEY_MANUAL_DURATION_MINUTES = "voice_manual_duration_minutes"
@@ -120,5 +124,20 @@ object Prefs {
 
     fun setSpeechPackMissing(context: Context, missing: Boolean) {
         prefs(context).edit().putBoolean(KEY_SPEECH_PACK_MISSING, missing).apply()
+    }
+
+    /**
+     * Deixa [listener] avisado, na hora, sempre que alguma chave mudar (ex.: o switch mestre
+     * de comandos de voz sendo desligado em Ajustes enquanto o serviço já está de olho num
+     * timer/polling mais lento). O framework guarda só uma referência fraca ao listener — quem
+     * chama precisa manter uma referência forte viva (ex.: campo da classe) e desregistrar em
+     * [unregisterChangeListener], ou o listener some sem aviso.
+     */
+    fun registerChangeListener(context: Context, listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        prefs(context).registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    fun unregisterChangeListener(context: Context, listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        prefs(context).unregisterOnSharedPreferenceChangeListener(listener)
     }
 }
