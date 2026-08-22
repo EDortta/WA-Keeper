@@ -57,4 +57,12 @@ object VoiceGrammar {
         "nove" to 9, "nono" to 9, "nona" to 9,
         "dez" to 10, "decimo" to 10, "decima" to 10
     )
+
+    /**
+     * Cortesia/preenchimento que costuma sobrar no FIM do pedido, depois do nome do
+     * destinatário — "leia as mensagens de Nanda PARA MIM" tinha "para mim" grudado no nome
+     * extraído sem isso. Achado em captura ao vivo: quase toda frase real de Esteban termina
+     * com "para mim". Tirado do alvo em [VoiceCommandParser] antes de casar com um remetente.
+     */
+    val TRAILING_FILLER_PHRASES = listOf("para mim", "pra mim", "por favor")
 }

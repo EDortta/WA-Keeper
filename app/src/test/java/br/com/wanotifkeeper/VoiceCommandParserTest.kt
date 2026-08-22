@@ -106,4 +106,56 @@ class VoiceCommandParserTest {
         // e continua não reconhecido como comando, por mais que tenha a palavra de ativação:
         assertEquals(null, VoiceCommandParser.parse("Godofredo, toca uma musica"))
     }
+
+    // --- Terceira rodada: captura ao vivo de fala real mostrou "leia as últimas mensagens de
+    // Nanda" funcionando (não é regressão do refactor Parsed/WaitingForCommand/Unrecognized/
+    // NotForUs — ver duas transcrições reais de sucesso no log), mas VÁRIAS variações naturais
+    // da mesma frase falhando por dois gaps reais na regex, achados direto no log dele:
+    //
+    // 1. "mensagens?" (só o 's' opcional) nunca batia com o singular "mensagem" — plural em
+    //    português muda -EM pra -ENS, não é só acrescentar "s". "Leia a última MENSAGEM de
+    //    Nanda" ficava sem resposta por causa disso.
+    // 2. A preposição "de|do|da" era obrigatória — "mensagens NA Nanda" (preposição diferente)
+    //    e "mensagens Nanda" (preposição comida pelo reconhecedor) batiam com tudo e falhavam
+    //    só nisso.
+    //
+    // Falhas de transcrição em si (ex.: "lei" no lugar de "leia", "gofredo" no lugar de
+    // "Godofredo", "imagens" no lugar de "mensagens") são ruído do reconhecedor, não do parser —
+    // não dá pra corrigir isso sem arriscar falso positivo, e não foram tratadas.
+
+    @Test
+    fun `singular mensagem now matches, not just plural mensagens`() {
+        val parsed = VoiceCommandParser.parse("Godofredo, leia a última mensagem de Nanda para mim")
+        assertNotNull("frase real de Esteban que ficava muda", parsed)
+        assertEquals("nanda", parsed!!.command.target)
+    }
+
+    @Test
+    fun `preposition na also works, not just de-do-da`() {
+        val parsed = VoiceCommandParser.parse("Godofredo, leia as últimas duas mensagens na Nanda para mim")
+        assertNotNull(parsed)
+        assertEquals("nanda", parsed!!.command.target)
+    }
+
+    @Test
+    fun `missing preposition altogether still extracts the target`() {
+        val parsed = VoiceCommandParser.parse("Godofredo leia as últimas cinco mensagens nana")
+        assertNotNull("preposição comida pelo reconhecedor, texto real do log", parsed)
+        assertEquals("nana", parsed!!.command.target)
+    }
+
+    @Test
+    fun `still works with the original required preposition (de) - no regression`() {
+        val parsed = VoiceCommandParser.parse("Godofredo leia as últimas cinco mensagens da Nanda")
+        assertNotNull(parsed)
+        assertEquals("nanda", parsed!!.command.target)
+    }
+
+    @Test
+    fun `real successful utterance from the live log still works after the grammar fix`() {
+        val parsed = VoiceCommandParser.parse("Godofredo leia as últimas cinco mensagens do estrela")
+        assertNotNull(parsed)
+        assertEquals("estrela", parsed!!.command.target)
+        assertEquals(5, parsed.command.count)
+    }
 }

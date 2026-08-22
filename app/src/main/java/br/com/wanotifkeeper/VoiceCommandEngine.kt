@@ -372,12 +372,14 @@ class VoiceCommandEngine(
             "Não entendi. Tente algo como: Godofredo, leia as últimas mensagens de Fulano."
         /**
          * Atraso antes de reiniciar a escuta depois de um ciclo sem nada reconhecível, indexado
-         * por [noSpeechStreak] (o último valor se repete além do fim da lista). Os três
-         * primeiros ciclos ficam em 0ms — cobre tanto "acabou de abrir a janela" quanto "acabou
-         * de ouvir só a palavra de ativação, o pedido pode vir no próximo turno" (não pode
-         * atrasar aqui ou come o orçamento da janela de graça). Só espaça de verdade depois
-         * disso, quando fica claro que ninguém está tentando falar com o Godofredo agora.
+         * por [noSpeechStreak] (o último valor se repete além do fim da lista). Só o primeiro
+         * ciclo (índice 0) precisa ficar em 0ms — é o único que importa pra pegar o pedido logo
+         * depois de "acabou de abrir a janela" ou "acabou de ouvir só a palavra de ativação"
+         * (janela de graça de 8s); qualquer ciclo depois desse já não influencia mais aquela
+         * janela. Esteban relatou que o backoff anterior (3/6/10/15/20s, só começando a espaçar
+         * no 4º ciclo ocioso) ainda incomodava — este começa a espaçar já no 2º ciclo e chega
+         * ao teto mais rápido.
          */
-        private val NO_SPEECH_BACKOFF_MS = listOf(0L, 0L, 0L, 3000L, 6000L, 10000L, 15000L, 20000L)
+        private val NO_SPEECH_BACKOFF_MS = listOf(0L, 2000L, 5000L, 10000L, 20000L, 30000L)
     }
 }

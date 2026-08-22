@@ -23,8 +23,20 @@ object VoiceCommandParser {
     // "pelo , leia..."); o "\b" evita casar "leia" dentro de outra palavra (ex.: "boleia").
     // O ".*?" entre o verbo e "mensagens" tolera fala natural ("lê PARA MIM as últimas
     // mensagens de..." / "lê PRA MIM..."), em vez de exigir a sequência exata "as últimas".
+    //
+    // "mensagem(?:m|ns)": achado em captura ao vivo de fala real — "mensagens?" (só o "s" como
+    // opcional) nunca batia com o singular "mensagem" porque o plural em português muda o final
+    // -EM pra -ENS (não é só acrescentar "s"): "mensagem" -> "mensagens". "Leia a última
+    // mensagem de Nanda" ficava mudo por causa disso.
+    //
+    // Preposição opcional (não só "de|do|da" obrigatório): outra falha real — "leia as últimas
+    // mensagens NA Nanda" (preposição diferente) e "...mensagens Nanda" (preposição comida pelo
+    // reconhecedor) batiam com tudo até aí e falhavam só por causa dessa exigência. Precisa do
+    // `\b` depois da preposição pra não devorar o começo do nome (ex.: "na" não pode casar como
+    // prefixo de "nanda" sem isso).
     private val READ_LAST_PATTERN = Regex(
-        "\\b(?:${VoiceGrammar.READ_LAST_VERBS.joinToString("|")})\\b(.*?)\\bmensagens?\\b\\s*(?:de|do|da)\\s+(.+?)\\s*$"
+        "\\b(?:${VoiceGrammar.READ_LAST_VERBS.joinToString("|")})\\b(.*?)\\bmensage(?:m|ns)\\b" +
+            "\\s*(?:(?:de|do|da|na|no)\\b\\s+)?(.+?)\\s*$"
     )
     private val WHAT_DID_X_SAY_PATTERN = Regex("\\bo\\s+que\\s+(.+?)\\s+mandou\\??\\s*$")
 
@@ -71,18 +83,40 @@ object VoiceCommandParser {
             val count = Regex("""\d+""").find(gap)?.value?.toIntOrNull()?.coerceIn(1, VoiceGrammar.MAX_READ_COUNT)
                 ?: wordCount(gap)
                 ?: VoiceGrammar.DEFAULT_READ_COUNT
-            val target = m.groupValues[2].trim()
+            val target = stripTrailingFiller(m.groupValues[2].trim())
             if (target.isNotEmpty()) return ParsedVoiceCommand(VoiceCommand(target, count), accountOverride)
         }
 
         WHAT_DID_X_SAY_PATTERN.find(cleaned)?.let { m ->
-            val target = m.groupValues[1].trim()
+            val target = stripTrailingFiller(m.groupValues[1].trim())
             if (target.isNotEmpty()) {
                 return ParsedVoiceCommand(VoiceCommand(target, VoiceGrammar.DEFAULT_READ_COUNT), accountOverride)
             }
         }
 
         return null
+    }
+
+    /**
+     * Tira cortesia/preenchimento do FIM do nome extraído ("nanda para mim" -> "nanda") —
+     * repete até não sobrar nenhuma, pra cobrir frases encadeadas ("... por favor pra mim").
+     */
+    private fun stripTrailingFiller(target: String): String {
+        var result = target
+        var changed = true
+        while (changed) {
+            changed = false
+            for (filler in VoiceGrammar.TRAILING_FILLER_PHRASES) {
+                when {
+                    result == filler -> { result = ""; changed = true }
+                    result.endsWith(" $filler") -> {
+                        result = result.removeSuffix(" $filler").trimEnd()
+                        changed = true
+                    }
+                }
+            }
+        }
+        return result
     }
 
     /** Número por extenso ("dez", "décimo", ...) dentro do trecho entre o verbo e "mensagens". */
