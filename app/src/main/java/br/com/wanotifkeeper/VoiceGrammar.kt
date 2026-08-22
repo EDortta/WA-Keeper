@@ -24,8 +24,14 @@ object VoiceGrammar {
         "whatsapp secundario", "segundo whatsapp", "conta business", "whatsapp business", "pelo business"
     )
 
-    /** Verbos que iniciam o comando "leia as últimas mensagens de X". */
-    val READ_LAST_VERBS = listOf("leia", "ler", "le", "mostra", "mostrar")
+    /**
+     * Verbos que iniciam o comando "leia as últimas mensagens de X". "Fala"/"falar" entraram
+     * depois de um relato ao vivo de "nenhuma resposta": Esteban disse "Godofredo, fala para
+     * mim as últimas cinco mensagens da Nanda" — frase natural pra um assistente de voz, mas
+     * fora da lista, então o parser (corretamente, por design) ignorava em silêncio. O
+     * reconhecedor tinha ouvido certinho; faltava o verbo no vocabulário.
+     */
+    val READ_LAST_VERBS = listOf("leia", "ler", "le", "mostra", "mostrar", "fala", "falar")
 
     /** Quantas mensagens ler quando o comando não pede um número específico. */
     const val DEFAULT_READ_COUNT = 5

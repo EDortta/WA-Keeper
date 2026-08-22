@@ -5,16 +5,17 @@ import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 /**
- * Cobre o comando "mostra as N últimas mensagens de X" — incluindo a frase exata que Esteban
- * relatou sem resposta nenhuma ("Godofredo, mostra as dez últimas mensagens de Nanda").
+ * Cobre o comando "verbo + as N últimas mensagens de X", incluindo duas rodadas de relatos
+ * reais de Esteban de "nenhuma resposta":
  *
- * Achado da investigação: o parser SEMPRE reconhecia essa frase (verbo "mostra" já estava em
- * [VoiceGrammar.READ_LAST_VERBS]) — o bug real era que "dez" (número por extenso) não batia
- * com a extração de contagem, que só procurava `\d+`, e caía pro padrão de 5 mensagens sem
- * avisar. Corrigido reaproveitando [VoiceGrammar.NUMBER_WORDS] como fallback. Isso por si só
- * não explica "nenhuma resposta" (um parse bem-sucedido sempre fala alguma coisa, nem que seja
- * "não encontrei") — ver o relatório da investigação pra outras hipóteses (gate fechado no
- * momento da fala, ou erro de transcrição no aparelho real).
+ * 1. "Godofredo, mostra as dez últimas mensagens de Nanda" — o parser sempre reconhecia essa
+ *    frase (verbo "mostra" já estava em [VoiceGrammar.READ_LAST_VERBS]); o bug era "dez" (por
+ *    extenso) não bater com a extração de contagem (só olhava `\d+`), caindo pro padrão de 5
+ *    sem avisar. Corrigido reaproveitando [VoiceGrammar.NUMBER_WORDS] como fallback.
+ * 2. "Godofredo" (sozinho) seguido, dentro da janela de graça, de "fala para mim as últimas
+ *    cinco mensagens da Nanda" — captura ao vivo confirmou que o reconhecedor ouviu certinho,
+ *    mas "fala"/"falar" não estavam em READ_LAST_VERBS, então o parser ignorava em silêncio
+ *    por design (nunca adivinha). Corrigido adicionando os dois verbos.
  */
 class VoiceCommandParserTest {
 
@@ -46,5 +47,40 @@ class VoiceCommandParserTest {
         val parsed = VoiceCommandParser.parse("Godofredo, mostra as 5 últimas mensagens de Nanda")
         assertNotNull(parsed)
         assertEquals(5, parsed!!.command.count)
+    }
+
+    /**
+     * Achado numa segunda rodada de investigação, com captura ao vivo de fala real (não mais
+     * síntese): Esteban disse "Godofredo" sozinho, e no turno seguinte (dentro da janela de
+     * graça) "fala para mim as últimas cinco mensagens da Nanda" — reconhecido palavra por
+     * palavra pelo motor (log confirma a transcrição exata), mas "fala" não estava em
+     * [VoiceGrammar.READ_LAST_VERBS], então o parser ignorava em silêncio por design (nunca
+     * adivinha). É esse o gap real por trás do "eu falo falo falo e não faz nada" — não um loop
+     * travado no motor (o generation counter e os logs mostram o ciclo normal de
+     * escuta/NO_MATCH/reescuta, sem nenhum erro).
+     */
+    @Test
+    fun `reported utterance - fala para mim as ultimas cinco mensagens da Nanda (grace window, no wake word repeated)`() {
+        val parsed = VoiceCommandParser.parseCommandOnly("fala para mim as ultimas cinco mensagens da Nanda")
+        assertNotNull("esperava reconhecer 'fala' como verbo de comando", parsed)
+        assertEquals("nanda", parsed!!.command.target)
+        assertEquals(5, parsed.command.count)
+    }
+
+    @Test
+    fun `falar also works as a trigger verb`() {
+        val parsed = VoiceCommandParser.parse("Godofredo, pode falar as últimas mensagens de Nanda")
+        assertNotNull(parsed)
+        assertEquals("nanda", parsed!!.command.target)
+    }
+
+    @Test
+    fun `bare wake word alone does not parse as a command`() {
+        assertEquals(null, VoiceCommandParser.parse("Godofredo"))
+    }
+
+    @Test
+    fun `bare wake word is still detected for the grace window`() {
+        assert(VoiceCommandParser.hasWakeWord("Godofredo"))
     }
 }
