@@ -83,4 +83,27 @@ class VoiceCommandParserTest {
     fun `bare wake word is still detected for the grace window`() {
         assert(VoiceCommandParser.hasWakeWord("Godofredo"))
     }
+
+    // --- remainderAfterWakeWord: base pra VoiceCommandEngine distinguir "ainda esperando o
+    // resto" (fica quieto) de "pediu algo real e não bati" (fala que não entendeu) — ver
+    // VoiceCommandEngine.Resolution. Sem a palavra de ativação, é sempre null (fala alheia).
+
+    @Test
+    fun `remainder is null without the wake word`() {
+        assertEquals(null, VoiceCommandParser.remainderAfterWakeWord("toca uma musica"))
+    }
+
+    @Test
+    fun `remainder is empty when only the wake word was said`() {
+        assertEquals("", VoiceCommandParser.remainderAfterWakeWord("Godofredo"))
+    }
+
+    @Test
+    fun `remainder is non-empty for an unrecognized command - should trigger the not-understood fallback`() {
+        val remainder = VoiceCommandParser.remainderAfterWakeWord("Godofredo, toca uma musica")
+        assertNotNull(remainder)
+        assert(remainder!!.isNotEmpty())
+        // e continua não reconhecido como comando, por mais que tenha a palavra de ativação:
+        assertEquals(null, VoiceCommandParser.parse("Godofredo, toca uma musica"))
+    }
 }

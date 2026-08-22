@@ -31,12 +31,23 @@ object VoiceCommandParser {
     /** A palavra de ativação está em algum lugar da frase — mesmo sozinha, sem comando junto. */
     fun hasWakeWord(rawUtterance: String): Boolean = WAKE_WORD_PATTERN.containsMatchIn(normalize(rawUtterance))
 
-    /** Exige a palavra de ativação na própria frase. Uso normal — cada turno se justifica sozinho. */
-    fun parse(rawUtterance: String): ParsedVoiceCommand? {
+    /**
+     * Tira a palavra de ativação da frase (normalizada) e devolve o que sobra — null se a
+     * palavra não estiver presente, string vazia se só ela foi dita. Exposto (não privado) pra
+     * o motor de voz conseguir diferenciar "só a palavra, ainda esperando o resto" (fica quieto,
+     * arma a janela de graça) de "palavra + algo mais que não bateu com nenhum comando" (fala
+     * que não entendeu) — sem isso os dois casos pareciam idênticos de fora.
+     */
+    fun remainderAfterWakeWord(rawUtterance: String): String? {
         val normalized = normalize(rawUtterance)
         val wakeMatch = WAKE_WORD_PATTERN.find(normalized) ?: return null
-        val cleaned = (normalized.substring(0, wakeMatch.range.first) + " " + normalized.substring(wakeMatch.range.last + 1))
+        return (normalized.substring(0, wakeMatch.range.first) + " " + normalized.substring(wakeMatch.range.last + 1))
             .trim().replace(Regex("\\s+"), " ")
+    }
+
+    /** Exige a palavra de ativação na própria frase. Uso normal — cada turno se justifica sozinho. */
+    fun parse(rawUtterance: String): ParsedVoiceCommand? {
+        val cleaned = remainderAfterWakeWord(rawUtterance) ?: return null
         return parseCommandOnly(cleaned, alreadyNormalized = true)
     }
 

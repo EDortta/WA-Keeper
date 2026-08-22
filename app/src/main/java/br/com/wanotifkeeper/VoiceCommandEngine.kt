@@ -40,6 +40,16 @@ class VoiceCommandEngine(
     @Volatile private var active = false
     private var errorStreak = 0
 
+    // Cada ciclo de escuta reinicia o SpeechRecognizer, e o serviço on-device (não o app) toca
+    // um aviso sonoro próprio a cada início/fim de sessão — não tem API pública pra silenciar
+    // isso sem também silenciar notificação de verdade (mesmo stream de áudio). Esteban relatou
+    // ao vivo o som repetindo indefinidamente ("plac..plic-pluc") como desagradável enquanto
+    // ninguém fala nada. O que dá pra controlar é a CADÊNCIA: fica responsivo (reinicia na hora)
+    // nos primeiros ciclos — é quando a pessoa provavelmente está prestes a falar — e vai
+    // espaçando os reinícios se ninguém disser nada de reconhecível, em vez de manter o mesmo
+    // ritmo pra sempre. Zera assim que algo é ouvido (onResults) ou quando a escuta liga de novo.
+    private var noSpeechStreak = 0
+
     // Cada geração é uma "sessão" do recognizer. Callbacks de uma sessão velha (ex.: um
     // destroy() que ainda não terminou de verdade quando uma nova sessão já começou) são
     // ignorados — sem isso, duas sessões concorrentes cada uma reagenda sua própria re-escuta,
@@ -65,6 +75,7 @@ class VoiceCommandEngine(
         if (active) return
         active = true
         errorStreak = 0
+        noSpeechStreak = 0
         wakeWordArmedUntil = 0L
         main.post { createAndListen() }
     }
@@ -172,6 +183,7 @@ class VoiceCommandEngine(
         override fun onResults(results: Bundle) {
             if (!current()) return
             errorStreak = 0
+            noSpeechStreak = 0
             onRecognitionWorking()
             val text = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
             android.util.Log.d(TAG, "ouviu: \"$text\"")
@@ -183,9 +195,14 @@ class VoiceCommandEngine(
             if (!current()) return
             when (error) {
                 SpeechRecognizer.ERROR_NO_MATCH, SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> {
-                    android.util.Log.d(TAG, "${errorName(error)} — reescutando")
+                    // Nada reconhecível nesse ciclo — espaça o próximo reinício (e o aviso
+                    // sonoro que vem junto) em vez de manter o mesmo ritmo pra sempre. Volta a
+                    // ficar responsivo assim que algo for de fato ouvido (onResults zera).
+                    val delay = NO_SPEECH_BACKOFF_MS.getOrElse(noSpeechStreak) { NO_SPEECH_BACKOFF_MS.last() }
+                    android.util.Log.d(TAG, "${errorName(error)} — reescutando em ${delay}ms (streak=$noSpeechStreak)")
+                    noSpeechStreak++
                     errorStreak = 0
-                    relistenSoon(gen, 0L)
+                    relistenSoon(gen, delay)
                 }
                 SpeechRecognizer.ERROR_LANGUAGE_NOT_SUPPORTED, SpeechRecognizer.ERROR_LANGUAGE_UNAVAILABLE -> {
                     android.util.Log.d(TAG, "pacote de voz indisponível (${errorName(error)})")
@@ -209,31 +226,60 @@ class VoiceCommandEngine(
         }
     }
 
+    /** Resultado de tentar entender um turno — três jeitos de "não virou um comando" que pedem
+     * reações bem diferentes do motor (ver [resolveCommand]). */
+    private sealed class Resolution {
+        data class Parsed(val command: ParsedVoiceCommand) : Resolution()
+        /** Só a palavra de ativação, nada mais — janela de graça armada, fica quieto. */
+        object WaitingForCommand : Resolution()
+        /** A frase era claramente dirigida ao Godofredo (tinha a palavra, ou caiu dentro da
+         * janela de graça) mas não bateu com nenhum comando conhecido — avisa, não fica mudo. */
+        object Unrecognized : Resolution()
+        /** Sem a palavra de ativação e fora da janela de graça — fala alheia, ignora quieto. */
+        object NotForUs : Resolution()
+    }
+
     /**
      * Resolve um comando a partir da transcrição, cobrindo o caso de "Godofredo" dito sozinho
      * num turno e o pedido só chegar no próximo. Nunca reusa a janela de graça duas vezes:
      * uma vez consumida (com sucesso ou não), fecha.
+     *
+     * Antes só devolvia null pra qualquer "não virou comando" — e o motor ficava mudo tanto pra
+     * "ainda esperando o resto" quanto pra "a pessoa pediu algo real e não bati". Esteban
+     * relatou ao vivo exatamente essa segunda situação como "eu falo e não faz nada": o
+     * reconhecedor ouvia certinho, o parser não reconhecia o verbo/padrão, e o motor ficava
+     * calado — silêncio ali é o bug, não a política de "nunca adivinhar" em si (que continua
+     * valendo pra fala sem a palavra de ativação, caso [Resolution.NotForUs]).
      */
-    private fun resolveCommand(raw: String): ParsedVoiceCommand? {
+    private fun resolveCommand(raw: String): Resolution {
         VoiceCommandParser.parse(raw)?.let {
             wakeWordArmedUntil = 0L
-            return it
+            return Resolution.Parsed(it)
         }
 
         if (wakeWordArmedUntil > System.currentTimeMillis()) {
             wakeWordArmedUntil = 0L
             VoiceCommandParser.parseCommandOnly(raw)?.let {
                 android.util.Log.d(TAG, "comando aceito sem repetir a palavra de ativação (janela de graça)")
-                return it
+                return Resolution.Parsed(it)
             }
+            // Dentro da janela de graça, mas o texto não virou nenhum comando conhecido — a
+            // pessoa estava claramente respondendo ao Godofredo, só não do jeito que ele entende.
+            return Resolution.Unrecognized
         }
 
-        if (VoiceCommandParser.hasWakeWord(raw)) {
-            wakeWordArmedUntil = System.currentTimeMillis() + WAKE_WORD_GRACE_MS
-            android.util.Log.d(TAG, "palavra de ativação ouvida sozinha — aguardando o comando")
+        val remainder = VoiceCommandParser.remainderAfterWakeWord(raw)
+        if (remainder != null) {
+            if (remainder.isEmpty()) {
+                wakeWordArmedUntil = System.currentTimeMillis() + WAKE_WORD_GRACE_MS
+                android.util.Log.d(TAG, "palavra de ativação ouvida sozinha — aguardando o comando")
+                return Resolution.WaitingForCommand
+            }
+            // Palavra de ativação + algo mais na mesma frase, mas nada bateu.
+            return Resolution.Unrecognized
         }
 
-        return null
+        return Resolution.NotForUs
     }
 
     private fun handleTranscript(raw: String) {
@@ -257,10 +303,18 @@ class VoiceCommandEngine(
             return
         }
 
-        val parsed = resolveCommand(raw)
-        if (parsed == null) {
-            android.util.Log.d(TAG, "não é comando, ignorando: \"$raw\"")
-            return
+        val parsed = when (val resolution = resolveCommand(raw)) {
+            is Resolution.Parsed -> resolution.command
+            Resolution.WaitingForCommand -> return
+            Resolution.NotForUs -> {
+                android.util.Log.d(TAG, "não é comando, ignorando: \"$raw\"")
+                return
+            }
+            Resolution.Unrecognized -> {
+                android.util.Log.d(TAG, "não entendi o comando, avisando: \"$raw\"")
+                say(NOT_UNDERSTOOD_MESSAGE)
+                return
+            }
         }
         val pkg = parsed.accountOverride ?: defaultAccountPkg()
         android.util.Log.d(TAG, "comando reconhecido: alvo=\"${parsed.command.target}\" count=${parsed.command.count} pkg=$pkg")
@@ -312,5 +366,18 @@ class VoiceCommandEngine(
         private const val MAX_DISAMBIGUATION_ATTEMPTS = 2
         /** Quanto tempo depois de ouvir só a palavra de ativação o próximo turno ainda conta. */
         private const val WAKE_WORD_GRACE_MS = 8000L
+        /** Falado quando a frase era claramente pro Godofredo mas não bateu com nenhum comando —
+         * silêncio nesse caso é o que Esteban relatou como "eu falo e não faz nada" ao vivo. */
+        private const val NOT_UNDERSTOOD_MESSAGE =
+            "Não entendi. Tente algo como: Godofredo, leia as últimas mensagens de Fulano."
+        /**
+         * Atraso antes de reiniciar a escuta depois de um ciclo sem nada reconhecível, indexado
+         * por [noSpeechStreak] (o último valor se repete além do fim da lista). Os três
+         * primeiros ciclos ficam em 0ms — cobre tanto "acabou de abrir a janela" quanto "acabou
+         * de ouvir só a palavra de ativação, o pedido pode vir no próximo turno" (não pode
+         * atrasar aqui ou come o orçamento da janela de graça). Só espaça de verdade depois
+         * disso, quando fica claro que ninguém está tentando falar com o Godofredo agora.
+         */
+        private val NO_SPEECH_BACKOFF_MS = listOf(0L, 0L, 0L, 3000L, 6000L, 10000L, 15000L, 20000L)
     }
 }
