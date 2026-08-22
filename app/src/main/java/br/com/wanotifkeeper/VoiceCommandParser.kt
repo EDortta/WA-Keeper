@@ -58,6 +58,7 @@ object VoiceCommandParser {
         READ_LAST_PATTERN.find(cleaned)?.let { m ->
             val gap = m.groupValues[1]
             val count = Regex("""\d+""").find(gap)?.value?.toIntOrNull()?.coerceIn(1, VoiceGrammar.MAX_READ_COUNT)
+                ?: wordCount(gap)
                 ?: VoiceGrammar.DEFAULT_READ_COUNT
             val target = m.groupValues[2].trim()
             if (target.isNotEmpty()) return ParsedVoiceCommand(VoiceCommand(target, count), accountOverride)
@@ -72,6 +73,13 @@ object VoiceCommandParser {
 
         return null
     }
+
+    /** Número por extenso ("dez", "décimo", ...) dentro do trecho entre o verbo e "mensagens". */
+    private fun wordCount(gap: String): Int? =
+        VoiceGrammar.NUMBER_WORDS.entries
+            .filter { (_, n) -> n in 1..VoiceGrammar.MAX_READ_COUNT }
+            .firstOrNull { (word, _) -> Regex("\\b$word\\b").containsMatchIn(gap) }
+            ?.value
 
     /** Número falado ou dígito na resposta ao menu de desambiguação — restrito às opções oferecidas. */
     fun parseDisambiguationAnswer(rawUtterance: String, optionCount: Int): Int? {
