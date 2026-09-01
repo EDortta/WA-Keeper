@@ -13,7 +13,11 @@ que dispara o concílio a cada 5 (ver `README.md` desta pasta).
 
 | # | commit | o quê | crítica por commit | conta p/ concílio |
 |---|---|---|---|---|
-| — | — | (nada ainda) | — | 0/5 |
+| 1 | (este) | passo zero: viabilidade do `RemoteInput`+`PendingIntent` decidida por leitura | auto-crítica: conclusão é de leitura, não de aparelho — registrado como pendência explícita, sem alegar funcionamento | 1/5 |
+
+Nota: a branch estava 3 commits atrás de `development` (só docs de coordenação).
+Fast-forward `cf9779a..b55378b` aplicado no próprio worktree para que `RESUME.md` e
+este ledger existissem na branch. Nenhum merge de trabalho, nenhum push.
 
 ## Frente B — EPIC 3 (#17/#19) · `feature/epic-3-image-retention`
 
