@@ -111,9 +111,71 @@ sentidos, rótulo de outras mídias, variantes de escrita). Total: **14 testes**
 | corrigidos na rodada 1 | 13 |
 | viraram teste unitário | 5 testes novos (9 → 14) |
 | perguntas abertas para o operador | ver "Esperando o operador" |
-| rodada 2 | pendente |
+
+### Rodada 2 — verificação e classificação (2 lentes: classificação, olho novo)
+
+Os **12** fechamentos da rodada 1 foram verificados um a um no código: **todos FECHADOS**,
+nenhum vivo. Mas a rodada 2 levantou **10 achados distintos** (13 brutos, 3 vistos pelas
+duas lentes de forma independente — o que aumenta a confiança neles, não diminui).
+
+**Nenhum foi corrigido, por contrato.** O `README.md` da coordenação e o briefing desta
+rodada são explícitos: achado vivo depois da rodada 2 → **para e vai ao operador; nunca uma
+terceira rodada**. Corrigir agora produziria mudança não verificada, que é exatamente o que
+o teto de rodadas existe para impedir. Estão todos abaixo, com a classificação pedida.
+
+| # | achado | sev. | classificação |
+|---|---|---|---|
+| S1 | **`SENDER_PREFIX` reabre o buraco que o `MediaHints` existe para fechar.** O strip é incondicional: qualquer texto cujos primeiros ≤40 chars terminem em `": "` perde esse pedaço. `"Ana: fotos"` (a pessoa digitou a palavra) → `"fotos"` → `matches` → **true** → varre o diretório e anexa foto alheia a uma mensagem de TEXTO. Idem `"Olha isso: foto"`, `"Assunto: fotos"`. **As duas lentes acharam isto sozinhas.** | MAJOR | **introduzido por correção da rodada 1** (a correção do falso negativo em grupo desfez parte da correção do BLOCKER) |
+| S2 | **`FILE_SETTLE_MS` contradiz o cronograma de retry.** Última varredura em t+10,5 s, `settled` = t+9,0 s: arquivo com mtime em (t+9 s, t+12 s] **nunca** é aceito — não há retry depois. A janela útil é 9 s, não os 12 s que a constante e seu comentário afirmam; **o caso que motivou subir a janela de 8→12 s continua recusado.** Pior: na 1ª varredura (t+0,3 s) o filtro exige mtime ≤ t−1,2 s, então ela **só pode retornar arquivo anterior à notificação** — a coincidência temporal proibida pela #17 entrando pela porta construída para evitá-la. **As duas lentes acharam isto sozinhas.** | MAJOR | **introduzido por correção da rodada 1** |
+| S3 | **`DetailActivity.looksLikeMedia` ainda é a regra frouxa antiga** (`containsMatchIn` sobre `imagem\|foto\|photo\|…` nos 40 primeiros chars) — literalmente o padrão que o `MediaHints` foi criado para eliminar, vivo na mesma branch. Não dispara captura, mas afirma ao usuário "imagem não capturada" para toda mensagem que mencione "foto", e é a regra que um mantenedor futuro vai encontrar primeiro e replicar. **As duas lentes acharam isto sozinhas.** | MAJOR | **pré-existente recém-visto** |
+| S4 | `captureImageUri` agora pega o mesmo `imageLock` que `captureLatestImage` segura durante `listFiles` + `copyTo` de vários MB. O comentário diz que a cópia do URI "é imediata"; ela deixou de ser. E o lock não protege nada: `uriCopies`, `consumed` e `destSeq` já são thread-safe. | MINOR | **introduzido por correção da rodada 1** |
+| S5 | `uriCopies` cresce sem limite pela vida do processo, sem invalidação. Só memória (o reuso revalida com `length() > 0`). `consumed` tem o mesmo crescimento e é anterior à branch. | MINOR | **introduzido por correção da rodada 1** (o gêmeo `consumed` é pré-existente) |
+| S6 | Dedup **segmentada**: o memo de URI não alimenta `consumed`. A #19 pede dedup pelo *arquivo-fonte*; o que existe é dedup por URI de um lado e por `absolutePath:mtime` do outro, sem ponte — a mesma imagem pode ser copiada duas vezes por caminhos diferentes. | MINOR | **antigo** (fechamento só parcial do achado 9 da rodada 1) |
+| S7 | `lastOrNull()` só é a mensagem desta notificação se o bundle vier do mais antigo para o mais novo. É o que o AOSP faz em `MessagingStyle.addMessage`, mas é o único dos 12 fechamentos cuja prova depende de comportamento externo. Degrada com segurança (cai no fallback por rótulo). | MINOR | **introduzido por correção da rodada 1** — e **só o aparelho confirma** |
+| S8 | Os três caminhos de captura têm três contratos diferentes para o mesmo trabalho (destino, dedup, validação da cópia). `savePicture` nomeia com `bmp.hashCode()`, que é hash de **identidade**, não de conteúdo — o nome mente sobre ser endereçado por conteúdo. O guard de 0 byte só existe no caminho do URI. | MINOR | **pré-existente recém-visto**, amplificado pela branch |
+| S9 | `imageJob?.join()` é guarda morta com comentário que parece carregar peso: quem protege o sweep é `ORPHAN_GRACE_MS`, e **tem** que ser ele, porque `MainActivity` e `RetentionActivity` também chamam `purge` e não têm job para esperar. Risco: alguém reduzir a carência confiando no `join`. | MINOR | **introduzido por correção da rodada 1** |
+| S10 | Quatro constantes independentes respondem "quão perto no tempo é a mesma mensagem?" (60 s / 20 s / 15 s / 12 s), nenhuma derivada de outra. O caminho do URI é o **mais permissivo em tempo** (60 s) e o **único sem a trava semântica** da #17 (basta `messageImage != null`, sem passar por `looksLikeImageMessage`). | MINOR | **antigo** / misto |
+
+### Contagens do concílio (as duas rodadas)
+
+| | |
+|---|---|
+| lentes | 6 (rodada 1: concorrência, conformidade, regressão, adversarial · rodada 2: classificação, olho novo) |
+| achados levantados | **31** (21 na rodada 1 + 10 na rodada 2) |
+| corrigidos | **13** (todos na rodada 1; verificados FECHADOS na rodada 2) |
+| viraram teste unitário | **5 testes novos** (9 → 14, `:app:testDebugUnitTest` verde) |
+| **sobreviventes (vivos depois da rodada 2)** | **10** → param aqui e vão ao operador |
+| perguntas abertas | **4** (ver "Esperando o operador") |
+| rodadas | **2 de 2. Teto atingido. Não haverá terceira.** |
+
+## Por que esta frente parou
+
+Porque o teto de rodadas do concílio foi atingido com achados vivos. A rodada 2 confirmou
+que as 13 correções da rodada 1 fecharam o que se propunham, e mostrou que **duas delas
+abriram problema novo** (S1 e S2) — as duas achadas de forma independente pelas duas lentes.
+Corrigir S1 e S2 agora seria mudança sem verificação, porque verificá-la exigiria a terceira
+rodada que o contrato proíbe. A decisão é do operador.
+
+**A branch NÃO está pronta para merge.** S1 e S2 são regressões da restrição central da #17
+("não anexar imagem antiga a uma mensagem de texto por coincidência temporal").
+
+### Recomendação para a retomada (não executada)
+
+1. **S1** — o caminho mais curto é **remover `stripSenderPrefix`** (4 linhas): volta à garantia
+   forte da rodada 1, ao custo do falso negativo em grupo nas versões sem emoji. O caminho
+   correto, mais caro, é o prefixo só ser removido quando houver evidência de que a
+   notificação é de grupo (`EXTRA_IS_GROUP_CONVERSATION` / `MessagingStyle.isGroupConversation`),
+   em vez de casar qualquer `": "`.
+2. **S2** — as três grandezas (janela, settle, escada de retry) precisam ser **derivadas umas
+   das outras em código**, não coincidir por comentário. Enquanto isso não acontece, o mínimo
+   é `ceiling` = último retry − `FILE_SETTLE_MS`, e a primeira varredura não rodar antes de
+   `FILE_SETTLE_MS`.
+3. **S3** — `DetailActivity.looksLikeMedia` deve passar a chamar `MediaHints`.
 
 ## Esperando o operador
+
+0. **Decidir sobre os 10 achados vivos da rodada 2**, em especial S1, S2 e S3. Nenhum foi
+   corrigido — por contrato, não por falta de tempo.
 
 1. **Lead 5 — `WhatsApp Images` tem subpasta neste aparelho?**
    Pergunta literal: *no seu telefone, `Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Images`
@@ -125,4 +187,23 @@ sentidos, rótulo de outras mídias, variantes de escrita). Total: **14 testes**
    `Android/media/com.whatsapp.w4b/WhatsApp Business/Media/WhatsApp Business Images`,
    por simetria com o caminho de voz que já estava lá. Não foi verificado em
    aparelho. Vale a mesma pergunta.
-3. **Merge da PR #20.** Decisão do operador; nenhum agente mescla.
+3. **Ordem de `EXTRA_MESSAGES` (achado S7).** Pergunta literal: *nas notificações de
+   MessagingStyle do WhatsApp deste aparelho, o bundle `EXTRA_MESSAGES` vem do mais antigo
+   para o mais novo?* O fechamento do BLOCKER da rodada 2 assume que sim (é o que o AOSP
+   faz). Se alguma versão inverter, o caminho do URI vira falso negativo silencioso.
+
+4. **Conflito semântico no merge com `development` (lente de regressão, MAJOR).**
+   `development` ganhou `isDuplicateRepost(pkg, title, text)` — early-return de 2 s — que roda
+   **antes** da extração de `EXTRA_PICTURE`. O WhatsApp costuma postar o rótulo primeiro e só
+   depois atualizar a notificação com o bitmap/URI, **com texto idêntico**: depois do merge,
+   essa segunda notificação é descartada e o caminho de imagem nunca roda para ela.
+   `git merge-tree` **não** acusa isso — os hunks estão em regiões diferentes e mesclam limpo.
+   As duas features nunca foram exercitadas juntas. Isto contraria uma regra já estabelecida
+   em `development`, então sai do concílio e vem para o operador.
+
+5. **Merge da PR #20.** Decisão do operador; nenhum agente mescla. Nota mecânica: a branch
+   está atrasada em relação a `development` (merge-base `fe713e0`). `git merge-tree` acusa 5
+   arquivos; o de `NotifListenerService.kt` é um bloco de import onde **os dois lados são
+   necessários** (`android.os.Build` de `development`, `android.net.Uri` da branch) —
+   resolver com `--ours`/`--theirs` **não compila**. Nos 3 arquivos de docs o lado da branch
+   é o mais novo.
