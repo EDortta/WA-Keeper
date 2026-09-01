@@ -52,23 +52,33 @@ object Retention {
             excluded = configured.map { it.sender } + ""
         )
 
-        sweepOrphanImages(ctx, dao.allImagePaths().toSet())
-        sweepOrphanAudio(ctx, dao.allAudioPaths().toSet())
+        sweepOrphanImages(ctx, dao.allImagePaths().toSet(), now)
+        sweepOrphanAudio(ctx, dao.allAudioPaths().toSet(), now)
         return before - dao.count()
     }
 
+    /**
+     * Carência antes de apagar um órfão. Existe porque o arquivo SEMPRE nasce em disco antes
+     * da linha que o referencia — e no fallback de imagem essa distância chega a 10,5 s, mais
+     * o tempo da cópia. Sem carência, um purge disparado por outra notificação (ou pela
+     * MainActivity / RetentionActivity, que também chamam purge) apaga o arquivo que está
+     * sendo escrito agora, e a linha fica apontando para um caminho morto.
+     */
+    private val ORPHAN_GRACE_MS = TimeUnit.MINUTES.toMillis(2)
+
+    private fun isSweepable(f: File, now: Long): Boolean = now - f.lastModified() > ORPHAN_GRACE_MS
+
     /** Apaga arquivos de imagem que não são mais referenciados por nenhuma linha. */
-    private fun sweepOrphanImages(ctx: Context, referenced: Set<String>) {
-        val dir = imageDir(ctx)
-        dir.listFiles()?.forEach { f ->
-            if (f.absolutePath !in referenced) f.delete()
+    private fun sweepOrphanImages(ctx: Context, referenced: Set<String>, now: Long) {
+        imageDir(ctx).listFiles()?.forEach { f ->
+            if (f.absolutePath !in referenced && isSweepable(f, now)) f.delete()
         }
     }
 
     /** Apaga áudios copiados que não são mais referenciados por nenhuma linha. */
-    private fun sweepOrphanAudio(ctx: Context, referenced: Set<String>) {
+    private fun sweepOrphanAudio(ctx: Context, referenced: Set<String>, now: Long) {
         MediaVault.audioDir(ctx).listFiles()?.forEach { f ->
-            if (f.absolutePath !in referenced) f.delete()
+            if (f.absolutePath !in referenced && isSweepable(f, now)) f.delete()
         }
     }
 

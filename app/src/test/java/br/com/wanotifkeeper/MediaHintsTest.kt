@@ -55,16 +55,61 @@ class MediaHintsTest {
     }
 
     @Test
-    fun `palavra dentro de outra palavra nao conta como imagem`() {
+    fun `palavra colada em outra nao conta como imagem`() {
+        // A regra NÃO é fronteira de palavra: é o texto inteiro ser o rótulo. Estes casos
+        // caem pelo mesmo motivo que "me manda a foto", e é isso que o teste documenta.
         assertFalse(MediaHints.looksLikeImageMessage("fotocópia"))
         assertFalse(MediaHints.looksLikeImageMessage("fotógrafo"))
-        assertFalse(MediaHints.looksLikeImageMessage("imagens é o que não falta por aqui"))
+    }
+
+    // --- concílio, lente adversarial: emoji digitado por uma pessoa ---
+
+    @Test
+    fun `emoji de camera no meio da frase nao conta como imagem`() {
+        assertFalse(MediaHints.looksLikeImageMessage("comprei uma câmera nova 📸"))
+        assertFalse(MediaHints.looksLikeImageMessage("que saudade daquele lugar 🏞"))
+        assertFalse(MediaHints.looksLikeImageMessage("olha só 📷"))
+    }
+
+    // --- concílio, lente adversarial: notificação de grupo traz "Remetente: " ---
+
+    @Test
+    fun `rotulo com prefixo de remetente conta como imagem`() {
+        assertTrue(MediaHints.looksLikeImageMessage("Ana: Foto"))
+        assertTrue(MediaHints.looksLikeImageMessage("Você: 2 fotos"))
+        assertTrue(MediaHints.looksLikeImageMessage("Ana: 📷 Foto"))
+    }
+
+    @Test
+    fun `frase com prefixo de remetente nao conta como imagem`() {
+        assertFalse(MediaHints.looksLikeImageMessage("Ana: me manda a foto"))
+        assertFalse(MediaHints.looksLikeImageMessage("Ana: comprei uma câmera nova 📸"))
+    }
+
+    // --- concílio, lente adversarial: rótulo de OUTRAS mídias não é imagem ---
+
+    @Test
+    fun `rotulo de outra midia nao conta como imagem`() {
+        assertFalse(MediaHints.looksLikeImageMessage("🎥 Vídeo"))
+        assertFalse(MediaHints.looksLikeImageMessage("🎬 GIF"))
+        assertFalse(MediaHints.looksLikeImageMessage("📄 Documento"))
+        assertFalse(MediaHints.looksLikeImageMessage("Figurinha"))
+        assertFalse(MediaHints.looksLikeImageMessage("Sticker"))
+    }
+
+    // --- concílio, lente adversarial: separador e caixa ---
+
+    @Test
+    fun `variantes de escrita do rotulo contam como imagem`() {
+        assertTrue(MediaHints.looksLikeImageMessage("1 foto"))
+        assertTrue(MediaHints.looksLikeImageMessage("2\u00A0fotos"))   // NBSP, e não espaço
+        assertTrue(MediaHints.looksLikeImageMessage("IMÁGENES"))
+        assertTrue(MediaHints.looksLikeImageMessage("\u200EFoto"))     // marca bidi invisível
     }
 
     @Test
     fun `texto comum nao conta como imagem`() {
         assertFalse(MediaHints.looksLikeImageMessage("bom dia"))
-        assertFalse(MediaHints.looksLikeImageMessage(""))
     }
 
     // --- voz: o comportamento não pode ter mudado nesta branch ---

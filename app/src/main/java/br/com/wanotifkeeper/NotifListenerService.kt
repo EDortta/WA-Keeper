@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,7 +16,11 @@ import java.io.FileOutputStream
 
 class NotifListenerService : NotificationListenerService() {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    // Sem o handler, uma exceção não tratada num filho de `launch` sobe para o handler de
+    // thread padrão e derruba o app — SupervisorJob protege os irmãos, não o processo.
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, _ -> }
+    )
 
     private val watchedPackages = setOf(
         "com.whatsapp",
@@ -80,7 +85,7 @@ class NotifListenerService : NotificationListenerService() {
             extras.getParcelable(Notification.EXTRA_PICTURE) as? Bitmap
         }.getOrNull()
 
-        val messageImage = extractMessagingStyleImage(sbn.notification)
+        val messageImage = extractMessagingStyleImage(sbn.notification, sbn.postTime)
         val isImage = picture != null || messageImage != null || MediaVault.looksLikeImageMessage(text)
 
         scope.launch {
@@ -130,15 +135,23 @@ class NotifListenerService : NotificationListenerService() {
     /**
      * MessagingStyle pode carregar uma URI da imagem, mesmo quando EXTRA_PICTURE não existe.
      */
-    private fun extractMessagingStyleImage(notification: Notification): NotificationImage? = runCatching {
+    private fun extractMessagingStyleImage(notification: Notification, postTime: Long): NotificationImage? = runCatching {
         @Suppress("DEPRECATION")
         val bundles = notification.extras.getParcelableArray(Notification.EXTRA_MESSAGES) ?: return null
-        Notification.MessagingStyle.Message.getMessagesFromBundleArray(bundles)
-            .asReversed()
-            .firstOrNull { msg ->
-                msg.dataUri != null && msg.dataMimeType?.startsWith("image/", ignoreCase = true) == true
-            }
-            ?.let { msg -> NotificationImage(msg.dataUri!!, msg.dataMimeType) }
+        // EXTRA_MESSAGES traz o HISTÓRICO recente da conversa, não só a mensagem que disparou
+        // esta notificação. Procurar "a última COM imagem" fazia uma mensagem de TEXTO herdar
+        // a foto anterior da mesma conversa — exatamente o que a #17 proíbe. Só a última
+        // entrada do bundle é a desta notificação; se ela não for imagem, não há imagem.
+        val last = Notification.MessagingStyle.Message.getMessagesFromBundleArray(bundles)
+            .lastOrNull() ?: return null
+        val uri = last.dataUri ?: return null
+        if (last.dataMimeType?.startsWith("image/", ignoreCase = true) != true) return null
+        // Segunda trava: mesmo sendo a última, se o horário dela está longe do postTime é
+        // histórico, não a mensagem que chegou agora.
+        if (last.timestamp > 0L && kotlin.math.abs(postTime - last.timestamp) > MESSAGE_TS_TOLERANCE_MS) {
+            return null
+        }
+        NotificationImage(uri, last.dataMimeType)
     }.getOrNull()
 
     /**
@@ -190,6 +203,11 @@ class NotifListenerService : NotificationListenerService() {
         if (now - lastPurge < RetentionPolicy.HOUR_MS) return
         lastPurge = now
         runCatching { Retention.purge(applicationContext, now) }
+    }
+
+    private companion object {
+        /** Distância máxima entre o horário da mensagem do MessagingStyle e o postTime. */
+        const val MESSAGE_TS_TOLERANCE_MS = 60_000L
     }
 
     private data class NotificationImage(

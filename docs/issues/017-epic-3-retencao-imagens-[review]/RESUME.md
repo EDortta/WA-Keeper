@@ -73,11 +73,45 @@ o topo deste arquivo.
 
 Ver `docs/coordination/commit-ledger.md` para o commit de cada uma.
 
-## Concílio
+## Concílio de entrega
 
-- Rodadas: **0**. Achados levantados: —. Sobreviventes: —. Viraram teste: —.
-  Perguntas abertas: —.
-- Pendente: concílio de entrega, depois da revisão fechar não-BLOCKER.
+Rodado depois de a revisão fechar não-BLOCKER, contra o artefato aprovado.
+4 lentes distintas, nenhuma vendo a saída da outra: **concorrência/ciclo de vida**,
+**conformidade com as issues**, **regressão**, **adversarial**.
+
+### Rodada 1 — 21 achados levantados
+
+Corrigidos nesta rodada:
+
+| origem | achado | correção |
+|---|---|---|
+| conformidade | **BLOCKER** — `EXTRA_MESSAGES` traz o histórico da conversa; pegar "a última COM imagem" fazia uma mensagem de TEXTO herdar a foto anterior | passa a usar **só a última entrada** do bundle, mais guarda de `timestamp` contra o `postTime` (60 s) |
+| adversarial | **MAJOR** — emoji não ancorado: "comprei uma câmera nova 📸" disparava a varredura | emoji só conta **no início** do texto (`IMAGE_EMOJI_PREFIX`) |
+| adversarial | **MAJOR** — falso negativo em grupo: `"Ana: Foto"` não casava, e o ramo de rótulo existe justamente para as versões sem emoji | prefixo `"Remetente: "` é removido antes de testar o rótulo |
+| conformidade | **MAJOR** — a varredura de subpastas (correção do lead 5) pegava `Sent/` e `Private/`: imagem que **você enviou** podia vencer o desempate | só subpastas de nome numérico (ano+semana) |
+| concorrência + adversarial | **MAJOR** — arquivo ainda em download era copiado truncado, e o retry parava no primeiro sucesso | candidato precisa estar sem escrita há `FILE_SETTLE_MS` (1,5 s) |
+| concorrência + regressão | **MAJOR** — `@Synchronized` num `object` dá **um monitor só**: a varredura de imagem bloqueava a captura de áudio, refazendo pelo lock o acoplamento que a correção do achado 9 desfez pela coroutine | locks separados (`voiceLock`, `imageLock`) |
+| concorrência + conformidade | **MAJOR** — `sweepOrphanImages` apaga por "não está no banco", e o arquivo nasce em disco até 10,5 s antes da linha; um purge de outra notificação (ou da MainActivity/RetentionActivity) apagava a cópia em andamento | carência de 2 min antes de varrer órfão, imagem e áudio |
+| adversarial | **MAJOR** — stream vazio virava arquivo de 0 byte que contava como sucesso, **travava** o fallback de diretório e sumia sem aviso na tela | `dest.length() == 0` → apaga e devolve `null` |
+| conformidade | **MAJOR** — o caminho URI não deduplicava pelo arquivo-fonte, contra regra explícita da #19 | memo `uri → caminho`, reaproveita a cópia |
+| conformidade | **MINOR** — `DetailActivity` decodifica sem subamostragem, e `imagePath` agora é o **original** do WhatsApp, não mais a miniatura: risco de OOM sem `largeHeap` | `inSampleSize` com teto de 2048 px |
+| adversarial | **MINOR** — `IMAGE_LABEL` não casava `"IMÁGENES"` (o `IGNORE_CASE` do Kotlin não liga `UNICODE_CASE`) nem `"2\u00A0fotos"` (NBSP) | `(?iu)` e separador aceitando NBSP; marcas bidi removidas |
+| concorrência | **MINOR** — filho de `launch` sem `CoroutineExceptionHandler` derruba o processo | handler no `scope` |
+| adversarial | **MINOR** — 2 dos 9 testes não provavam o que o nome anunciava | renomeados/reduzidos, e o comentário passou a dizer qual é a regra de verdade |
+
+Viraram teste: **5 testes novos** (emoji digitado, prefixo de remetente nos dois
+sentidos, rótulo de outras mídias, variantes de escrita). Total: **14 testes**,
+`:app:testDebugUnitTest` verde.
+
+### Contagens
+
+| | |
+|---|---|
+| achados levantados (rodada 1) | 21 |
+| corrigidos na rodada 1 | 13 |
+| viraram teste unitário | 5 testes novos (9 → 14) |
+| perguntas abertas para o operador | ver "Esperando o operador" |
+| rodada 2 | pendente |
 
 ## Esperando o operador
 

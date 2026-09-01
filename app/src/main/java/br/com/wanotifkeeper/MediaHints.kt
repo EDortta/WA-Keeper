@@ -25,23 +25,48 @@ object MediaHints {
         RegexOption.IGNORE_CASE
     )
 
-    /** O emoji que o WhatsApp prefixa no rótulo de foto. Vale mesmo com legenda depois. */
-    private val IMAGE_EMOJI = Regex("📷|📸|🖼|🏞")
+    /**
+     * O emoji de foto **no início** do texto. Ancorado de propósito: o WhatsApp põe o emoji
+     * como prefixo do rótulo, então "📷 Foto" casa e "comprei uma câmera nova 📸" — emoji
+     * digitado por uma pessoa no meio de uma frase — não casa. Sem a âncora, esse era o
+     * caminho incondicional para anexar uma imagem alheia a uma mensagem de texto.
+     */
+    private val IMAGE_EMOJI_PREFIX = Regex("^(📷|📸|🖼|🏞)")
 
     /**
      * O rótulo de foto sozinho, sem frase em volta — inclusive na forma agrupada
      * ("2 fotos", "3 photos"). `matches` exige o texto inteiro: "me manda a foto" não casa.
+     *
+     * `(?iu)` em vez de [RegexOption.IGNORE_CASE]: a opção do Kotlin é só
+     * `Pattern.CASE_INSENSITIVE`, sem `UNICODE_CASE`, e sem isso "IMÁGENES" não casa com
+     * `imágenes`. O separador aceita NBSP porque o WhatsApp usa U+00A0 em "2 fotos".
      */
     private val IMAGE_LABEL = Regex(
-        "(\\d+\\s+)?(fotos?|fotografias?|fotografías?|imagem|imagens|imagen|imágenes|" +
-            "photos?|pictures?|images?)",
-        RegexOption.IGNORE_CASE
+        "(?iu)(\\d+[\\s\\u00A0]+)?(fotos?|fotografias?|fotografías?|imagem|imagens|" +
+            "imagen|imágenes|photos?|pictures?|images?)"
     )
+
+    /**
+     * Em grupo o texto da notificação vem como "Fulano: corpo". Sem tirar esse prefixo, o
+     * ramo de rótulo (o que salva as versões do WhatsApp que NÃO mandam o emoji) nunca
+     * dispara em grupo — que é o caso de uso mais comum.
+     */
+    private val SENDER_PREFIX = Regex("^[^:\n]{1,40}:[\\s\\u00A0]+")
+
+    /** Marcas invisíveis (bidi, BOM) que o `trim()` do Kotlin não remove. */
+    private val INVISIBLE = charArrayOf('\u200E', '\u200F', '\u202A', '\u202C', '\uFEFF')
 
     fun looksLikeVoiceMessage(text: String): Boolean = VOICE_HINT.containsMatchIn(text)
 
     fun looksLikeImageMessage(text: String): Boolean {
-        if (IMAGE_EMOJI.containsMatchIn(text)) return true
-        return IMAGE_LABEL.matches(text.trim())
+        val body = stripSenderPrefix(normalize(text))
+        if (IMAGE_EMOJI_PREFIX.containsMatchIn(body)) return true
+        return IMAGE_LABEL.matches(body)
     }
+
+    private fun normalize(text: String): String =
+        text.trim().trim(*INVISIBLE).trim()
+
+    private fun stripSenderPrefix(text: String): String =
+        SENDER_PREFIX.find(text)?.let { normalize(text.removeRange(it.range)) } ?: text
 }
