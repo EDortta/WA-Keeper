@@ -76,6 +76,13 @@
                         android:textSize="12sp"
                         android:visibility="gone" />
 
+                    <Button
+                        android:id="@+id/btnSchedule"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:text="Enviar quando esta pessoa falar comigo" />
+
                     <TextView
                         android:id="@+id/tvText"
                         android:layout_width="match_parent"
