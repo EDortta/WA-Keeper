@@ -59,6 +59,18 @@ estar escrito no briefing.
 
 ## Correções aplicadas
 
+| lead | correção | teste |
+|---|---|---|
+| 1 (BLOCKER) | a regra de "isto parece mídia?" saiu do `MediaVault` para `MediaHints`, objeto puro sem Android — mesmo padrão de `VoiceGateDecision`. O indício de imagem deixou de ser "contém a palavra" e passou a ser **emoji de mídia (📷/📸/🖼/🏞) OU o texto ser só o rótulo** ("Foto", "2 fotos", "Photo"), com `matches` sobre o texto inteiro. "me manda a foto" não dispara mais o fallback. | `MediaHintsTest` — 9 testes, verdes |
+| 3 (MAJOR) | destino de `captureImageUri` virou `img-uri-$aroundTs-<seq>$ext`, com `AtomicLong`. Duas notificações de mesmo `postTime` não escrevem mais no mesmo arquivo. Cópia parcial é apagada em caso de falha, em vez de esperar a retenção. | coberto por leitura; sem teste JVM (depende de `ContentResolver`) |
+| 5 (parqueado) | **endurecido sem supor nada do aparelho**: `captureLatestImage` passou a varrer a raiz **e** as 2 subpastas mais recentes, como o caminho de voz já fazia. Correto tanto se as imagens ficam na raiz quanto se ficam em subpasta de semana. A pergunta continua aberta para o operador. | — |
+| 6 (MAJOR) | `IMAGE_WINDOW_FORWARD_MS` 8 s → **12 s**, cobrindo o horizonte real do retry (10,5 s) com margem. Os últimos 2,5 s de retry deixaram de ser caminho morto. | — |
+| 9 (MAJOR, fora dos leads) | `captureImage` passou a rodar em coroutine própria (`scope.launch`), e a captura de áudio deixou de esperar por ela. `runPurge()` continua depois das duas, via `imageJob?.join()`, para a varredura de órfãos não apagar um arquivo antes de o `setImagePath` registrá-lo. | — |
+| 4 (LOW) | sem correção, por decisão: é a propriedade que o áudio já tinha antes desta branch. Só documentada no código. | — |
+
+Build: `:app:testDebugUnitTest` verde (9 testes). Nenhum teste em aparelho — ver
+o topo deste arquivo.
+
 Ver `docs/coordination/commit-ledger.md` para o commit de cada uma.
 
 ## Concílio

@@ -107,9 +107,12 @@ class NotifListenerService : NotificationListenerService() {
 
             // Algumas versões do WhatsApp não expõem bitmap/URI na notificação.
             // Nesses casos tentamos copiar a imagem recém-baixada do diretório oficial de mídia.
-            if (imagePath == null && isImage) {
-                captureImage(rowId, sbn.packageName, sbn.postTime)
-            }
+            // Em coroutine própria: o retry de imagem espera até 10,5 s quando não acha nada,
+            // e não pode empurrar a captura de ÁUDIO para depois disso — quanto mais tarde ela
+            // começa, mais chance o WhatsApp tem de apagar o .opus ("apagar para todos").
+            val imageJob = if (imagePath == null && isImage) {
+                scope.launch { captureImage(rowId, sbn.packageName, sbn.postTime) }
+            } else null
 
             if (isVoice &&
                 Prefs.isAudioCaptureEnabled(applicationContext, sbn.packageName) &&
@@ -117,6 +120,9 @@ class NotifListenerService : NotificationListenerService() {
             ) {
                 captureAudio(rowId, sbn.packageName, sbn.postTime)
             }
+            // A retenção varre órfãos comparando com os caminhos gravados no banco; só pode
+            // rodar depois que a captura de imagem tiver registrado o dela.
+            imageJob?.join()
             runPurge()
         }
     }

@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Environment
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Copia para o armazenamento privado do app mídias recebidas que o WhatsApp grava
@@ -13,24 +14,21 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object MediaVault {
 
-    /** Anchor de mensagem de voz nas notificações (pt/es/en). O 🎤 é o sinal mais confiável. */
-    private val VOICE_HINT = Regex(
-        "🎤|🎙|voice message|mensagem de voz|mensaje de voz",
-        RegexOption.IGNORE_CASE
-    )
-
-    /** Anchor de imagem nas notificações (pt/es/en). */
-    private val IMAGE_HINT = Regex(
-        "📷|🖼|photo|picture|image|foto|imagem|fotografia",
-        RegexOption.IGNORE_CASE
-    )
-
-    /** Arquivos-fonte já copiados nesta sessão, para não anexar a mesma mídia duas vezes. */
+    /**
+     * Arquivos-fonte já copiados nesta sessão, para não anexar a mesma mídia duas vezes.
+     * Vive só em memória, como sempre viveu para o áudio: se o listener for morto e
+     * recriado, o set volta vazio. O dano é limitado pela janela de tempo, que é medida a
+     * partir do `postTime` da notificação NOVA.
+     */
     private val consumed: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
-    fun looksLikeVoiceMessage(text: String): Boolean = VOICE_HINT.containsMatchIn(text)
+    /** Discriminador para nomes de destino, para duas notificações não colidirem no mesmo arquivo. */
+    private val destSeq = AtomicLong(0)
 
-    fun looksLikeImageMessage(text: String): Boolean = IMAGE_HINT.containsMatchIn(text)
+    // A regra de "isto parece mídia?" vive em MediaHints, sem Android, para ter teste.
+    fun looksLikeVoiceMessage(text: String): Boolean = MediaHints.looksLikeVoiceMessage(text)
+
+    fun looksLikeImageMessage(text: String): Boolean = MediaHints.looksLikeImageMessage(text)
 
     /** Antes de 11 o acesso a arquivo era direto; de 11 em diante exige All Files Access. */
     fun hasAllFilesAccess(): Boolean =
@@ -103,10 +101,17 @@ object MediaVault {
             mimeType.equals("image/heic", ignoreCase = true) -> ".heic"
             else -> ".img"
         }
-        val dest = File(Retention.imageDir(ctx), "img-uri-$aroundTs$ext")
-        ctx.contentResolver.openInputStream(uri)?.use { input ->
-            dest.outputStream().use { output -> input.copyTo(output) }
-        } ?: return null
+        // O sufixo de sequência existe porque duas notificações podem ter o MESMO postTime
+        // (o resumo do grupo e a filha, ou uma atualização da mesma notificação). Sem ele,
+        // duas linhas apontariam para o mesmo arquivo e uma ficaria com a imagem da outra.
+        val dest = File(Retention.imageDir(ctx), "img-uri-$aroundTs-${destSeq.incrementAndGet()}$ext")
+        val input = ctx.contentResolver.openInputStream(uri) ?: return null
+        try {
+            input.use { i -> dest.outputStream().use { o -> i.copyTo(o) } }
+        } catch (t: Throwable) {
+            dest.delete()   // cópia parcial não vira lixo esperando a retenção
+            throw t
+        }
         dest.absolutePath
     }.getOrNull()
 
@@ -119,14 +124,23 @@ object MediaVault {
         if (!hasAllFilesAccess()) return null
         val root = imageRoot(pkg)?.takeIf { it.isDirectory } ?: return null
         val cutoff = aroundTs - IMAGE_WINDOW_BACK_MS
+        val ceiling = aroundTs + IMAGE_WINDOW_FORWARD_MS
 
-        val candidate = root.listFiles { f ->
-            f.isFile &&
-                isImageFile(f) &&
-                f.lastModified() >= cutoff &&
-                f.lastModified() <= aroundTs + IMAGE_WINDOW_FORWARD_MS &&
-                key(f) !in consumed
-        }?.minByOrNull { kotlin.math.abs(it.lastModified() - aroundTs) }
+        // Não sabemos (sem o aparelho) se esta versão do WhatsApp grava as imagens direto na
+        // raiz ou dentro de uma subpasta de semana, como faz com as notas de voz. Varrer os
+        // dois é barato e correto nos dois casos — melhor que supor um deles.
+        val dirs = buildList {
+            add(root)
+            root.listFiles { f -> f.isDirectory }
+                ?.sortedByDescending { it.name }
+                ?.take(2)
+                ?.let(::addAll)
+        }
+
+        val candidate = dirs
+            .flatMap { dir -> dir.listFiles { f -> f.isFile && isImageFile(f) }?.toList() ?: emptyList() }
+            .filter { it.lastModified() in cutoff..ceiling && key(it) !in consumed }
+            .minByOrNull { kotlin.math.abs(it.lastModified() - aroundTs) }
             ?: return null
 
         return runCatching {
@@ -137,15 +151,20 @@ object MediaVault {
         }.getOrNull()
     }
 
-    private fun isImageFile(f: File): Boolean {
-        val ext = f.extension.lowercase()
-        return ext in setOf("jpg", "jpeg", "png", "webp", "heic", "heif")
-    }
+    private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp", "heic", "heif")
+
+    private fun isImageFile(f: File): Boolean = f.extension.lowercase() in IMAGE_EXTENSIONS
 
     private fun key(f: File): String = "${f.absolutePath}:${f.lastModified()}"
 
     /** Janela para trás a partir da notificação — o arquivo aparece por volta desse horário. */
     private const val WINDOW_BACK_MS = 20_000L
     private const val IMAGE_WINDOW_BACK_MS = 15_000L
-    private const val IMAGE_WINDOW_FORWARD_MS = 8_000L
+
+    /**
+     * Janela adiante: tem que cobrir o retry inteiro do NotifListenerService, que soma
+     * 300+1200+3000+6000 = 10,5 s depois do postTime. Com os 8 s de antes, um arquivo que
+     * aterrissasse em t+9 s era procurado pelo último retry e recusado pela janela.
+     */
+    private const val IMAGE_WINDOW_FORWARD_MS = 12_000L
 }
