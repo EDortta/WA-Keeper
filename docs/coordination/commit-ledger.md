@@ -13,7 +13,8 @@ que dispara o concílio a cada 5 (ver `README.md` desta pasta).
 
 | # | commit | o quê | crítica por commit | conta p/ concílio |
 |---|---|---|---|---|
-| 1 | (este) | passo zero: viabilidade do `RemoteInput`+`PendingIntent` decidida por leitura | auto-crítica: conclusão é de leitura, não de aparelho — registrado como pendência explícita, sem alegar funcionamento | 1/5 |
+| 1 | `a29b3d5` | passo zero: viabilidade do `RemoteInput`+`PendingIntent` decidida por leitura | auto-crítica: conclusão é de leitura, não de aparelho — registrado como pendência explícita, sem alegar funcionamento | 1/5 |
+| 2 | (este) | tabela `scheduled_messages` + DAO com claim atômico + `ScheduledMessageStore` + migration 4→5 | auto-crítica: (a) índice do `@Entity` e o da migration precisam ter o **mesmo nome**, senão o Room recusa o banco migrado — nomeado `index_scheduled_messages_conversation` nos dois lados; (b) compilação ainda não verificada, o build vem junto com o commit do coordenador+testes | 2/5 |
 
 Nota: a branch estava 3 commits atrás de `development` (só docs de coordenação).
 Fast-forward `cf9779a..b55378b` aplicado no próprio worktree para que `RESUME.md` e
