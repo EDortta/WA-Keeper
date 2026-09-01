@@ -23,6 +23,9 @@ object Prefs {
     const val KEY_VOICE_COMMANDS_ENABLED = "voice_commands_enabled"
     private const val KEY_VOICE_DEFAULT_ACCOUNT = "voice_default_account_pkg"
     private const val KEY_MANUAL_LISTEN_UNTIL = "voice_manual_listen_until"
+
+    /** Pedido de comando por botão de microfone. Público: o serviço observa a mudança. */
+    const val KEY_DIRECT_COMMAND_UNTIL = "voice_direct_command_until"
     private const val KEY_MANUAL_DURATION_MINUTES = "voice_manual_duration_minutes"
     private const val KEY_MANUAL_TIMER_MOTION_SEEN = "voice_manual_timer_motion_seen"
     private const val KEY_SPEECH_PACK_MISSING = "voice_speech_pack_missing"
@@ -92,6 +95,13 @@ object Prefs {
     }
 
     /** Epoch millis até quando a escuta manual (timer) fica liberada, mesmo parado. 0 = nenhum timer ativo. */
+    fun directCommandUntil(context: Context): Long =
+        prefs(context).getLong(KEY_DIRECT_COMMAND_UNTIL, 0L)
+
+    fun setDirectCommandUntil(context: Context, untilMillis: Long) {
+        prefs(context).edit().putLong(KEY_DIRECT_COMMAND_UNTIL, untilMillis).apply()
+    }
+
     fun manualListenUntil(context: Context): Long =
         prefs(context).getLong(KEY_MANUAL_LISTEN_UNTIL, 0L)
 

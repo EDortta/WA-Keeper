@@ -78,6 +78,11 @@ class NotifListenerService : NotificationListenerService() {
     // Janela de ativação dos comandos de voz: microfone só liga aqui dentro (ver runVoiceGateLoop).
     @Volatile private var voiceListening = false
 
+    // Qual pedido do botão de microfone já foi armado. Guardado por VALOR (o instante-limite do
+    // pedido) e não por booleano: assim um toque novo, que grava um limite novo, rearma; e os
+    // tiques do gate dentro da mesma janela não rearmam.
+    @Volatile private var directCommandArmedFor = 0L
+
     // Sem isso, desligar o switch em Ajustes só surtia efeito no próximo tick do
     // runVoiceGateLoop (até VOICE_GATE_CHECK_MS depois) — o microfone/beep continuava indo
     // nesse meio-tempo, e era fácil confundir com o recognizer não desligando de verdade.
@@ -85,8 +90,8 @@ class NotifListenerService : NotificationListenerService() {
     // fraca, um listener só em lambda local seria coletado e pararia de disparar.
     private val voicePrefsListener =
         SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == Prefs.KEY_VOICE_COMMANDS_ENABLED) {
-                android.util.Log.d(TAG_VOICE_GATE, "voice_commands_enabled mudou — reavaliando na hora")
+            if (key == Prefs.KEY_VOICE_COMMANDS_ENABLED || key == Prefs.KEY_DIRECT_COMMAND_UNTIL) {
+                android.util.Log.d(TAG_VOICE_GATE, "$key mudou — reavaliando na hora")
                 scope.launch { updateListeningState() }
             }
         }
@@ -492,6 +497,21 @@ class NotifListenerService : NotificationListenerService() {
 
         if (shouldListen && !voiceListening) startVoiceListening()
         else if (!shouldListen && voiceListening) stopVoiceListening()
+
+        // Pedido do botão de microfone: dispensa a palavra de ativação para a próxima fala.
+        // Fica DEPOIS do start, para o motor já existir.
+        //
+        // O pedido NÃO é zerado aqui: é ele que mantém o gate aberto (ver voiceGateOpen) pelos
+        // segundos em que a pessoa leva o telefone à boca. Zerá-lo desligaria o microfone no
+        // mesmo instante em que o botão acabou de ligá-lo, quando não há movimento nem timer
+        // manual. Quem impede o rearme a cada tique é `directCommandArmedFor`, e a janela
+        // fecha sozinha ao expirar.
+        val directUntil = Prefs.directCommandUntil(applicationContext)
+        if (voiceListening && directUntil > System.currentTimeMillis() && directUntil != directCommandArmedFor) {
+            directCommandArmedFor = directUntil
+            voiceEngine.armDirectCommand()
+            android.util.Log.d(TAG_VOICE_GATE, "comando direto armado pelo botão de microfone")
+        }
     }
 
     private fun voiceGateOpen(): Boolean {
@@ -508,7 +528,10 @@ class NotifListenerService : NotificationListenerService() {
                 manualOpen = false
             }
         }
-        return motionOpen || manualOpen
+        // Botão de microfone: pedido explícito e curto, não depende de movimento nem do timer.
+        val directOpen = Prefs.directCommandUntil(applicationContext) > now
+
+        return motionOpen || manualOpen || directOpen
     }
 
     private fun startVoiceListening() {

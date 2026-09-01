@@ -80,6 +80,27 @@ class VoiceCommandEngine(
         main.post { createAndListen() }
     }
 
+    /**
+     * Botão de microfone: a pessoa PEDIU para falar um comando, então a palavra de ativação
+     * não faz sentido — ela já disse "é comigo" tocando o botão. Reusa a mesma janela de graça
+     * que existe para quem fala "Godofredo" e pausa antes do pedido ([wakeWordArmedUntil]),
+     * só que aberta por toque em vez de por fala.
+     *
+     * A janela é mais larga que a da fala porque aqui há um caminho humano no meio: tocar o
+     * botão, levar o telefone à boca e só então falar.
+     */
+    fun armDirectCommand() {
+        wakeWordArmedUntil = System.currentTimeMillis() + DIRECT_COMMAND_GRACE_MS
+        noSpeechStreak = 0
+        if (!active) {
+            start()
+            return
+        }
+        // Já estava ouvindo, mas possivelmente num backoff longo (até 30 s sem ninguém falar).
+        // Esperar o próximo ciclo faria o botão parecer quebrado — recomeça a escuta na hora.
+        main.post { recreate(generation.get()) }
+    }
+
     fun stop() {
         if (!active) return
         active = false
@@ -366,6 +387,9 @@ class VoiceCommandEngine(
         private const val MAX_DISAMBIGUATION_ATTEMPTS = 2
         /** Quanto tempo depois de ouvir só a palavra de ativação o próximo turno ainda conta. */
         private const val WAKE_WORD_GRACE_MS = 8000L
+
+        /** Janela do comando pedido por botão: tocar, levar à boca e falar leva mais tempo. */
+        private const val DIRECT_COMMAND_GRACE_MS = 20_000L
         /** Falado quando a frase era claramente pro Godofredo mas não bateu com nenhum comando —
          * silêncio nesse caso é o que Esteban relatou como "eu falo e não faz nada" ao vivo. */
         private const val NOT_UNDERSTOOD_MESSAGE =

@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="#F0F2F5">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <!-- Banner de permissão -->
     <TextView
@@ -97,6 +101,7 @@
         android:layout_height="1dp"
         android:background="#E5E5EA" />
 
+    <!-- paddingBottom deixa espaço para o botão de microfone não cobrir o último cartão -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"
         android:layout_width="match_parent"
@@ -104,7 +109,7 @@
         android:layout_weight="1"
         android:clipToPadding="false"
         android:paddingTop="8dp"
-        android:paddingBottom="16dp" />
+        android:paddingBottom="96dp" />
 
     <!-- Empty state -->
     <LinearLayout
@@ -142,3 +147,37 @@
     </LinearLayout>
 
 </LinearLayout>
+
+    <!--
+        Botão de microfone. Enquanto a palavra de ativação ("Godofredo") não é confiável no
+        reconhecedor on-device, este é o caminho direto: tocar e falar o comando, sem depender
+        de o aparelho ouvir a palavra certa. Centralizado embaixo, sobre a lista.
+    -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btnMic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="24dp"
+        android:contentDescription="Falar um comando"
+        android:src="@android:drawable/ic_btn_speak_now"
+        app:backgroundTint="#25D366"
+        app:tint="#FFFFFF"
+        app:fabSize="normal"
+        app:elevation="6dp" />
+
+    <TextView
+        android:id="@+id/tvMicHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="92dp"
+        android:background="@drawable/bg_search"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="8dp"
+        android:text="Pode falar o comando"
+        android:textColor="#1C1C1E"
+        android:textSize="13sp"
+        android:visibility="gone" />
+
+</FrameLayout>

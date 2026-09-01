@@ -1,7 +1,9 @@
 package br.com.wanotifkeeper
 
+import android.Manifest
 import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.Settings
 import android.text.Editable
@@ -11,7 +13,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
@@ -27,6 +32,16 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
+
+    private companion object {
+        const val REQ_MIC = 7301
+
+        /** Janela em que o pedido do botão mantém o microfone aberto. */
+        const val DIRECT_COMMAND_WINDOW_MS = 20_000L
+
+        /** Por quanto tempo a dica "Pode falar o comando" fica na tela. */
+        const val MIC_HINT_MS = 6_000L
+    }
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: NotifAdapter
@@ -75,6 +90,8 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
+        binding.btnMic.setOnClickListener { onMicTapped() }
+
         // Banner de permissão
         updatePermissionBanner()
         binding.bannerPermission.setOnClickListener {
@@ -107,6 +124,60 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updatePermissionBanner()
+    }
+
+    /**
+     * Botão de microfone: caminho direto para falar um comando, sem depender de a palavra de
+     * ativação ser ouvida corretamente pelo reconhecedor on-device.
+     *
+     * Não liga o interruptor mestre por conta própria: se os comandos de voz estão desligados,
+     * isso foi uma escolha, e o botão leva aos Ajustes em vez de desfazê-la em silêncio.
+     */
+    private fun onMicTapped() {
+        if (!Prefs.isVoiceCommandsEnabled(this)) {
+            Toast.makeText(this, "Ative os comandos de voz nos Ajustes", Toast.LENGTH_LONG).show()
+            startActivity(Intent(this, SettingsActivity::class.java))
+            return
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), REQ_MIC)
+            return
+        }
+
+        if (!isListenerEnabled()) {
+            // O motor de voz vive dentro do NotificationListenerService: sem o acesso a
+            // notificações concedido, o serviço não está de pé e não há quem ouça.
+            Toast.makeText(this, "Ative o acesso a notificações para usar comandos de voz", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // O serviço observa esta chave e reage na hora — ver NotifListenerService.voicePrefsListener.
+        Prefs.setDirectCommandUntil(this, System.currentTimeMillis() + DIRECT_COMMAND_WINDOW_MS)
+        showMicHint()
+    }
+
+    private fun showMicHint() {
+        binding.tvMicHint.visibility = View.VISIBLE
+        binding.tvMicHint.removeCallbacks(hideMicHint)
+        binding.tvMicHint.postDelayed(hideMicHint, MIC_HINT_MS)
+    }
+
+    private val hideMicHint = Runnable { binding.tvMicHint.visibility = View.GONE }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQ_MIC &&
+            grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED
+        ) {
+            onMicTapped()
+        }
     }
 
     private fun updatePermissionBanner() {
