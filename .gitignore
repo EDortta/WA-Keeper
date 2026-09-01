@@ -14,3 +14,9 @@ local.properties
 *.jks
 *.keystore
 keystore.properties
+
+# Criados pelo helper `awt` dentro de cada worktree — .credentials/store é um
+# symlink para ~/.config/credentials/personal. Um `git add -A` distraído
+# versionaria o ponteiro para o cofre pessoal.
+.credentials/
+.env
