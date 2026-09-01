@@ -64,6 +64,11 @@ implementação sem tocar na máquina de estados nem na UI — a épica não cai
 
 ## Esperando o operador
 
+0. **Correção de rumo registrada:** o RESUME dizia antes que
+   `PendingIntent.CanceledException` viraria `FAILED`. Não vira: vira `PENDING` com
+   backoff, e `FAILED` só depois de esgotar as tentativas. A frase estava errada e foi
+   corrigida aqui.
+
 1. **Verificar no aparelho** que a notificação do WhatsApp instalado ainda expõe uma
    `Notification.Action` com `remoteInputs` não vazio, e que disparar o `PendingIntent`
    com `RemoteInput.addResultsToIntent` de fato envia a mensagem — para `com.whatsapp`
@@ -72,7 +77,48 @@ implementação sem tocar na máquina de estados nem na UI — a épica não cai
    o novo log `WAK-ScheduledMsg` imprime o resultado do disparo. Pergunta literal:
    *"A ação de resposta direta aparece no `adb shell dumpsys notification --noredact`
    para as duas contas, e o disparo entrega a mensagem no WhatsApp do destinatário?"*
-2. **Nada nesta branch foi executado em aparelho.** O que está provado é teste unitário
+2. **`send()` sem exceção prova despacho, não entrega.** Se alguma build do WhatsApp
+   rotear a resposta por uma activity, a restrição de *background activity launch* faz
+   o disparo virar no-op silencioso — `send()` retorna normalmente e nada acontece. O
+   overload de `PendingIntent.send` com `OnFinished` reduziria a dúvida e não foi usado:
+   sem aparelho não havia como distinguir os casos. Pergunta literal: *"o disparo a
+   partir do listener em segundo plano entrega, ou a ação de resposta do WhatsApp é
+   `getActivity` e cai na restrição de background activity launch?"*
+
+3. **A premissa "mensagem do `MessagingStyle` sem `Person` é do dono do aparelho"
+   não foi confirmada.** Se alguma build do WhatsApp omitir o `Person` em conversa
+   1-a-1, **toda** mensagem recebida seria classificada como eco e a épica nunca
+   dispararia — em silêncio, sem erro. O log `WAK-ScheduledMsg` imprime
+   `eco do próprio usuário ignorado (messages=…, history=…)` justamente para que isso
+   apareça no `logcat`. Pergunta literal: *"em conversa 1-a-1, a última `Message` do
+   `MessagingStyle` do WhatsApp tem `Person` preenchido?"*
+
+4. **Escopo — decisão do operador, não do agente.** O concílio apontou que permitir
+   **duas ou mais** mensagens armadas por conversa toca a evolução "múltiplas mensagens
+   encadeadas", listada como fora do primeiro corte. A leitura desta implementação é
+   que "encadeadas" significa *uma programação que dispara uma sequência*, e não *o
+   usuário armar duas de forma independente* — cada linha continua sendo `once` e
+   idempotente, e um gatilho entrega no máximo uma. Como o achado contraria uma decisão
+   de projeto, ele **sai do concílio e vai ao operador** em vez de ser resolvido aqui.
+
+5. **A branch `feature/epic-3-image-retention` saiu de `main`, não de `development`.**
+   O `merge-base` das duas frentes é `main`. Consequência prática: um `git diff` da
+   epic-3 contra `development` **mente** — parece apagar `CallDetector`, `Beeper`,
+   `VoiceCommandEngine` e o cache de ações de resposta, que na verdade só não existem
+   naquela base. Um `--ours/--theirs` apressado no merge apaga os comandos de voz. O
+   merge em si é brando (dois conflitos de adjacência em `NotifListenerService.kt`),
+   mas a base precisa ser corrigida antes.
+
+6. **Lacunas conhecidas, não fechadas nesta janela:** não há lista global de mensagens
+   armadas (só por conversa, alcançável pela `DetailActivity`) — e `Retention.purge`
+   apaga as notificações sem tocar em `scheduled_messages`, então uma conversa purgada
+   deixa a mensagem armada viva e sem caminho de UI; `exportSchema = false` impede
+   teste automatizado da migration 4→5 (conferida coluna a coluna por leitura, não por
+   `MigrationTestHelper`); a identidade da conversa é o título da notificação, então
+   renomear o contato desvincula a mensagem em silêncio; a concorrência do claim é
+   provada por simulação determinística, não por threads reais.
+
+7. **Nada nesta branch foi executado em aparelho.** O que está provado é teste unitário
    JVM da máquina de estados e da idempotência do claim. Nenhuma afirmação de
    funcionamento em dispositivo foi feita.
 
@@ -99,6 +145,26 @@ regras recorrentes, horário permitido, condições semânticas, ausência/boas-
 
 ## Concílio
 
-- Rodadas: **0**. Achados levantados: —. Sobreviventes: —. Viraram teste: —.
-  Perguntas abertas: —.
+**Rodada 1** — 3 lentes distintas (idempotência/concorrência; fidelidade ao contrato
+e honestidade; Android/integração), rodadas contra os commits `a29b3d5..36a8d63`,
+sem que um membro visse a saída do outro.
+
+| contagem | valor |
+|---|---|
+| achados levantados | **24** (8 por lente) |
+| sobreviveram à triagem | **21** (3 eram pontos que as próprias lentes verificaram e passaram) |
+| fechados com correção nesta rodada | **11** |
+| viraram teste | **10 testes novos** (5 no coordenador, 5 em `OwnMessageHeuristicTest`) |
+| parqueados para o operador | **10** |
+
+Os 11 fechados: claim preso ressuscitando mensagem já entregue (BLOCKER); contador de
+linhas do `markSent`/`markFailed` descartado (envio real virava linha `PENDING`);
+resgate de claim preso que nunca alcançava o caso comum; TOCTOU entre a leitura e o
+claim fazendo sair texto já editado; heurística de eco da própria resposta com as duas
+pernas mutuamente excludentes; `FakeStore` divergente do SQL real em 4 pontos;
+`NO_ACTION` queimando cota de tentativas e matando a mensagem por condição transitória;
+textos de UI e KDoc alegando entrega que o mecanismo não prova; linha `FAILED` sem saída
+na interface; `AlertDialog` sem `dismiss`.
+
 - Cadência: a cada 5 commits aprovados, ou no delivery commit — o que vier primeiro.
+- Teto: 2 rodadas. Achado vivo depois da rodada 2 vai ao operador.

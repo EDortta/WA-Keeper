@@ -16,9 +16,6 @@ object ScheduledMessageTrigger {
 
     const val TAG = "WAK-ScheduledMsg"
 
-    /** Um claim mais velho que isto é resto de um processo que morreu enviando. */
-    private const val STALE_CLAIM_MS = 5 * 60_000L
-
     @Volatile private var coordinator: ScheduledMessageCoordinator? = null
 
     private fun coordinator(ctx: Context): ScheduledMessageCoordinator =
@@ -33,9 +30,12 @@ object ScheduledMessageTrigger {
     /**
      * Uma notificação nova daquela conversa chegou: se houver mensagem armada, é agora.
      *
-     * Chamado **depois** de a ação de resposta desta notificação já ter sido cacheada —
-     * é isso que garante que o `PendingIntent` usado no envio é fresco, e não um
-     * ponteiro velho de uma notificação que já morreu.
+     * Chamado **depois** de a ação de resposta desta notificação já ter sido cacheada.
+     * Isso torna o `PendingIntent` fresco no caso normal — mas não é garantia: quando
+     * esta notificação em particular não traz ação, o `ReplyActionRegistry` mantém a
+     * entrada anterior de propósito, e o disparo pode usar um ponteiro de notificação
+     * já removida. Nesse caso o `send` falha com `CanceledException` e a entrega volta
+     * para a fila; o que não acontece é alegar sucesso.
      */
     suspend fun onIncoming(ctx: Context, sbn: StatusBarNotification, sender: String): TriggerOutcome {
         val outcome = coordinator(ctx).onConversationActivity(
@@ -48,18 +48,6 @@ object ScheduledMessageTrigger {
             android.util.Log.d(TAG, "${sbn.packageName}|$sender -> $outcome")
         }
         return outcome
-    }
-
-    /**
-     * Uma linha presa em `CLAIMED` é um processo que morreu no meio do envio. Devolve
-     * a `PENDING` uma vez, na conexão do listener — nunca em laço, para não virar o
-     * loop apertado que a #18 proíbe.
-     */
-    suspend fun releaseStaleClaims(ctx: Context) {
-        val now = System.currentTimeMillis()
-        runCatching {
-            NotifDatabase.get(ctx).scheduled().releaseStaleClaims(now, now - STALE_CLAIM_MS)
-        }
     }
 
     /**
@@ -77,13 +65,25 @@ object ScheduledMessageTrigger {
         val style = runCatching {
             NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(notification)
         }.getOrNull()
-
-        val lastPerson = style?.messages?.lastOrNull()?.person
-        if (style != null && style.messages.isNotEmpty() && lastPerson == null) return true
-
         val history = runCatching {
             notification.extras?.getCharSequenceArray(Notification.EXTRA_REMOTE_INPUT_HISTORY)
         }.getOrNull()
-        return style?.messages.isNullOrEmpty() && !history.isNullOrEmpty()
+
+        val hasMessages = !style?.messages.isNullOrEmpty()
+        val own = OwnMessageHeuristic.isOwnMessage(
+            hasMessages = hasMessages,
+            lastMessageHasNoPerson = hasMessages && style?.messages?.lastOrNull()?.person == null,
+            hasRemoteInputHistory = !history.isNullOrEmpty()
+        )
+        // O log nomeia os sinais porque a única forma de conferir a premissa
+        // ("mensagem sem Person é do dono do aparelho") é olhar um aparelho de verdade —
+        // que não existe nesta janela. Ver a pergunta parqueada no RESUME.md da 018.
+        if (own) {
+            android.util.Log.d(
+                TAG,
+                "eco do próprio usuário ignorado (messages=$hasMessages, history=${!history.isNullOrEmpty()})"
+            )
+        }
+        return own
     }
 }

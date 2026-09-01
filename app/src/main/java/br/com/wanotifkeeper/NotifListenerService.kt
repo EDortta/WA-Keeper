@@ -119,7 +119,6 @@ class NotifListenerService : NotificationListenerService() {
         motion.start()
         callDetector.start(scope)
         scope.launch { runPurge() }
-        scope.launch { ScheduledMessageTrigger.releaseStaleClaims(applicationContext) }
         scope.launch { runVoiceGateLoop() }
     }
 

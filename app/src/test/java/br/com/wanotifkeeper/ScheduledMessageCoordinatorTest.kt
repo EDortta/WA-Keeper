@@ -24,6 +24,9 @@ class ScheduledMessageCoordinatorTest {
         /** Roda logo antes do claim — é assim que a corrida é reproduzida sem thread. */
         var beforeClaim: ((Long) -> Unit)? = null
 
+        /** Roda logo depois do claim, antes da releitura — reproduz o TOCTOU do texto. */
+        var afterClaim: ((Long) -> Unit)? = null
+
         fun arm(pkg: String, sender: String, text: String, createdAt: Long = 0L): Long {
             val id = nextId++
             rows[id] = ScheduledMessageEntity(
@@ -49,6 +52,7 @@ class ScheduledMessageCoordinatorTest {
                 state = ScheduledState.CLAIMED.name, claimedAt = now, updatedAt = now,
                 attempts = row.attempts + 1, triggerNotificationKey = triggerKey, triggeredAt = now
             )
+            afterClaim?.invoke(id)
             return true
         }
 
@@ -58,32 +62,65 @@ class ScheduledMessageCoordinatorTest {
             rows[id] = row.copy(state = ScheduledState.CLAIMED.name, attempts = row.attempts + 1)
         }
 
-        override suspend fun markSent(id: Long, now: Long) {
-            val row = rows[id] ?: return
-            if (row.state != ScheduledState.CLAIMED.name) return
+        override suspend fun markSent(id: Long, now: Long): Boolean {
+            val row = rows[id] ?: return false
+            if (row.state != ScheduledState.CLAIMED.name) return false
             rows[id] = row.copy(state = ScheduledState.SENT.name, sentAt = now, updatedAt = now, lastError = null)
+            return true
         }
 
-        override suspend fun markRetryable(id: Long, now: Long, error: String, retryAt: Long) {
-            val row = rows[id] ?: return
-            if (row.state != ScheduledState.CLAIMED.name) return
+        override suspend fun markRetryable(
+            id: Long, now: Long, error: String, retryAt: Long, consumesAttempt: Boolean
+        ): Boolean {
+            val row = rows[id] ?: return false
+            if (row.state != ScheduledState.CLAIMED.name) return false
             rows[id] = row.copy(
                 state = ScheduledState.PENDING.name, updatedAt = now,
-                lastError = error, nextAttemptAt = retryAt
+                lastError = error, nextAttemptAt = retryAt,
+                attempts = if (consumesAttempt) row.attempts else row.attempts - 1
             )
+            return true
         }
 
-        override suspend fun markFailed(id: Long, now: Long, error: String) {
-            val row = rows[id] ?: return
-            if (row.state != ScheduledState.CLAIMED.name) return
+        override suspend fun markFailed(id: Long, now: Long, error: String): Boolean {
+            val row = rows[id] ?: return false
+            if (row.state != ScheduledState.CLAIMED.name) return false
             rows[id] = row.copy(state = ScheduledState.FAILED.name, updatedAt = now, lastError = error)
+            return true
+        }
+
+        /** Espelha o SQL: `WHERE state='CLAIMED' AND claimedAt < :staleBefore` → FAILED. */
+        override suspend fun failStaleClaims(now: Long, staleBefore: Long): Int {
+            var n = 0
+            rows.keys.toList().forEach { id ->
+                val row = rows[id]!!
+                if (row.state == ScheduledState.CLAIMED.name && (row.claimedAt ?: 0L) < staleBefore) {
+                    rows[id] = row.copy(
+                        state = ScheduledState.FAILED.name, updatedAt = now,
+                        lastError = "o app foi encerrado durante o envio — não é possível saber se a mensagem saiu"
+                    )
+                    n++
+                }
+            }
+            return n
+        }
+
+        /** Espelha `UPDATE ... WHERE id = :id AND state = 'PENDING'` da edição. */
+        fun updateText(id: Long, text: String): Int {
+            val row = rows[id] ?: return 0
+            if (row.state != ScheduledState.PENDING.name) return 0
+            rows[id] = row.copy(text = text)
+            return 1
         }
 
         override suspend fun byId(id: Long) = rows[id]
 
-        fun cancel(id: Long) {
-            val row = rows[id]!!
+        /** Espelha o guard `WHERE state='PENDING'` do SQL real — cancelar em voo não pega. */
+        fun cancel(id: Long): Int {
+            val row = rows[id] ?: return 0
+            if (row.state != ScheduledState.PENDING.name) return 0
             rows[id] = row.copy(state = ScheduledState.CANCELLED.name)
+            return 1
         }
     }
 
@@ -103,11 +140,6 @@ class ScheduledMessageCoordinatorTest {
         }
     }
 
-    private fun clockAt(vararg times: Long): () -> Long {
-        var i = 0
-        return { times[minOf(i++, times.size - 1)] }
-    }
-
     private val ok = RecordingSender { ReplyResult.Accepted }
 
     private fun coordinator(
@@ -117,7 +149,7 @@ class ScheduledMessageCoordinatorTest {
         maxAttempts: Int = 3
     ) = ScheduledMessageCoordinator(
         store = store, sender = sender, clock = { now },
-        maxAttempts = maxAttempts, retryBackoffMs = 60_000L
+        maxAttempts = maxAttempts, retryBackoffMs = 60_000L, staleClaimMs = 300_000L
     )
 
     // ---- caminho feliz -------------------------------------------------------
@@ -227,16 +259,18 @@ class ScheduledMessageCoordinatorTest {
     @Test
     fun `falha volta a PENDING com tentativa registrada e espera antes do proximo gatilho`() = runBlocking {
         val store = FakeStore()
-        val sender = RecordingSender { ReplyResult.Rejected(NotificationReplySender.NO_ACTION) }
+        // Rejeição de despacho de verdade — esta consome tentativa. O caso
+        // NO_ACTION (que não consome) tem teste próprio mais abaixo.
+        val sender = RecordingSender { ReplyResult.Rejected("PendingIntent recusado") }
         val id = store.arm("com.whatsapp", "Ana", "oi")
 
         val outcome = coordinator(store, sender).onConversationActivity("com.whatsapp", "Ana", false, "key-1")
 
-        assertEquals(TriggerOutcome.Retrying(id, 1, NotificationReplySender.NO_ACTION), outcome)
+        assertTrue(outcome is TriggerOutcome.Retrying)
         val row = store.rows[id]!!
         assertEquals(ScheduledState.PENDING, row.scheduledState)
         assertEquals(1, row.attempts)
-        assertEquals(NotificationReplySender.NO_ACTION, row.lastError)
+        assertEquals("PendingIntent recusado", row.lastError)
         assertEquals(61_000L, row.nextAttemptAt)
         assertNull("falhar nunca pode carimbar sentAt", row.sentAt)
     }
@@ -258,7 +292,7 @@ class ScheduledMessageCoordinatorTest {
     @Test
     fun `tentativas esgotadas viram FAILED terminal e nunca SENT`() = runBlocking {
         val store = FakeStore()
-        val sender = RecordingSender { ReplyResult.Rejected(NotificationReplySender.NO_ACTION) }
+        val sender = RecordingSender { ReplyResult.Rejected("PendingIntent recusado") }
         val id = store.arm("com.whatsapp", "Ana", "oi")
 
         // Cada gatilho avança uma tentativa; o backoff é contornado avançando o relógio.
@@ -269,7 +303,7 @@ class ScheduledMessageCoordinatorTest {
             ).onConversationActivity("com.whatsapp", "Ana", false, "key-$t")
         }
 
-        assertEquals(TriggerOutcome.Failed(id, NotificationReplySender.NO_ACTION), outcome)
+        assertEquals(TriggerOutcome.Failed(id, "PendingIntent recusado"), outcome)
         val row = store.rows[id]!!
         assertEquals(ScheduledState.FAILED, row.scheduledState)
         assertEquals(3, row.attempts)
@@ -306,5 +340,94 @@ class ScheduledMessageCoordinatorTest {
 
         c.onConversationActivity("com.whatsapp", "Ana", false, "key-2")
         assertEquals(listOf("primeira", "segunda"), sender.sent.map { it.third })
+    }
+
+    // ---- achados da rodada 1 do concílio -------------------------------------
+
+    @Test
+    fun `claim preso de processo morto vira FAILED e nunca reenvia`() = runBlocking {
+        val store = FakeStore()
+        val sender = RecordingSender { ReplyResult.Accepted }
+        val id = store.arm("com.whatsapp", "Ana", "oi")
+        // Processo morreu depois do send e antes do markSent: a linha ficou CLAIMED.
+        store.stealClaim(id)
+        store.rows[id] = store.rows[id]!!.copy(claimedAt = 1L)
+
+        val outcome = ScheduledMessageCoordinator(
+            store = store, sender = sender, clock = { 1_000_000L },
+            maxAttempts = 3, retryBackoffMs = 60_000L, staleClaimMs = 300_000L
+        ).onConversationActivity("com.whatsapp", "Ana", false, "key-1")
+
+        assertEquals(TriggerOutcome.NothingArmed, outcome)
+        assertEquals(ScheduledState.FAILED, store.rows[id]!!.scheduledState)
+        assertTrue("ressuscitar um claim preso reenviaria o que talvez já saiu", sender.sent.isEmpty())
+        assertNull(store.rows[id]!!.sentAt)
+    }
+
+    @Test
+    fun `carimbo de SENT que nao pega e reportado como tal, nao como sucesso`() = runBlocking {
+        val store = FakeStore()
+        val sender = RecordingSender { ReplyResult.Accepted }
+        val id = store.arm("com.whatsapp", "Ana", "oi")
+        // Alguém tira a linha de CLAIMED enquanto o envio está em voo.
+        store.beforeClaim = null
+
+        val c = object : ReplySender {
+            override suspend fun send(packageName: String, s2: String, text: String): ReplyResult {
+                store.rows[id] = store.rows[id]!!.copy(state = ScheduledState.FAILED.name)
+                return sender.send(packageName, s2, text)
+            }
+        }
+        val outcome = coordinator(store, c).onConversationActivity("com.whatsapp", "Ana", false, "key-1")
+
+        assertEquals(TriggerOutcome.SentNotRecorded(id), outcome)
+        assertNull("sem carimbo não há sentAt", store.rows[id]!!.sentAt)
+    }
+
+    @Test
+    fun `edicao entre a leitura e o claim nao faz sair o texto velho`() = runBlocking {
+        val store = FakeStore()
+        val sender = RecordingSender { ReplyResult.Accepted }
+        val id = store.arm("com.whatsapp", "Ana", "texto velho")
+        store.beforeClaim = { store.updateText(it, "texto novo") }
+
+        coordinator(store, sender).onConversationActivity("com.whatsapp", "Ana", false, "key-1")
+
+        assertEquals("o claim protege a posse, não o conteúdo", "texto novo", sender.sent.single().third)
+        assertEquals(ScheduledState.SENT, store.rows[id]!!.scheduledState)
+    }
+
+    @Test
+    fun `notificacao sem acao de resposta nunca esgota as tentativas`() = runBlocking {
+        val store = FakeStore()
+        val sender = RecordingSender { ReplyResult.Rejected(NotificationReplySender.NO_ACTION, false) }
+        val id = store.arm("com.whatsapp", "Ana", "oi")
+
+        for (t in listOf(1_000L, 100_000L, 200_000L, 300_000L, 400_000L)) {
+            ScheduledMessageCoordinator(
+                store = store, sender = sender, clock = { t },
+                maxAttempts = 3, retryBackoffMs = 60_000L, staleClaimMs = 300_000L
+            ).onConversationActivity("com.whatsapp", "Ana", false, "key-$t")
+        }
+
+        val row = store.rows[id]!!
+        assertEquals("o cache de ações nasce vazio a cada reinício — isso não pode matar a mensagem",
+            ScheduledState.PENDING, row.scheduledState)
+        assertEquals(0, row.attempts)
+        assertEquals(NotificationReplySender.NO_ACTION, row.lastError)
+    }
+
+    @Test
+    fun `linha que some entre a leitura e o claim nao envia nada`() = runBlocking {
+        val store = FakeStore()
+        val sender = RecordingSender { ReplyResult.Accepted }
+        val id = store.arm("com.whatsapp", "Ana", "oi")
+        store.afterClaim = { store.rows.remove(it) }
+
+        val outcome = coordinator(store, sender).onConversationActivity("com.whatsapp", "Ana", false, "key-1")
+
+        assertEquals(TriggerOutcome.Vanished, outcome)
+        assertTrue(sender.sent.isEmpty())
+        assertNull(store.rows[id])
     }
 }

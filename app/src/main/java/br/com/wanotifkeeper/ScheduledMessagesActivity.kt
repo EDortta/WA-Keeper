@@ -27,6 +27,8 @@ import java.util.Locale
 class ScheduledMessagesActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityScheduledBinding
+    /** Retido para ser fechado em onDestroy — senão vaza a janela se a activity morrer aberta. */
+    private var editDialog: AlertDialog? = null
     private val fmt = SimpleDateFormat("dd/MM HH:mm", Locale.getDefault())
 
     private val pkg by lazy { intent.getStringExtra(EXTRA_PKG) ?: "com.whatsapp" }
@@ -66,7 +68,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             binding.etMessage.setText("")
             Toast.makeText(
                 this@ScheduledMessagesActivity,
-                "Armada. Sai na próxima mensagem de $sender.",
+                "Armada. O app vai tentar enviar na próxima mensagem de $sender.",
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -79,9 +81,17 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             val row = ItemScheduledBinding.inflate(layoutInflater, binding.containerArmed, false)
             row.tvText.text = item.text
             row.tvState.text = describe(item)
-            row.rowActions.visibility = if (item.isEditable) View.VISIBLE else View.GONE
+            // PENDING: dá para editar e cancelar. Encerrada (SENT/FAILED/CANCELLED): só
+            // dá para tirar da lista — sem isso, uma linha FAILED ficava lá para sempre.
+            // CLAIMED não ganha botão: pode haver envio em voo.
+            val encerrada = item.scheduledState in
+                setOf(ScheduledState.SENT, ScheduledState.FAILED, ScheduledState.CANCELLED)
+            row.rowActions.visibility =
+                if (item.isEditable || encerrada) View.VISIBLE else View.GONE
+            row.btnEdit.visibility = if (item.isEditable) View.VISIBLE else View.GONE
+            row.btnCancel.text = if (item.isEditable) "Cancelar" else "Remover"
             row.btnEdit.setOnClickListener { promptEdit(item) }
-            row.btnCancel.setOnClickListener { cancel(item) }
+            row.btnCancel.setOnClickListener { if (item.isEditable) cancel(item) else remove(item) }
             binding.containerArmed.addView(row.root)
         }
     }
@@ -98,8 +108,12 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             else base
         }
         ScheduledState.CLAIMED -> "Enviando agora…"
+        // Não diz "entregue": o que o app sabe é que o Android aceitou despachar a
+        // resposta para o WhatsApp. Confirmação de entrega ao destinatário não existe
+        // por este mecanismo, e inventá-la seria exatamente o que a #18 proíbe.
         ScheduledState.SENT ->
-            "Entregue ao WhatsApp em ${item.sentAt?.let { fmt.format(Date(it)) } ?: "—"}"
+            "Envio despachado ao WhatsApp em ${item.sentAt?.let { fmt.format(Date(it)) } ?: "—"}" +
+                " · o app não tem como confirmar a entrega"
         ScheduledState.FAILED ->
             "Não foi enviada após ${item.attempts} tentativa(s): ${item.lastError ?: "motivo não registrado"}"
         ScheduledState.CANCELLED -> "Cancelada"
@@ -110,7 +124,8 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             setText(item.text)
             setPadding(48, 32, 48, 32)
         }
-        AlertDialog.Builder(this)
+        editDialog?.dismiss()
+        editDialog = AlertDialog.Builder(this)
             .setTitle("Editar mensagem armada")
             .setView(field)
             .setPositiveButton("Salvar") { _, _ ->
@@ -132,6 +147,16 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             }
             .setNegativeButton("Voltar", null)
             .show()
+    }
+
+    private fun remove(item: ScheduledMessageEntity) {
+        lifecycleScope.launch { dao.delete(item.id) }
+    }
+
+    override fun onDestroy() {
+        editDialog?.dismiss()
+        editDialog = null
+        super.onDestroy()
     }
 
     private fun cancel(item: ScheduledMessageEntity) {

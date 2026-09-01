@@ -17,8 +17,18 @@ sealed class TriggerOutcome {
      */
     object LostClaim : TriggerOutcome()
 
-    /** O mecanismo de envio aceitou. Só aqui a linha vira `SENT`. */
+    /** O mecanismo de envio aceitou o despacho. Só aqui a linha vira `SENT`. */
     data class Sent(val id: Long) : TriggerOutcome()
+
+    /**
+     * O envio foi despachado, mas o carimbo de `SENT` não pegou — a linha saiu de
+     * `CLAIMED` por baixo. Estado ruim e raro, que precisa aparecer no log em vez de
+     * se disfarçar de sucesso.
+     */
+    data class SentNotRecorded(val id: Long) : TriggerOutcome()
+
+    /** A linha sumiu entre a leitura e o claim. Nada foi enviado. */
+    object Vanished : TriggerOutcome()
 
     /** Falhou, mas continua recuperável: volta a `PENDING`, com espera antes do próximo gatilho. */
     data class Retrying(val id: Long, val attempt: Int, val reason: String) : TriggerOutcome()
@@ -40,6 +50,7 @@ class ScheduledMessageCoordinator(
     private val clock: () -> Long = System::currentTimeMillis,
     private val maxAttempts: Int = DEFAULT_MAX_ATTEMPTS,
     private val retryBackoffMs: Long = DEFAULT_RETRY_BACKOFF_MS,
+    private val staleClaimMs: Long = DEFAULT_STALE_CLAIM_MS,
     private val log: (String) -> Unit = {}
 ) {
 
@@ -58,6 +69,13 @@ class ScheduledMessageCoordinator(
         if (fromSelf) return TriggerOutcome.OwnMessage
 
         val at = clock()
+
+        // Antes de qualquer coisa: encerrar claims presos de um processo que morreu
+        // enviando. Roda a cada gatilho de propósito — na conexão do listener, que era
+        // o lugar anterior, o caso comum (serviço religado segundos depois) nunca era
+        // alcançado, e a linha ficava "Enviando agora…" para sempre.
+        store.failStaleClaims(at, at - staleClaimMs)
+
         val candidate = store.nextEligible(packageName, conversationSender, at)
             ?: return TriggerOutcome.NothingArmed
 
@@ -68,9 +86,14 @@ class ScheduledMessageCoordinator(
             return TriggerOutcome.LostClaim
         }
 
-        val attempt = candidate.attempts + 1
+        // Releitura obrigatória depois do claim: o claim protege a posse da linha, não
+        // o conteúdo. Uma edição que caísse entre nextEligible e claim faria sair o
+        // texto velho enquanto a tela mostrasse o novo.
+        val row = store.byId(candidate.id) ?: return TriggerOutcome.Vanished
+
+        val attempt = row.attempts
         val result = runCatching {
-            sender.send(packageName, conversationSender, candidate.text)
+            sender.send(packageName, conversationSender, row.text)
         }.getOrElse { e ->
             // Sem isto, uma exceção inesperada deixaria a linha presa em CLAIMED e a
             // mensagem nunca mais sairia (só releaseStaleClaims a resgataria).
@@ -79,18 +102,23 @@ class ScheduledMessageCoordinator(
 
         return when (result) {
             is ReplyResult.Accepted -> {
-                store.markSent(candidate.id, clock())
-                log("#${candidate.id} aceito pelo mecanismo de envio na tentativa $attempt")
+                if (!store.markSent(candidate.id, clock())) {
+                    log("#${candidate.id} DESPACHADO mas o carimbo de SENT não pegou — linha saiu de CLAIMED")
+                    return TriggerOutcome.SentNotRecorded(candidate.id)
+                }
+                log("#${candidate.id} despacho aceito pelo Android na tentativa $attempt")
                 TriggerOutcome.Sent(candidate.id)
             }
             is ReplyResult.Rejected -> {
-                if (attempt >= maxAttempts) {
+                if (result.consumesAttempt && attempt >= maxAttempts) {
                     store.markFailed(candidate.id, clock(), result.reason)
                     log("#${candidate.id} FALHOU em definitivo após $attempt tentativas: ${result.reason}")
                     TriggerOutcome.Failed(candidate.id, result.reason)
                 } else {
                     val retryAt = clock() + retryBackoffMs
-                    store.markRetryable(candidate.id, clock(), result.reason, retryAt)
+                    store.markRetryable(
+                        candidate.id, clock(), result.reason, retryAt, result.consumesAttempt
+                    )
                     log("#${candidate.id} falhou na tentativa $attempt (${result.reason}) — nova chance após $retryAt")
                     TriggerOutcome.Retrying(candidate.id, attempt, result.reason)
                 }
@@ -112,5 +140,8 @@ class ScheduledMessageCoordinator(
          * corta isso sem transformar a entrega em algo lento.
          */
         const val DEFAULT_RETRY_BACKOFF_MS = 60_000L
+
+        /** Claim mais velho que isto é resto de processo morto, não envio em andamento. */
+        const val DEFAULT_STALE_CLAIM_MS = 5 * 60_000L
     }
 }

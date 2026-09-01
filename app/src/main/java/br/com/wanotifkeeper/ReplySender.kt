@@ -17,8 +17,14 @@ sealed class ReplyResult {
      */
     object Accepted : ReplyResult()
 
-    /** Não deu. [reason] é registrado como está, para a UI mostrar sem inventar sucesso. */
-    data class Rejected(val reason: String) : ReplyResult()
+    /**
+     * Não deu. [reason] é registrado como está, para a UI mostrar sem inventar sucesso.
+     *
+     * [consumesAttempt] separa "o envio foi tentado e falhou" de "não havia por onde
+     * tentar". A segunda é condição do ambiente (o cache de ações nasce vazio a cada
+     * reinício do processo) e não pode gastar a cota de tentativas.
+     */
+    data class Rejected(val reason: String, val consumesAttempt: Boolean = true) : ReplyResult()
 }
 
 /**
@@ -46,6 +52,15 @@ interface ReplySender {
  * mesmo nome de exibição no WhatsApp e no Business não se confunda.
  */
 object ReplyActionRegistry {
+
+    /**
+     * ATENÇÃO (concílio, rodada 1): `send()` retornar sem exceção prova que o Android
+     * aceitou **despachar** o intent — não que o WhatsApp processou a resposta. Se
+     * alguma build rotear a resposta por uma activity, a restrição de background
+     * activity launch faz o disparo virar no-op silencioso. O overload de `send` com
+     * `OnFinished` reduziria a dúvida e não foi usado nesta janela: sem aparelho, não
+     * havia como distinguir os casos. Pendência registrada no `RESUME.md` da 018.
+     */
 
     class CachedReply(
         val actionIntent: PendingIntent,
@@ -108,7 +123,7 @@ class NotificationReplySender(private val context: Context) : ReplySender {
 
     override suspend fun send(packageName: String, sender: String, text: String): ReplyResult {
         val cached = ReplyActionRegistry.get(packageName, sender)
-            ?: return ReplyResult.Rejected(NO_ACTION)
+            ?: return ReplyResult.Rejected(NO_ACTION, consumesAttempt = false)
 
         return runCatching {
             val intent = Intent()

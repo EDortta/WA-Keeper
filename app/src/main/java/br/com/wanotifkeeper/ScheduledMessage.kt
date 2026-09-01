@@ -124,12 +124,32 @@ interface ScheduledMessageDao {
     )
     suspend fun markSent(id: Long, now: Long): Int
 
-    /** Falha recuperável: volta a `PENDING`, com o erro guardado e uma espera antes do próximo gatilho. */
+    /**
+     * Falha recuperável que **consome** uma tentativa: volta a `PENDING` com o erro
+     * guardado e uma espera antes do próximo gatilho.
+     */
     @Query(
         "UPDATE scheduled_messages SET state = 'PENDING', updatedAt = :now, " +
             "lastError = :error, nextAttemptAt = :retryAt WHERE id = :id AND state = 'CLAIMED'"
     )
     suspend fun markRetryable(id: Long, now: Long, error: String, retryAt: Long): Int
+
+    /**
+     * Falha recuperável que **não** consome tentativa.
+     *
+     * É o caso de "esta notificação não trouxe ação de resposta": o cache do
+     * [ReplyActionRegistry] nasce vazio a cada reinício do processo, então uma
+     * condição transitória do ambiente não pode gastar a cota de disparos e matar
+     * em definitivo uma mensagem que o mecanismo entregaria bem. O motivo continua
+     * gravado em `lastError` e visível na tela — a impossibilidade fica registrada,
+     * como a #18 exige, sem virar sentença.
+     */
+    @Query(
+        "UPDATE scheduled_messages SET state = 'PENDING', updatedAt = :now, " +
+            "lastError = :error, nextAttemptAt = :retryAt, attempts = attempts - 1 " +
+            "WHERE id = :id AND state = 'CLAIMED'"
+    )
+    suspend fun markRetryableWithoutConsumingAttempt(id: Long, now: Long, error: String, retryAt: Long): Int
 
     /** Tentativas esgotadas: terminal, visível, e sem jamais alegar envio. */
     @Query(
@@ -153,16 +173,25 @@ interface ScheduledMessageDao {
     suspend fun updateText(id: Long, text: String, now: Long): Int
 
     /**
-     * Sobreviveu a um crash em `CLAIMED`: ninguém está enviando, mas a linha ficou
-     * presa. Devolve a `PENDING` para que o próximo contato possa tentar de novo.
-     * Chamado uma vez na conexão do listener, nunca em laço.
+     * Uma linha presa em `CLAIMED` é um processo que morreu **durante** o envio — e
+     * não há como saber de que lado da chamada ele morreu.
+     *
+     * Por isso ela **não** volta a `PENDING`. Devolver a fila significaria reenviar
+     * uma mensagem que pode já ter saído, e a #18 é sobre entregar **uma única vez**.
+     * Entre repetir e não repetir, o contrato manda não repetir; entre alegar envio e
+     * admitir a dúvida, manda admitir. Vira `FAILED` com o motivo escrito na linha, e
+     * o usuário decide se arma de novo.
      */
     @Query(
-        "UPDATE scheduled_messages SET state = 'PENDING', updatedAt = :now, " +
-            "lastError = 'processo encerrado durante o envio' " +
+        "UPDATE scheduled_messages SET state = 'FAILED', updatedAt = :now, " +
+            "lastError = 'o app foi encerrado durante o envio — não é possível saber se a mensagem saiu' " +
             "WHERE state = 'CLAIMED' AND claimedAt < :staleBefore"
     )
-    suspend fun releaseStaleClaims(now: Long, staleBefore: Long): Int
+    suspend fun failStaleClaims(now: Long, staleBefore: Long): Int
+
+    /** Apagar uma linha já encerrada. `CLAIMED` não se apaga: pode haver envio em voo. */
+    @Query("DELETE FROM scheduled_messages WHERE id = :id AND state != 'CLAIMED'")
+    suspend fun delete(id: Long): Int
 
     @Query("SELECT COUNT(*) FROM scheduled_messages WHERE state = 'PENDING'")
     suspend fun pendingCount(): Int

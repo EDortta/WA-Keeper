@@ -19,13 +19,31 @@ interface ScheduledMessageStore {
      */
     suspend fun claim(id: Long, now: Long, triggerKey: String?): Boolean
 
-    suspend fun markSent(id: Long, now: Long)
+    /**
+     * `false` quando o `UPDATE` não achou a linha em `CLAIMED` — ou seja, alguém
+     * mexeu nela por baixo. Devolver `Unit` aqui era um *lost update* silencioso: o
+     * envio acontecia, o carimbo não pegava, e a linha voltava a ser elegível.
+     */
+    suspend fun markSent(id: Long, now: Long): Boolean
 
-    /** Falha ainda recuperável: volta a `PENDING`, só elegível de novo a partir de [retryAt]. */
-    suspend fun markRetryable(id: Long, now: Long, error: String, retryAt: Long)
+    /**
+     * Falha ainda recuperável: volta a `PENDING`, só elegível de novo a partir de
+     * [retryAt]. [consumesAttempt] `false` devolve a tentativa — ver
+     * `markRetryableWithoutConsumingAttempt`.
+     */
+    suspend fun markRetryable(
+        id: Long, now: Long, error: String, retryAt: Long, consumesAttempt: Boolean
+    ): Boolean
 
     /** Falha terminal: `FAILED`, visível, nunca convertida em sucesso. */
-    suspend fun markFailed(id: Long, now: Long, error: String)
+    suspend fun markFailed(id: Long, now: Long, error: String): Boolean
+
+    /**
+     * Encerra como `FAILED` os claims presos de um processo que morreu enviando.
+     * Chamado a cada gatilho: rodar só na conexão do listener nunca pegava o caso
+     * comum, em que o serviço religa segundos depois e a linha ainda é "nova".
+     */
+    suspend fun failStaleClaims(now: Long, staleBefore: Long): Int
 
     suspend fun byId(id: Long): ScheduledMessageEntity?
 }
@@ -39,15 +57,21 @@ class RoomScheduledMessageStore(private val dao: ScheduledMessageDao) : Schedule
     override suspend fun claim(id: Long, now: Long, triggerKey: String?): Boolean =
         dao.claim(id, now, triggerKey) == 1
 
-    override suspend fun markSent(id: Long, now: Long) { dao.markSent(id, now) }
+    override suspend fun markSent(id: Long, now: Long): Boolean = dao.markSent(id, now) == 1
 
-    override suspend fun markRetryable(id: Long, now: Long, error: String, retryAt: Long) {
-        dao.markRetryable(id, now, error, retryAt)
+    override suspend fun markRetryable(
+        id: Long, now: Long, error: String, retryAt: Long, consumesAttempt: Boolean
+    ): Boolean = if (consumesAttempt) {
+        dao.markRetryable(id, now, error, retryAt) == 1
+    } else {
+        dao.markRetryableWithoutConsumingAttempt(id, now, error, retryAt) == 1
     }
 
-    override suspend fun markFailed(id: Long, now: Long, error: String) {
-        dao.markFailed(id, now, error)
-    }
+    override suspend fun markFailed(id: Long, now: Long, error: String): Boolean =
+        dao.markFailed(id, now, error) == 1
+
+    override suspend fun failStaleClaims(now: Long, staleBefore: Long): Int =
+        dao.failStaleClaims(now, staleBefore)
 
     override suspend fun byId(id: Long) = dao.byId(id)
 }
