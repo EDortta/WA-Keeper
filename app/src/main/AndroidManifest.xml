@@ -58,6 +58,11 @@
             android:parentActivityName=".MainActivity" />
 
         <activity
+            android:name=".ScheduledMessagesActivity"
+            android:exported="false"
+            android:parentActivityName=".DetailActivity" />
+
+        <activity
             android:name=".SettingsActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />

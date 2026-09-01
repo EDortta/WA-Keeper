@@ -37,6 +37,13 @@ class DetailActivity : AppCompatActivity() {
             binding.tvTime.text = fmt.format(Date(item.timestamp))
             binding.tvText.text = item.text
 
+            // EPIC 4 (#18): a partir da conversa, armar uma mensagem para o próximo contato.
+            binding.btnSchedule.setOnClickListener {
+                startActivity(
+                    ScheduledMessagesActivity.intent(this@DetailActivity, item.packageName, item.sender)
+                )
+            }
+
             val file = item.imagePath?.let(::File)
             val bmp = file?.takeIf { it.exists() }?.let { BitmapFactory.decodeFile(it.absolutePath) }
             when {

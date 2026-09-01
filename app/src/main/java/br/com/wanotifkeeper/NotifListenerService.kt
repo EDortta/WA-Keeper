@@ -4,8 +4,6 @@ import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.RemoteInput
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -105,19 +103,6 @@ class NotifListenerService : NotificationListenerService() {
         data class Audio(val path: String) : PendingPlayback()
     }
 
-    // Ação de "resposta rápida" que o próprio WhatsApp publica na notificação — guardada
-    // pra um futuro comando de voz reenviar sem precisar de API nenhuma do WhatsApp.
-    // Só em memória: um PendingIntent não sobrevive (nem faria sentido sobreviver) a um
-    // reinício do processo. Chave "pacote|remetente" pra não confundir contas.
-    private val replyActions = ConcurrentHashMap<String, CachedReply>()
-
-    private class CachedReply(
-        val actionIntent: PendingIntent,
-        val remoteInputs: Array<RemoteInput>,
-        val resultKey: String,
-        val notificationKey: String
-    )
-
     private val recentPosts = ConcurrentHashMap<String, Long>()
 
     /** true se pacote+remetente+texto idênticos já passaram por aqui há pouco (repost do WhatsApp). */
@@ -215,6 +200,10 @@ class NotifListenerService : NotificationListenerService() {
                     imagePath = imagePath
                 )
             )
+            // EPIC 4 (#18): a mensagem recebida já foi persistida acima — só depois
+            // disso a mensagem armada para esta conversa pode disparar. Toda a lógica
+            // mora em ScheduledMessageTrigger; aqui é só o gancho.
+            runCatching { ScheduledMessageTrigger.onIncoming(applicationContext, sbn, title) }
             if (isVoice &&
                 Prefs.isAudioCaptureEnabled(applicationContext, sbn.packageName) &&
                 !Prefs.isAudioBlocked(applicationContext, title)
@@ -226,31 +215,18 @@ class NotifListenerService : NotificationListenerService() {
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
-        if (sbn.packageName in watchedPackages) invalidateReplyAction(sbn.key)
+        if (sbn.packageName in watchedPackages) ReplyActionRegistry.forget(sbn.key)
     }
 
-    /**
-     * Guarda a ação de resposta rápida (se a notificação trouxer uma) pra essa conversa.
-     * Notificação mais nova sempre substitui a mais velha; se esta em particular não trouxer
-     * a ação (acontece em reposts de atualização), a entrada anterior é mantida como está.
-     */
+    /** Delegado ao ReplyActionRegistry — o cache vive fora do serviço para o envio alcançá-lo. */
     private fun cacheReplyAction(sbn: StatusBarNotification, sender: String) {
-        val action = sbn.notification.actions?.firstOrNull { !it.remoteInputs.isNullOrEmpty() } ?: return
-        val remoteInputs = action.remoteInputs ?: return
-        val actionIntent = action.actionIntent ?: return
-        replyActions["${sbn.packageName}|$sender"] = CachedReply(
-            actionIntent = actionIntent,
-            remoteInputs = remoteInputs,
-            resultKey = remoteInputs.first().resultKey,
-            notificationKey = sbn.key
-        )
-        android.util.Log.d(TAG, "Reply action cached for ${sbn.packageName}|$sender (key=${remoteInputs.first().resultKey})")
-    }
-
-    /** A notificação some (lida, apagada, substituída sem ação) — a resposta cacheada não vale mais. */
-    private fun invalidateReplyAction(notificationKey: String) {
-        val stale = replyActions.entries.firstOrNull { it.value.notificationKey == notificationKey }?.key ?: return
-        replyActions.remove(stale)
+        val resultKey = ReplyActionRegistry.remember(
+            packageName = sbn.packageName,
+            sender = sender,
+            notificationKey = sbn.key,
+            actions = sbn.notification.actions
+        ) ?: return
+        android.util.Log.d(TAG, "Reply action cached for ${sbn.packageName}|$sender (key=$resultKey)")
     }
 
     /**
