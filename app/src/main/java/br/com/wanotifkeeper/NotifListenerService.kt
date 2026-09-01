@@ -119,6 +119,7 @@ class NotifListenerService : NotificationListenerService() {
         motion.start()
         callDetector.start(scope)
         scope.launch { runPurge() }
+        scope.launch { ScheduledMessageTrigger.releaseStaleClaims(applicationContext) }
         scope.launch { runVoiceGateLoop() }
     }
 
@@ -200,6 +201,10 @@ class NotifListenerService : NotificationListenerService() {
                     imagePath = imagePath
                 )
             )
+            // EPIC 4 (#18): a mensagem recebida já foi persistida acima — só depois
+            // disso a mensagem armada para esta conversa pode disparar. Toda a lógica
+            // mora em ScheduledMessageTrigger; aqui é só o gancho.
+            runCatching { ScheduledMessageTrigger.onIncoming(applicationContext, sbn, title) }
             if (isVoice &&
                 Prefs.isAudioCaptureEnabled(applicationContext, sbn.packageName) &&
                 !Prefs.isAudioBlocked(applicationContext, title)
