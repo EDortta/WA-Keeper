@@ -25,8 +25,13 @@ seguidos. `/tmp` limpo às 23:51. Horizonte útil: 23:25.
 - por que parou: —
 
 ### Frente B — EPIC 3 (#17/#19, PR #20) · `feature/epic-3-image-retention`
-- estado: iniciando
-- por que parou: —
+- estado: **revisão fechada, correções commitadas, concílio de entrega rodando (rodada 1)**
+- commits desta rodada: `29adb7e` (veredicto dos 8 leads), `97334de` (correções + teste)
+- 8 leads: 4 confirmados (1 BLOCKER, 2 MAJOR, 1 LOW), 3 descartados com evidência,
+  1 parqueado (só o aparelho responde). +1 achado fora dos leads (MAJOR, regressão de áudio).
+- teste: `MediaHintsTest`, 9 testes, `:app:testDebugUnitTest` verde.
+- por que parou: — (ainda rodando)
+- detalhe completo: `docs/issues/017-epic-3-retencao-imagens-[review]/RESUME.md`
 
 ## Esperando o operador
 
