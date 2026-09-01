@@ -7,7 +7,9 @@ estar **respondidos e guardados antes de armar qualquer coisa**.
 > §0: "Uma execução autônoma que não sabe decidir parar não é autônoma. É um
 > consumidor não supervisionado de orçamento."
 
-Status: **NÃO ARMADO.** Itens marcados 🔴 aguardam o operador.
+Status: **ARMADO** em 2026-09-01 09:05, por consentimento explícito do operador
+("pode proceder"), com a configuração da tabela §1 abaixo. O operador está
+**remoto e ausente**, e avisou que **a energia pode cair**.
 
 ---
 
@@ -46,14 +48,14 @@ mesmo com 2 agentes escrevendo código em paralelo.
 
 | Item | Valor | Status |
 |---|---|---|
-| Repositórios que podem mudar | só `WA-Keeper` | proposto |
-| Caminhos que podem mudar | `app/src/**`, `docs/**` nos **worktrees** `--epic4-scheduled-msg` e `--epic3-image-review`. Nunca o checkout principal, nunca `main` | proposto |
-| Modelo por fase | 🔴 | **falta** |
-| Teto por chamada / por issue / por rodada / por noite / campanha | 🔴 | **falta** |
-| Concorrência de chamadas de modelo | 2 agentes | proposto |
-| Concorrência de trabalho local | **1 build Gradle por vez** | proposto |
+| Repositórios que podem mudar | só `WA-Keeper` | **consentido** |
+| Caminhos que podem mudar | `app/src/**`, `docs/**` nos **worktrees** `--epic4-scheduled-msg` e `--epic3-image-review`. Nunca o checkout principal, nunca `main` | **consentido** |
+| Modelo por fase | Opus 5 (`claude-opus-5`) em implementação e revisão | **consentido** |
+| Teto por chamada / por issue / por rodada / por noite / campanha | 40 chamadas por frente; 2 rodadas de concílio; noite = a janela até 23:25; campanha = esta janela | **consentido** |
+| Concorrência de chamadas de modelo | 2 agentes | **consentido** |
+| Concorrência de trabalho local | **1 build Gradle por vez**, via `flock` em `~/.local/state/ai-agents/wa-keeper-build.lock` | **consentido** |
 | Janela | agora → **23:25** (hard stop do reboot) | derivado do §6 |
-| Canal de notificação + confirmação de entrega | 🔴 | **falta** |
+| Canal de notificação + confirmação de entrega | `docs/coordination/morning-report.md`, versionado e commitado — sobrevive a queda de energia e à limpeza de `/tmp`. Não há canal externo configurado neste repo | **consentido** |
 | Revisão antes de chegar em `development` | por frente, antes da PR; concílio a cada 5 commits aprovados ou no delivery commit | do `README.md` desta pasta |
 
 ## §2 — Condições de parada
@@ -92,3 +94,56 @@ não um plano validado.
 Consequência: o que pode ser armado hoje é uma execução **com freios declarados e
 não provados**, dentro de uma janela curta, com o operador como watchdog na volta.
 Não é a esteira autônoma que o contrato descreve.
+
+
+---
+
+## Queda de energia — o que muda
+
+O operador está remoto e a energia pode cair. Um agente in-process morre junto
+com a máquina, sem aviso e sem chance de fazer checkpoint. O contrato pede
+relatório "durável o bastante para sobreviver ao crash que o produziu"; aqui a
+única durabilidade real é **git**.
+
+Regra imposta às duas frentes:
+
+- **Commit pequeno e frequente na própria branch.** Um crash pode custar no
+  máximo um incremento de trabalho, nunca uma noite.
+- **`RESUME.md` e `commit-ledger.md` atualizados no mesmo commit do código**, não
+  depois. Estado que só existe na cabeça do agente não sobrevive à queda.
+- **Nada de trabalho longo sem commit intermediário.** Se uma etapa não cabe em
+  um commit, ela é grande demais.
+- Na retomada: o `RESUME.md` de cada frente é a fonte de verdade do que já foi
+  feito. `git log` da branch é a segunda.
+
+## Alavanca de potência — containers
+
+O operador autorizou desarmar os containers para liberar máquina, no máximo a
+cada 30 minutos, se a potência faltar.
+
+**42 containers rodando agora** (`jk-structure-*` da ZeeCred, `lct-acheivc-*`,
+observabilidade) — é o que produz o load ~5.
+
+⚠️ O script indicado, `~/Sync/Authfy/authfy-docker/stop-all-containers.sh`, faz
+`docker stop` **e `docker rm`** sobre `docker ps -a`: ele **remove** os
+containers, não só desliga. Para stack gerida por compose isso é recuperável com
+um `up` — para o resto, não é.
+
+**Decisão desta rodada:** usar `docker stop` **sem** `rm`, e só sobre o que for
+preciso. É reversível com `docker start` e entrega o mesmo alívio de CPU. O
+script com `rm` fica como botão do operador, não do agente.
+
+Nota: `lct-acheivc-backend-*` subiu há 1 minuto e o `crontab` tem guardiões
+(`wa-hub` a cada 2 min) que recriam containers — parar tudo pode virar briga com
+guardião, não alívio.
+
+## Aparelho de teste — indisponível nesta rodada
+
+`adb devices` está vazio e o operador está fisicamente longe do aparelho.
+**Nenhuma verificação em dispositivo é possível nesta janela.** Consequência:
+
+- vale teste unitário JVM e leitura estática;
+- qualquer achado que só o aparelho confirma (ex.: o caminho real de
+  `WhatsApp Images`, se tem subpasta) é **parqueado** como `needs_operator`,
+  com a pergunta escrita literalmente no `RESUME.md` da frente — nunca resolvido
+  por suposição.
