@@ -7,6 +7,7 @@ app/build/
 .idea/
 *.iml
 captures/
+.artifacts/
 
 # Chaves e config local — nunca versionar (SEC-0066)
 local.properties
