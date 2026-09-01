@@ -11,6 +11,17 @@ achados vivos que precisam da sua decisão: **19 no total** (10 da B, 9 da A).
 
 A janela ia até 23:25; as frentes terminaram às 09:28 e 09:35, muito antes.
 
+**Onde estão os 19 achados, com recomendação escrita e nenhuma executada** — os dois
+arquivos abaixo foram consolidados em `development` (só documentação; nenhum commit de
+código saiu do worktree):
+
+- os 10 da frente B → `docs/issues/017-epic-3-retencao-imagens-[review]/RESUME.md`
+  (tabela S1…S10, mais "Recomendação para a retomada");
+- os 9 da frente A → `docs/issues/018-epic-4-mensagens-condicionadas-[open]/RESUME.md`
+  (item 7 de "Esperando o operador").
+
+As lições da rodada estão em `docs/napkin-lessons.md`.
+
 ## Configuração desta rodada
 
 Ver `unattended-run.md` nesta pasta. Resumo: 2 frentes em worktrees separados,
@@ -102,11 +113,12 @@ atrasando o áudio em até 10,5 s — regressão que a #17 proíbe.
 
 **Do coordenador:**
 
-7. **A branch da frente B está 18 commits atrás de `development`.** Ela nasceu de
+7. **A branch da frente B está 19 commits atrás de `development`** (18 quando as
+   frentes fecharam; `development` ganhou commits de documentação depois). Ela nasceu de
    `fe713e0`, que é exatamente a ponta atual de `main` — daí a impressão de que
    "saiu de main". Não é história divergente (`fe713e0` é ancestral de
    `development`), então o merge é normal; o perigo é a resolução de conflito:
-   um `--ours`/`--theirs` apressado apaga os 18 commits de comandos de voz.
+   um `--ours`/`--theirs` apressado apaga os commits de comandos de voz.
 8. **`.gitignore` não cobria `.credentials/` nem `.env`.** O helper `awt` cria,
    dentro do worktree, um `.credentials/store` que é **symlink para
    `~/.config/credentials/personal`**. Um `git add -A` distraído versionaria o
