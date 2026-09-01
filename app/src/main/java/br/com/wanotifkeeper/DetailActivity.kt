@@ -97,10 +97,16 @@ class DetailActivity : AppCompatActivity() {
         audioPreview = null
     }
 
-    private fun looksLikeMedia(text: String) = Regex(
-        "^(📷|🎥|🎤)|imagem|foto|imagen|photo|image|v[ií]deo|audio|áudio",
-        RegexOption.IGNORE_CASE
-    ).containsMatchIn(text.take(40))
+    /**
+     * S3 do concílio: aqui vivia a regra frouxa que o [MediaHints] foi criado para eliminar
+     * (`containsMatchIn` sobre "foto|imagem|…"), na mesma branch que a eliminou do caminho de
+     * captura. Ela não dispara varredura, mas afirmava "imagem não capturada" para qualquer
+     * mensagem que mencionasse a palavra — e era a regra que um mantenedor encontraria
+     * primeiro e replicaria. Passa a ser a mesma regra do resto do app.
+     */
+    private fun looksLikeMedia(text: String) =
+        MediaHints.looksLikeImageMessage(text, isGroup = true) ||
+            MediaHints.looksLikeVoiceMessage(text)
 
     companion object {
         const val EXTRA_ID = "notif_id"

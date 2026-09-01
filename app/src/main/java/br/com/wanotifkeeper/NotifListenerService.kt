@@ -273,7 +273,11 @@ class NotifListenerService : NotificationListenerService() {
         }.getOrNull()
 
         val messageImage = extractMessagingStyleImage(sbn.notification, sbn.postTime)
-        val isImage = picture != null || messageImage != null || MediaVault.looksLikeImageMessage(text)
+        // EXTRA_IS_GROUP_CONVERSATION é API 28 e o minSdk é 26; a chave é estável desde então
+        // e ausente vira `false`, o lado seguro (não remove prefixo, não relaxa a regra).
+        val isGroup = extras.getBoolean("android.isGroupConversation", false)
+        val isImage = picture != null || messageImage != null ||
+            MediaVault.looksLikeImageMessage(text, isGroup)
 
         // O dedup roda DEPOIS de extrair a imagem, de propósito: sem isso, a segunda
         // notificação — a que o WhatsApp publica com o bitmap/URI, texto idêntico — seria
@@ -385,7 +389,7 @@ class NotifListenerService : NotificationListenerService() {
      * A imagem pode aparecer alguns instantes após a notificação; tentamos algumas vezes.
      */
     private suspend fun captureImage(rowId: Long, pkg: String, postTime: Long) {
-        for (wait in longArrayOf(300, 1200, 3000, 6000)) {
+        for (wait in MediaVault.IMAGE_RETRY_DELAYS_MS) {
             delay(wait)
             val path = MediaVault.captureLatestImage(applicationContext, pkg, postTime) ?: continue
             NotifDatabase.get(applicationContext).dao().setImagePath(rowId, path)

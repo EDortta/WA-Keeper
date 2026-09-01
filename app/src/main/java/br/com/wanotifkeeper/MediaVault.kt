@@ -41,7 +41,8 @@ object MediaVault {
     // A regra de "isto parece mídia?" vive em MediaHints, sem Android, para ter teste.
     fun looksLikeVoiceMessage(text: String): Boolean = MediaHints.looksLikeVoiceMessage(text)
 
-    fun looksLikeImageMessage(text: String): Boolean = MediaHints.looksLikeImageMessage(text)
+    fun looksLikeImageMessage(text: String, isGroup: Boolean = false): Boolean =
+        MediaHints.looksLikeImageMessage(text, isGroup)
 
     /** Antes de 11 o acesso a arquivo era direto; de 11 em diante exige All Files Access. */
     fun hasAllFilesAccess(): Boolean =
@@ -197,13 +198,29 @@ object MediaVault {
     private const val WINDOW_BACK_MS = 20_000L
     private const val IMAGE_WINDOW_BACK_MS = 15_000L
 
-    /**
-     * Janela adiante: tem que cobrir o retry inteiro do NotifListenerService, que soma
-     * 300+1200+3000+6000 = 10,5 s depois do postTime. Com os 8 s de antes, um arquivo que
-     * aterrissasse em t+9 s era procurado pelo último retry e recusado pela janela.
-     */
-    private const val IMAGE_WINDOW_FORWARD_MS = 12_000L
-
     /** Quanto tempo um arquivo precisa estar sem escrita para ser considerado baixado por inteiro. */
     private const val FILE_SETTLE_MS = 1_500L
+
+    /**
+     * Escada de retry da varredura de imagem — fonte única, consumida pelo
+     * NotifListenerService. Cumulativo: 1,5 / 3 / 6 / 12 s depois do postTime.
+     *
+     * S2 do concílio: a primeira tentativa era em t+0,3 s, e o filtro de estabilização exige
+     * mtime ≤ agora − 1,5 s. Em t+0,3 s isso significa mtime ≤ t−1,2 s: a primeira varredura
+     * só conseguia devolver arquivo ANTERIOR à notificação — a coincidência temporal que a
+     * #17 proíbe, entrando justamente pela porta construída para evitá-la. A primeira
+     * tentativa agora não roda antes de FILE_SETTLE_MS.
+     */
+    val IMAGE_RETRY_DELAYS_MS = longArrayOf(1_500, 1_500, 3_000, 6_000)
+
+    /**
+     * Janela adiante: **derivada** da escada de retry, não escrita à mão.
+     *
+     * S2 do concílio: as três grandezas (janela, estabilização, escada) foram escritas em
+     * momentos diferentes e ficaram contraditórias — a janela declarada de 12 s valia 9 s de
+     * fato, porque a última varredura acontecia em t+10,5 s e nada com mtime posterior a
+     * t+9 s podia ter estabilizado. Agora o teto é o que a última varredura consegue mesmo
+     * enxergar, por construção: nenhum comentário precisa manter isso alinhado.
+     */
+    private val IMAGE_WINDOW_FORWARD_MS = IMAGE_RETRY_DELAYS_MS.sum() - FILE_SETTLE_MS
 }

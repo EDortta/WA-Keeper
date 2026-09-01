@@ -1,5 +1,6 @@
 package br.com.wanotifkeeper
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -74,16 +75,46 @@ class MediaHintsTest {
     // --- concílio, lente adversarial: notificação de grupo traz "Remetente: " ---
 
     @Test
-    fun `rotulo com prefixo de remetente conta como imagem`() {
-        assertTrue(MediaHints.looksLikeImageMessage("Ana: Foto"))
-        assertTrue(MediaHints.looksLikeImageMessage("Você: 2 fotos"))
-        assertTrue(MediaHints.looksLikeImageMessage("Ana: 📷 Foto"))
+    fun `rotulo com prefixo de remetente conta como imagem em grupo`() {
+        assertTrue(MediaHints.looksLikeImageMessage("Ana: Foto", isGroup = true))
+        assertTrue(MediaHints.looksLikeImageMessage("Você: 2 fotos", isGroup = true))
+        assertTrue(MediaHints.looksLikeImageMessage("Ana: 📷 Foto", isGroup = true))
     }
 
     @Test
-    fun `frase com prefixo de remetente nao conta como imagem`() {
-        assertFalse(MediaHints.looksLikeImageMessage("Ana: me manda a foto"))
-        assertFalse(MediaHints.looksLikeImageMessage("Ana: comprei uma câmera nova 📸"))
+    fun `frase com prefixo de remetente nao conta como imagem em grupo`() {
+        assertFalse(MediaHints.looksLikeImageMessage("Ana: me manda a foto", isGroup = true))
+        assertFalse(MediaHints.looksLikeImageMessage("Ana: comprei uma câmera nova 📸", isGroup = true))
+    }
+
+    // --- S1 do concílio (rodada 2): o strip de prefixo reabria o buraco do BLOCKER ---
+
+    @Test
+    fun `texto que parece prefixo nao vira imagem em conversa 1-a-1`() {
+        // Fora de grupo o WhatsApp não prefixa o remetente: qualquer "algo: " no início é
+        // texto digitado por uma pessoa. Removê-lo fazia "Ana: fotos" varrer o diretório e
+        // anexar foto alheia a uma mensagem de TEXTO — o que a #17 proíbe.
+        assertFalse(MediaHints.looksLikeImageMessage("Ana: fotos"))
+        assertFalse(MediaHints.looksLikeImageMessage("Olha isso: foto"))
+        assertFalse(MediaHints.looksLikeImageMessage("Assunto: fotos"))
+    }
+
+    @Test
+    fun `rotulo puro continua contando fora de grupo`() {
+        // O caminho 1-a-1 real, confirmado no aparelho: "📷 Foto" sem prefixo nenhum.
+        assertTrue(MediaHints.looksLikeImageMessage("📷 Foto"))
+        assertTrue(MediaHints.looksLikeImageMessage("Foto"))
+        assertTrue(MediaHints.looksLikeImageMessage("2 fotos"))
+    }
+
+    @Test
+    fun `o padrao e o lado seguro`() {
+        // Sem informação de grupo, não relaxa: o default tem que ser o comportamento estrito.
+        assertEquals(
+            MediaHints.looksLikeImageMessage("Ana: fotos"),
+            MediaHints.looksLikeImageMessage("Ana: fotos", isGroup = false)
+        )
+        assertFalse(MediaHints.looksLikeImageMessage("Ana: fotos", isGroup = false))
     }
 
     // --- concílio, lente adversarial: rótulo de OUTRAS mídias não é imagem ---

@@ -50,6 +50,13 @@ object MediaHints {
      * Em grupo o texto da notificação vem como "Fulano: corpo". Sem tirar esse prefixo, o
      * ramo de rótulo (o que salva as versões do WhatsApp que NÃO mandam o emoji) nunca
      * dispara em grupo — que é o caso de uso mais comum.
+     *
+     * S1 do concílio: quando o strip era incondicional, ele desfazia parte da âncora que o
+     * ramo de rótulo existe para ter. Em conversa 1-a-1 o WhatsApp NÃO prefixa o remetente,
+     * então qualquer `"algo: "` no início é texto que uma pessoa digitou — e `"Ana: fotos"`
+     * voltava a varrer o diretório e anexar foto alheia a uma mensagem de TEXTO, exatamente
+     * o que a #17 proíbe. Por isso o strip agora exige evidência de que a conversa é de
+     * grupo (`EXTRA_IS_GROUP_CONVERSATION`), em vez de casar qualquer `": "`.
      */
     private val SENDER_PREFIX = Regex("^[^:\n]{1,40}:[\\s\\u00A0]+")
 
@@ -58,8 +65,13 @@ object MediaHints {
 
     fun looksLikeVoiceMessage(text: String): Boolean = VOICE_HINT.containsMatchIn(text)
 
-    fun looksLikeImageMessage(text: String): Boolean {
-        val body = stripSenderPrefix(normalize(text))
+    /**
+     * @param isGroup a notificação declara ser de conversa em grupo. Só nesse caso o prefixo
+     *   "Fulano: " é removido antes de testar o rótulo — ver [SENDER_PREFIX].
+     */
+    fun looksLikeImageMessage(text: String, isGroup: Boolean = false): Boolean {
+        val normalized = normalize(text)
+        val body = if (isGroup) stripSenderPrefix(normalized) else normalized
         if (IMAGE_EMOJI_PREFIX.containsMatchIn(body)) return true
         return IMAGE_LABEL.matches(body)
     }
