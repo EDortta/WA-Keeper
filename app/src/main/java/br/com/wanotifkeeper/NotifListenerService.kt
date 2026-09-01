@@ -7,35 +7,53 @@ import android.app.NotificationManager
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.ConcurrentHashMap
 
 class NotifListenerService : NotificationListenerService() {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    // Sem o handler, uma exceção não tratada num filho de `launch` sobe para o handler de
+    // thread padrão e derruba o app — SupervisorJob protege os irmãos, não o processo.
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, _ -> }
+    )
 
     companion object {
         private const val TAG = "WAK-ReplyAction"
         private const val TAG_VOICE_GATE = "WAK-VoiceGate"
         private const val DEDUP_WINDOW_MS = 2000L
 
+        /**
+         * Quanto o repost que traz a imagem espera pelo rowId da primeira notificação.
+         * O INSERT roda em coroutine, então a segunda notificação pode chegar antes de a
+         * linha existir; sem espera, a imagem se perderia por uma corrida de milissegundos.
+         */
+        private const val REPOST_ROWID_WAIT_MS = 5000L
+
         /** Menor SDK em que SpeechRecognizer.createOnDeviceSpeechRecognizer existe. */
         private const val MIN_SDK_VOICE_COMMANDS = Build.VERSION_CODES.S // 31
         private const val VOICE_GATE_CHECK_MS = 7000L
         private const val VOICE_CHANNEL_ID = "voice_commands"
         private const val NOTIF_ID_VOICE_LISTENING = 42
+
+        /** Distância máxima entre o horário da mensagem do MessagingStyle e o postTime. */
+        private const val MESSAGE_TS_TOLERANCE_MS = 60_000L
     }
 
     private val watchedPackages = setOf(
@@ -103,14 +121,82 @@ class NotifListenerService : NotificationListenerService() {
         data class Audio(val path: String) : PendingPlayback()
     }
 
-    private val recentPosts = ConcurrentHashMap<String, Long>()
+    /**
+     * Registro de um post recente. O `rowId` chega depois do INSERT, que roda em coroutine —
+     * por isso é um sinal e não um valor: o repost que traz a imagem pode chegar antes de a
+     * linha existir, e precisa esperar por ela em vez de desistir.
+     */
+    private class RecentPost(
+        @Volatile var ts: Long,
+        @Volatile var hasImage: Boolean,
+        val rowIdSignal: CompletableDeferred<Long> = CompletableDeferred()
+    )
 
-    /** true se pacote+remetente+texto idênticos já passaram por aqui há pouco (repost do WhatsApp). */
-    private fun isDuplicateRepost(pkg: String, sender: String, text: String): Boolean {
+    private sealed class RepostDecision {
+        /** Primeira vez que este pacote+remetente+texto aparece na janela: fluxo normal. */
+        data class New(val record: RecentPost) : RepostDecision()
+
+        /** Repost puro, sem nada de novo: ignora. */
+        object Drop : RepostDecision()
+
+        /**
+         * Repost que traz imagem que o primeiro não tinha. O WhatsApp costuma publicar o
+         * rótulo ("📷 Foto") e só depois atualizar a notificação com o bitmap/URI, com texto
+         * IDÊNTICO. Descartar essa segunda notificação como repost perdia a única imagem que
+         * a notificação jamais ofereceu — e inserir uma linha nova mostraria a mensagem
+         * duplicada na tela. O certo é anexar a imagem à linha que já existe.
+         */
+        data class AttachImage(val record: RecentPost) : RepostDecision()
+    }
+
+    private val recentPosts = ConcurrentHashMap<String, RecentPost>()
+
+    /**
+     * Classifica pacote+remetente+texto idênticos vistos há pouco (repost do WhatsApp).
+     *
+     * `hasImageContent` é imagem DE VERDADE na notificação (bitmap ou URI), nunca o palpite
+     * pelo texto: o rótulo "📷 Foto" casa a heurística já na primeira notificação, e usá-lo
+     * aqui faria a segunda — a que enfim traz a imagem — ser descartada.
+     */
+    private fun classifyRepost(
+        pkg: String,
+        sender: String,
+        text: String,
+        hasImageContent: Boolean
+    ): RepostDecision {
         val now = System.currentTimeMillis()
-        recentPosts.entries.removeAll { now - it.value > DEDUP_WINDOW_MS }
-        val lastSeen = recentPosts.put("$pkg|$sender|$text", now)
-        return lastSeen != null && now - lastSeen < DEDUP_WINDOW_MS
+        val key = "$pkg|$sender|$text"
+        recentPosts.entries.removeAll { now - it.value.ts > DEDUP_WINDOW_MS }
+        val prev = recentPosts[key]
+        if (prev == null || now - prev.ts >= DEDUP_WINDOW_MS) {
+            val record = RecentPost(now, hasImageContent)
+            recentPosts[key] = record
+            return RepostDecision.New(record)
+        }
+        prev.ts = now
+        if (hasImageContent && !prev.hasImage) {
+            prev.hasImage = true
+            return RepostDecision.AttachImage(prev)
+        }
+        return RepostDecision.Drop
+    }
+
+    /** Copia a imagem que veio na própria notificação (bitmap ou URI), se veio alguma. */
+    private suspend fun imagePathFromNotification(
+        picture: Bitmap?,
+        messageImage: NotificationImage?,
+        postTime: Long
+    ): String? {
+        picture?.let { bmp -> savePicture(bmp, postTime)?.let { return it } }
+        if (messageImage != null) {
+            return MediaVault.captureImageUri(
+                applicationContext,
+                messageImage.uri,
+                messageImage.mimeType,
+                postTime
+            )
+        }
+        return null
     }
 
     override fun onListenerConnected() {
@@ -166,8 +252,6 @@ class NotifListenerService : NotificationListenerService() {
 
         // O WhatsApp costuma repostar/atualizar a mesma notificação poucos ms depois, com
         // texto idêntico — sem isso, toda mensagem seria lida em voz alta e guardada em dobro.
-        if (isDuplicateRepost(sbn.packageName, title, text.trim())) return
-
         cacheReplyAction(sbn, title)
 
         val isVoice = MediaVault.looksLikeVoiceMessage(text)
@@ -188,8 +272,38 @@ class NotifListenerService : NotificationListenerService() {
             extras.getParcelable(Notification.EXTRA_PICTURE) as? Bitmap
         }.getOrNull()
 
+        val messageImage = extractMessagingStyleImage(sbn.notification, sbn.postTime)
+        val isImage = picture != null || messageImage != null || MediaVault.looksLikeImageMessage(text)
+
+        // O dedup roda DEPOIS de extrair a imagem, de propósito: sem isso, a segunda
+        // notificação — a que o WhatsApp publica com o bitmap/URI, texto idêntico — seria
+        // descartada como repost e a imagem se perderia. Ver RepostDecision.AttachImage.
+        val decision = classifyRepost(
+            sbn.packageName, title, text.trim(),
+            hasImageContent = picture != null || messageImage != null
+        )
+        val record = when (decision) {
+            is RepostDecision.Drop -> return
+            is RepostDecision.AttachImage -> {
+                scope.launch {
+                    val rowId = withTimeoutOrNull(REPOST_ROWID_WAIT_MS) {
+                        decision.record.rowIdSignal.await()
+                    } ?: return@launch
+                    val path = imagePathFromNotification(picture, messageImage, sbn.postTime)
+                    if (path != null) {
+                        NotifDatabase.get(applicationContext).dao().setImagePath(rowId, path)
+                    } else {
+                        captureImage(rowId, sbn.packageName, sbn.postTime)
+                    }
+                }
+                return
+            }
+            is RepostDecision.New -> decision.record
+        }
+
         scope.launch {
-            val imagePath = picture?.let { savePicture(it, sbn.postTime) }
+            val imagePath = imagePathFromNotification(picture, messageImage, sbn.postTime)
+
             val db = NotifDatabase.get(applicationContext)
             val rowId = db.dao().insert(
                 NotifEntity(
@@ -200,16 +314,32 @@ class NotifListenerService : NotificationListenerService() {
                     imagePath = imagePath
                 )
             )
+            record.rowIdSignal.complete(rowId)
+
+            // Algumas versões do WhatsApp não expõem bitmap/URI na notificação.
+            // Nesses casos tentamos copiar a imagem recém-baixada do diretório oficial de mídia.
+            // Em coroutine própria: o retry de imagem espera até 10,5 s quando não acha nada,
+            // e não pode empurrar a captura de ÁUDIO para depois disso — quanto mais tarde ela
+            // começa, mais chance o WhatsApp tem de apagar o .opus ("apagar para todos").
+            // Sai na frente do gancho da EPIC 4 pelo mesmo motivo: é o caminho sensível a tempo.
+            val imageJob = if (imagePath == null && isImage) {
+                scope.launch { captureImage(rowId, sbn.packageName, sbn.postTime) }
+            } else null
+
             // EPIC 4 (#18): a mensagem recebida já foi persistida acima — só depois
             // disso a mensagem armada para esta conversa pode disparar. Toda a lógica
             // mora em ScheduledMessageTrigger; aqui é só o gancho.
             runCatching { ScheduledMessageTrigger.onIncoming(applicationContext, sbn, title) }
+
             if (isVoice &&
                 Prefs.isAudioCaptureEnabled(applicationContext, sbn.packageName) &&
                 !Prefs.isAudioBlocked(applicationContext, title)
             ) {
                 captureAudio(rowId, sbn.packageName, sbn.postTime)
             }
+            // A retenção varre órfãos comparando com os caminhos gravados no banco; só pode
+            // rodar depois que a captura de imagem tiver registrado o dela.
+            imageJob?.join()
             runPurge()
         }
     }
@@ -227,6 +357,40 @@ class NotifListenerService : NotificationListenerService() {
             actions = sbn.notification.actions
         ) ?: return
         android.util.Log.d(TAG, "Reply action cached for ${sbn.packageName}|$sender (key=$resultKey)")
+    }
+
+    /**
+     * MessagingStyle pode carregar uma URI da imagem, mesmo quando EXTRA_PICTURE não existe.
+     */
+    private fun extractMessagingStyleImage(notification: Notification, postTime: Long): NotificationImage? = runCatching {
+        @Suppress("DEPRECATION")
+        val bundles = notification.extras.getParcelableArray(Notification.EXTRA_MESSAGES) ?: return null
+        // EXTRA_MESSAGES traz o HISTÓRICO recente da conversa, não só a mensagem que disparou
+        // esta notificação. Procurar "a última COM imagem" fazia uma mensagem de TEXTO herdar
+        // a foto anterior da mesma conversa — exatamente o que a #17 proíbe. Só a última
+        // entrada do bundle é a desta notificação; se ela não for imagem, não há imagem.
+        val last = Notification.MessagingStyle.Message.getMessagesFromBundleArray(bundles)
+            .lastOrNull() ?: return null
+        val uri = last.dataUri ?: return null
+        if (last.dataMimeType?.startsWith("image/", ignoreCase = true) != true) return null
+        // Segunda trava: mesmo sendo a última, se o horário dela está longe do postTime é
+        // histórico, não a mensagem que chegou agora.
+        if (last.timestamp > 0L && kotlin.math.abs(postTime - last.timestamp) > MESSAGE_TS_TOLERANCE_MS) {
+            return null
+        }
+        NotificationImage(uri, last.dataMimeType)
+    }.getOrNull()
+
+    /**
+     * A imagem pode aparecer alguns instantes após a notificação; tentamos algumas vezes.
+     */
+    private suspend fun captureImage(rowId: Long, pkg: String, postTime: Long) {
+        for (wait in longArrayOf(300, 1200, 3000, 6000)) {
+            delay(wait)
+            val path = MediaVault.captureLatestImage(applicationContext, pkg, postTime) ?: continue
+            NotifDatabase.get(applicationContext).dao().setImagePath(rowId, path)
+            return
+        }
     }
 
     /**
@@ -388,4 +552,9 @@ class NotifListenerService : NotificationListenerService() {
         lastPurge = now
         runCatching { Retention.purge(applicationContext, now) }
     }
+
+    private data class NotificationImage(
+        val uri: Uri,
+        val mimeType: String?
+    )
 }

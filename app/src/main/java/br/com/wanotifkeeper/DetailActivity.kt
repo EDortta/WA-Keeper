@@ -45,7 +45,7 @@ class DetailActivity : AppCompatActivity() {
             }
 
             val file = item.imagePath?.let(::File)
-            val bmp = file?.takeIf { it.exists() }?.let { BitmapFactory.decodeFile(it.absolutePath) }
+            val bmp = file?.takeIf { it.exists() && it.length() > 0L }?.let(::decodeSampled)
             when {
                 bmp != null -> {
                     binding.imgAttachment.setImageBitmap(bmp)
@@ -62,6 +62,21 @@ class DetailActivity : AppCompatActivity() {
             }
         }
     }
+
+    /**
+     * Antes da EPIC 3, `imagePath` só continha o bitmap da notificação, que o sistema já
+     * entregava reduzido. Agora contém o arquivo ORIGINAL do WhatsApp: `decodeFile` cru sobre
+     * uma foto de 12 MP aloca dezenas de MB de uma vez, sem `largeHeap` no manifesto.
+     */
+    private fun decodeSampled(file: File): android.graphics.Bitmap? = runCatching {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(file.absolutePath, bounds)
+        var sample = 1
+        while (bounds.outWidth / sample > MAX_IMAGE_PX || bounds.outHeight / sample > MAX_IMAGE_PX) {
+            sample *= 2
+        }
+        BitmapFactory.decodeFile(file.absolutePath, BitmapFactory.Options().apply { inSampleSize = sample })
+    }.getOrNull()
 
     private fun playAudio(file: File) {
         audioPreview?.release()
@@ -89,5 +104,8 @@ class DetailActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_ID = "notif_id"
+
+        /** Teto de lado maior ao decodificar a imagem, para não estourar a heap com foto original. */
+        private const val MAX_IMAGE_PX = 2048
     }
 }

@@ -37,6 +37,9 @@ interface NotifDao {
     @Insert
     suspend fun insert(notif: NotifEntity): Long
 
+    @Query("UPDATE notifications SET imagePath = :path WHERE id = :id")
+    suspend fun setImagePath(id: Long, path: String)
+
     @Query("UPDATE notifications SET audioPath = :path WHERE id = :id")
     suspend fun setAudioPath(id: Long, path: String)
 
