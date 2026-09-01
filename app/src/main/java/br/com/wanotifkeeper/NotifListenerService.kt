@@ -2,6 +2,7 @@ package br.com.wanotifkeeper
 
 import android.app.Notification
 import android.graphics.Bitmap
+import android.net.Uri
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import kotlinx.coroutines.CoroutineScope
@@ -79,8 +80,20 @@ class NotifListenerService : NotificationListenerService() {
             extras.getParcelable(Notification.EXTRA_PICTURE) as? Bitmap
         }.getOrNull()
 
+        val messageImage = extractMessagingStyleImage(sbn.notification)
+        val isImage = picture != null || messageImage != null || MediaVault.looksLikeImageMessage(text)
+
         scope.launch {
-            val imagePath = picture?.let { savePicture(it, sbn.postTime) }
+            var imagePath = picture?.let { savePicture(it, sbn.postTime) }
+            if (imagePath == null && messageImage != null) {
+                imagePath = MediaVault.captureImageUri(
+                    applicationContext,
+                    messageImage.uri,
+                    messageImage.mimeType,
+                    sbn.postTime
+                )
+            }
+
             val db = NotifDatabase.get(applicationContext)
             val rowId = db.dao().insert(
                 NotifEntity(
@@ -91,6 +104,13 @@ class NotifListenerService : NotificationListenerService() {
                     imagePath = imagePath
                 )
             )
+
+            // Algumas versões do WhatsApp não expõem bitmap/URI na notificação.
+            // Nesses casos tentamos copiar a imagem recém-baixada do diretório oficial de mídia.
+            if (imagePath == null && isImage) {
+                captureImage(rowId, sbn.packageName, sbn.postTime)
+            }
+
             if (isVoice &&
                 Prefs.isAudioCaptureEnabled(applicationContext, sbn.packageName) &&
                 !Prefs.isAudioBlocked(applicationContext, title)
@@ -98,6 +118,32 @@ class NotifListenerService : NotificationListenerService() {
                 captureAudio(rowId, sbn.packageName, sbn.postTime)
             }
             runPurge()
+        }
+    }
+
+    /**
+     * MessagingStyle pode carregar uma URI da imagem, mesmo quando EXTRA_PICTURE não existe.
+     */
+    private fun extractMessagingStyleImage(notification: Notification): NotificationImage? = runCatching {
+        @Suppress("DEPRECATION")
+        val bundles = notification.extras.getParcelableArray(Notification.EXTRA_MESSAGES) ?: return null
+        Notification.MessagingStyle.Message.getMessagesFromBundleArray(bundles)
+            .asReversed()
+            .firstOrNull { msg ->
+                msg.dataUri != null && msg.dataMimeType?.startsWith("image/", ignoreCase = true) == true
+            }
+            ?.let { msg -> NotificationImage(msg.dataUri!!, msg.dataMimeType) }
+    }.getOrNull()
+
+    /**
+     * A imagem pode aparecer alguns instantes após a notificação; tentamos algumas vezes.
+     */
+    private suspend fun captureImage(rowId: Long, pkg: String, postTime: Long) {
+        for (wait in longArrayOf(300, 1200, 3000, 6000)) {
+            delay(wait)
+            val path = MediaVault.captureLatestImage(applicationContext, pkg, postTime) ?: continue
+            NotifDatabase.get(applicationContext).dao().setImagePath(rowId, path)
+            return
         }
     }
 
@@ -139,4 +185,9 @@ class NotifListenerService : NotificationListenerService() {
         lastPurge = now
         runCatching { Retention.purge(applicationContext, now) }
     }
+
+    private data class NotificationImage(
+        val uri: Uri,
+        val mimeType: String?
+    )
 }
