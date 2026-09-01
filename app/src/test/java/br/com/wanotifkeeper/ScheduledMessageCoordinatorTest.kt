@@ -94,7 +94,10 @@ class ScheduledMessageCoordinatorTest {
             var n = 0
             rows.keys.toList().forEach { id ->
                 val row = rows[id]!!
-                if (row.state == ScheduledState.CLAIMED.name && (row.claimedAt ?: 0L) < staleBefore) {
+                // Espelha o SQL: em SQLite `NULL < x` é NULL, então uma linha CLAIMED
+                // sem claimedAt NÃO casa. O fake não pode ser mais permissivo que a query.
+                val claimedAt = row.claimedAt
+                if (row.state == ScheduledState.CLAIMED.name && claimedAt != null && claimedAt < staleBefore) {
                     rows[id] = row.copy(
                         state = ScheduledState.FAILED.name, updatedAt = now,
                         lastError = "o app foi encerrado durante o envio — não é possível saber se a mensagem saiu"
@@ -149,7 +152,8 @@ class ScheduledMessageCoordinatorTest {
         maxAttempts: Int = 3
     ) = ScheduledMessageCoordinator(
         store = store, sender = sender, clock = { now },
-        maxAttempts = maxAttempts, retryBackoffMs = 60_000L, staleClaimMs = 300_000L
+        maxAttempts = maxAttempts, retryBackoffMs = 60_000L, staleClaimMs = 300_000L,
+        echoWindowMs = 20_000L
     )
 
     // ---- caminho feliz -------------------------------------------------------
@@ -172,10 +176,16 @@ class ScheduledMessageCoordinatorTest {
     fun `segunda notificacao depois do envio nao dispara de novo`() = runBlocking {
         val store = FakeStore()
         val sender = RecordingSender { ReplyResult.Accepted }
-        val c = coordinator(store, sender)
         store.arm("com.whatsapp", "Ana", "oi")
+        var agora = 1_000L
+        val c = ScheduledMessageCoordinator(
+            store = store, sender = sender, clock = { agora },
+            maxAttempts = 3, retryBackoffMs = 60_000L, staleClaimMs = 300_000L,
+            echoWindowMs = 20_000L
+        )
 
         c.onConversationActivity("com.whatsapp", "Ana", false, "key-1")
+        agora += 30_000L   // fora da janela de eco: é contato de verdade, e ainda assim não repete
         val second = c.onConversationActivity("com.whatsapp", "Ana", false, "key-2")
 
         assertEquals(TriggerOutcome.NothingArmed, second)
@@ -333,11 +343,17 @@ class ScheduledMessageCoordinatorTest {
         val sender = RecordingSender { ReplyResult.Accepted }
         store.arm("com.whatsapp", "Ana", "primeira", createdAt = 1L)
         store.arm("com.whatsapp", "Ana", "segunda", createdAt = 2L)
-        val c = coordinator(store, sender)
+        var agora = 1_000L
+        val c = ScheduledMessageCoordinator(
+            store = store, sender = sender, clock = { agora },
+            maxAttempts = 3, retryBackoffMs = 60_000L, staleClaimMs = 300_000L,
+            echoWindowMs = 20_000L
+        )
 
         c.onConversationActivity("com.whatsapp", "Ana", false, "key-1")
         assertEquals("um gatilho entrega no máximo uma mensagem", 1, sender.sent.size)
 
+        agora += 30_000L   // passada a janela de eco, é contato de verdade
         c.onConversationActivity("com.whatsapp", "Ana", false, "key-2")
         assertEquals(listOf("primeira", "segunda"), sender.sent.map { it.third })
     }
@@ -355,7 +371,8 @@ class ScheduledMessageCoordinatorTest {
 
         val outcome = ScheduledMessageCoordinator(
             store = store, sender = sender, clock = { 1_000_000L },
-            maxAttempts = 3, retryBackoffMs = 60_000L, staleClaimMs = 300_000L
+            maxAttempts = 3, retryBackoffMs = 60_000L, staleClaimMs = 300_000L,
+            echoWindowMs = 20_000L
         ).onConversationActivity("com.whatsapp", "Ana", false, "key-1")
 
         assertEquals(TriggerOutcome.NothingArmed, outcome)
@@ -406,7 +423,8 @@ class ScheduledMessageCoordinatorTest {
         for (t in listOf(1_000L, 100_000L, 200_000L, 300_000L, 400_000L)) {
             ScheduledMessageCoordinator(
                 store = store, sender = sender, clock = { t },
-                maxAttempts = 3, retryBackoffMs = 60_000L, staleClaimMs = 300_000L
+                maxAttempts = 3, retryBackoffMs = 60_000L, staleClaimMs = 300_000L,
+                echoWindowMs = 20_000L
             ).onConversationActivity("com.whatsapp", "Ana", false, "key-$t")
         }
 
@@ -429,5 +447,48 @@ class ScheduledMessageCoordinatorTest {
         assertEquals(TriggerOutcome.Vanished, outcome)
         assertTrue(sender.sent.isEmpty())
         assertNull(store.rows[id])
+    }
+
+    // ---- achados da rodada 2 do concílio -------------------------------------
+
+    @Test
+    fun `repost logo depois da entrega nao dispara a proxima armada`() = runBlocking {
+        val store = FakeStore()
+        val sender = RecordingSender { ReplyResult.Accepted }
+        store.arm("com.whatsapp", "Ana", "primeira", createdAt = 1L)
+        store.arm("com.whatsapp", "Ana", "segunda", createdAt = 2L)
+        var agora = 1_000L
+        val c = ScheduledMessageCoordinator(
+            store = store, sender = sender, clock = { agora },
+            maxAttempts = 3, retryBackoffMs = 60_000L, staleClaimMs = 300_000L,
+            echoWindowMs = 20_000L
+        )
+
+        c.onConversationActivity("com.whatsapp", "Ana", false, "key-1")
+        agora += 500L   // o WhatsApp reposta a notificação com a nossa resposta anexada
+        val eco = c.onConversationActivity("com.whatsapp", "Ana", false, "key-eco")
+
+        assertEquals(TriggerOutcome.EchoWindow, eco)
+        assertEquals("o eco da nossa entrega não pode disparar a segunda armada", 1, sender.sent.size)
+
+        agora += 30_000L   // passada a janela, um contato de verdade dispara normalmente
+        c.onConversationActivity("com.whatsapp", "Ana", false, "key-2")
+        assertEquals(listOf("primeira", "segunda"), sender.sent.map { it.third })
+    }
+
+    @Test
+    fun `linha que sai de CLAIMED entre o claim e a releitura nao e enviada`() = runBlocking {
+        val store = FakeStore()
+        val sender = RecordingSender { ReplyResult.Accepted }
+        val id = store.arm("com.whatsapp", "Ana", "oi")
+        store.afterClaim = {
+            store.rows[it] = store.rows[it]!!.copy(state = ScheduledState.FAILED.name)
+        }
+
+        val outcome = coordinator(store, sender).onConversationActivity("com.whatsapp", "Ana", false, "k")
+
+        assertEquals(TriggerOutcome.LostClaim, outcome)
+        assertTrue(sender.sent.isEmpty())
+        assertNull(store.rows[id]!!.sentAt)
     }
 }

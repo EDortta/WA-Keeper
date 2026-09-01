@@ -18,17 +18,21 @@ object OwnMessageHeuristic {
      * @param hasMessages a notificação traz um `MessagingStyle` com mensagens.
      * @param lastMessageHasNoPerson a última mensagem do style não tem `Person` —
      *   convenção do `MessagingStyle` para "mensagem do dono do aparelho".
-     * @param hasRemoteInputHistory `EXTRA_REMOTE_INPUT_HISTORY` está preenchido, ou
-     *   seja, alguém já respondeu por `RemoteInput` nesta notificação. Como o único
-     *   `RemoteInput` que este app dispara é o da entrega programada, o histórico é
-     *   o nosso próprio texto voltando.
+     * @param hasRemoteInputHistory `EXTRA_REMOTE_INPUT_HISTORY` está preenchido.
+     *   Sozinho **não** basta: qualquer resposta inline preenche esse extra — o próprio
+     *   usuário respondendo pela gaveta de notificações, Wear, Android Auto — e ele
+     *   persiste nos reposts seguintes daquela conversa. Tratá-lo como prova de eco
+     *   faria uma resposta pela gaveta suprimir todos os gatilhos daquela conversa, em
+     *   silêncio e para sempre. Entre deixar passar um eco e matar a épica calada, o
+     *   erro barato é o primeiro — e o eco tem defesa própria, determinística, na
+     *   janela pós-entrega do [ScheduledMessageCoordinator].
      */
     fun isOwnMessage(
         hasMessages: Boolean,
         lastMessageHasNoPerson: Boolean,
         hasRemoteInputHistory: Boolean
     ): Boolean {
-        if (hasRemoteInputHistory) return true
-        return hasMessages && lastMessageHasNoPerson
+        if (hasMessages) return lastMessageHasNoPerson
+        return hasRemoteInputHistory
     }
 }

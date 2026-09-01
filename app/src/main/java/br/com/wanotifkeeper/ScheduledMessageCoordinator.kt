@@ -27,8 +27,15 @@ sealed class TriggerOutcome {
      */
     data class SentNotRecorded(val id: Long) : TriggerOutcome()
 
-    /** A linha sumiu entre a leitura e o claim. Nada foi enviado. */
+    /** A linha sumiu entre o claim e a releitura. Nada foi enviado. */
     object Vanished : TriggerOutcome()
+
+    /**
+     * Chegou logo depois de uma entrega nossa para esta mesma conversa. É quase
+     * certamente o repost que o WhatsApp faz da própria notificação com a resposta
+     * anexada — e a defesa aqui não depende do formato da notificação, só do relógio.
+     */
+    object EchoWindow : TriggerOutcome()
 
     /** Falhou, mas continua recuperável: volta a `PENDING`, com espera antes do próximo gatilho. */
     data class Retrying(val id: Long, val attempt: Int, val reason: String) : TriggerOutcome()
@@ -51,6 +58,7 @@ class ScheduledMessageCoordinator(
     private val maxAttempts: Int = DEFAULT_MAX_ATTEMPTS,
     private val retryBackoffMs: Long = DEFAULT_RETRY_BACKOFF_MS,
     private val staleClaimMs: Long = DEFAULT_STALE_CLAIM_MS,
+    private val echoWindowMs: Long = DEFAULT_ECHO_WINDOW_MS,
     private val log: (String) -> Unit = {}
 ) {
 
@@ -60,6 +68,11 @@ class ScheduledMessageCoordinator(
      * [fromSelf] vem da detecção de mensagem do próprio usuário: eco da nossa própria
      * resposta não pode virar gatilho, senão a entrega se realimenta.
      */
+    /** Última entrega aceita por conversa. Só memória: perder isto no reinício é inócuo. */
+    private val lastDelivery = java.util.concurrent.ConcurrentHashMap<String, Long>()
+
+    @Volatile private var lastStaleSweepAt = 0L
+
     suspend fun onConversationActivity(
         packageName: String,
         conversationSender: String,
@@ -70,11 +83,29 @@ class ScheduledMessageCoordinator(
 
         val at = clock()
 
+        // Defesa determinística contra a realimentação: logo depois de entregarmos algo
+        // a esta conversa, o WhatsApp reposta a notificação com a resposta anexada. Não
+        // dá para distinguir isso pelo conteúdo de forma confiável (ver OwnMessageHeuristic),
+        // mas dá pelo relógio — e o relógio não depende do formato da notificação.
+        val key = "$packageName|$conversationSender"
+        val since = at - (lastDelivery[key] ?: Long.MIN_VALUE / 2)
+        if (since in 0 until echoWindowMs) {
+            log("gatilho de $key ignorado: ${since}ms depois da nossa própria entrega")
+            return TriggerOutcome.EchoWindow
+        }
+
         // Antes de qualquer coisa: encerrar claims presos de um processo que morreu
         // enviando. Roda a cada gatilho de propósito — na conexão do listener, que era
         // o lugar anterior, o caso comum (serviço religado segundos depois) nunca era
         // alcançado, e a linha ficava "Enviando agora…" para sempre.
-        store.failStaleClaims(at, at - staleClaimMs)
+        // Com throttle: varrer a tabela inteira a cada notificação do WhatsApp custaria
+        // uma transação de escrita por mensagem recebida, e o índice da tabela é por
+        // (pacote, remetente, estado) — o predicado desta varredura não o usa.
+        if (at - lastStaleSweepAt >= staleClaimMs) {
+            lastStaleSweepAt = at
+            val encerradas = store.failStaleClaims(at, at - staleClaimMs)
+            if (encerradas > 0) log("$encerradas claim(s) preso(s) encerrado(s) como FAILED")
+        }
 
         val candidate = store.nextEligible(packageName, conversationSender, at)
             ?: return TriggerOutcome.NothingArmed
@@ -90,6 +121,12 @@ class ScheduledMessageCoordinator(
         // o conteúdo. Uma edição que caísse entre nextEligible e claim faria sair o
         // texto velho enquanto a tela mostrasse o novo.
         val row = store.byId(candidate.id) ?: return TriggerOutcome.Vanished
+        if (row.scheduledState != ScheduledState.CLAIMED) {
+            // A linha saiu de CLAIMED entre o claim e a releitura. Enviar assim mesmo
+            // seria despachar sobre uma linha que outro caminho já encerrou.
+            log("#${candidate.id} saiu de CLAIMED antes do envio (${row.scheduledState}) — não envia")
+            return TriggerOutcome.LostClaim
+        }
 
         val attempt = row.attempts
         val result = runCatching {
@@ -106,19 +143,25 @@ class ScheduledMessageCoordinator(
                     log("#${candidate.id} DESPACHADO mas o carimbo de SENT não pegou — linha saiu de CLAIMED")
                     return TriggerOutcome.SentNotRecorded(candidate.id)
                 }
+                lastDelivery[key] = clock()
                 log("#${candidate.id} despacho aceito pelo Android na tentativa $attempt")
                 TriggerOutcome.Sent(candidate.id)
             }
             is ReplyResult.Rejected -> {
                 if (result.consumesAttempt && attempt >= maxAttempts) {
-                    store.markFailed(candidate.id, clock(), result.reason)
+                    if (!store.markFailed(candidate.id, clock(), result.reason)) {
+                        log("#${candidate.id} não pôde ser marcado FAILED — linha saiu de CLAIMED")
+                    }
                     log("#${candidate.id} FALHOU em definitivo após $attempt tentativas: ${result.reason}")
                     TriggerOutcome.Failed(candidate.id, result.reason)
                 } else {
                     val retryAt = clock() + retryBackoffMs
-                    store.markRetryable(
-                        candidate.id, clock(), result.reason, retryAt, result.consumesAttempt
-                    )
+                    if (!store.markRetryable(
+                            candidate.id, clock(), result.reason, retryAt, result.consumesAttempt
+                        )
+                    ) {
+                        log("#${candidate.id} não pôde voltar para PENDING — linha saiu de CLAIMED")
+                    }
                     log("#${candidate.id} falhou na tentativa $attempt (${result.reason}) — nova chance após $retryAt")
                     TriggerOutcome.Retrying(candidate.id, attempt, result.reason)
                 }
@@ -143,5 +186,8 @@ class ScheduledMessageCoordinator(
 
         /** Claim mais velho que isto é resto de processo morto, não envio em andamento. */
         const val DEFAULT_STALE_CLAIM_MS = 5 * 60_000L
+
+        /** Janela em que uma notificação da mesma conversa é tratada como eco da entrega. */
+        const val DEFAULT_ECHO_WINDOW_MS = 20_000L
     }
 }

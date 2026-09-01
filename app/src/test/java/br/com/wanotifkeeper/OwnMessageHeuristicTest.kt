@@ -13,9 +13,13 @@ import org.junit.Test
 class OwnMessageHeuristicTest {
 
     @Test
-    fun `eco com mensagens do contato mais historico de resposta e nosso proprio envio`() {
-        assertTrue(
-            "é exatamente a forma do repost depois de responder por RemoteInput",
+    fun `mensagem do contato nao vira eco so porque alguem ja respondeu inline`() {
+        // Rodada 2 do concílio: EXTRA_REMOTE_INPUT_HISTORY é preenchido por QUALQUER
+        // resposta inline — inclusive o usuário respondendo pela gaveta — e persiste nos
+        // reposts. Tratá-lo como prova de eco faria a mensagem armada nunca sair, calada.
+        // A defesa contra o eco passou a ser a janela pós-entrega do coordenador.
+        assertFalse(
+            "uma resposta pela gaveta não pode suprimir os gatilhos daquela conversa",
             OwnMessageHeuristic.isOwnMessage(
                 hasMessages = true, lastMessageHasNoPerson = false, hasRemoteInputHistory = true
             )
@@ -23,7 +27,7 @@ class OwnMessageHeuristicTest {
     }
 
     @Test
-    fun `historico de resposta sozinho ja basta`() {
+    fun `historico de resposta sem style nenhum conta como eco`() {
         assertTrue(
             OwnMessageHeuristic.isOwnMessage(
                 hasMessages = false, lastMessageHasNoPerson = false, hasRemoteInputHistory = true

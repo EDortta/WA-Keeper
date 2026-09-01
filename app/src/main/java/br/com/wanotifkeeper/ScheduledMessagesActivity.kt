@@ -102,10 +102,17 @@ class ScheduledMessagesActivity : AppCompatActivity() {
      * frase diz exatamente isso. Falha aparece com o motivo, sem virar sucesso.
      */
     private fun describe(item: ScheduledMessageEntity): String = when (item.scheduledState) {
+        // O erro aparece mesmo com attempts == 0: a falha por "notificação sem ação de
+        // resposta" devolve a tentativa de propósito, e antes disso ela sumia da tela —
+        // que é justamente a impossibilidade que a #18 manda registrar.
         ScheduledState.PENDING -> {
             val base = "Aguardando a próxima mensagem de $sender"
-            if (item.attempts > 0) "$base · ${item.attempts} tentativa(s) sem sucesso: ${item.lastError}"
-            else base
+            when {
+                item.lastError != null && item.attempts > 0 ->
+                    "$base · ${item.attempts} tentativa(s) sem sucesso: ${item.lastError}"
+                item.lastError != null -> "$base · ainda não foi possível enviar: ${item.lastError}"
+                else -> base
+            }
         }
         ScheduledState.CLAIMED -> "Enviando agora…"
         // Não diz "entregue": o que o app sabe é que o Android aceitou despachar a
@@ -114,8 +121,14 @@ class ScheduledMessagesActivity : AppCompatActivity() {
         ScheduledState.SENT ->
             "Envio despachado ao WhatsApp em ${item.sentAt?.let { fmt.format(Date(it)) } ?: "—"}" +
                 " · o app não tem como confirmar a entrega"
-        ScheduledState.FAILED ->
-            "Não foi enviada após ${item.attempts} tentativa(s): ${item.lastError ?: "motivo não registrado"}"
+        // O claim preso é o único FAILED em que o app NÃO pode dizer "não foi enviada":
+        // o processo morreu durante o envio e não há como saber de que lado da chamada.
+        ScheduledState.FAILED -> when (item.lastError) {
+            STALE_CLAIM_REASON ->
+                "Interrompida: $STALE_CLAIM_REASON. Confira a conversa no WhatsApp antes de armar de novo."
+            null -> "Não foi enviada após ${item.attempts} tentativa(s): motivo não registrado"
+            else -> "Não foi enviada após ${item.attempts} tentativa(s): ${item.lastError}"
+        }
         ScheduledState.CANCELLED -> "Cancelada"
     }
 
@@ -150,7 +163,15 @@ class ScheduledMessagesActivity : AppCompatActivity() {
     }
 
     private fun remove(item: ScheduledMessageEntity) {
-        lifecycleScope.launch { dao.delete(item.id) }
+        // Confirmação porque é o mesmo botão que dizia "Cancelar" um estado atrás, e
+        // apagar uma linha encerrada é irreversível — some o registro do que aconteceu.
+        editDialog?.dismiss()
+        editDialog = AlertDialog.Builder(this)
+            .setTitle("Remover da lista?")
+            .setMessage("O registro desta mensagem some. O que já foi enviado não volta atrás.")
+            .setPositiveButton("Remover") { _, _ -> lifecycleScope.launch { dao.delete(item.id) } }
+            .setNegativeButton("Voltar", null)
+            .show()
     }
 
     override fun onDestroy() {

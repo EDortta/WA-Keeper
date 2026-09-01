@@ -53,7 +53,8 @@ intent ao WhatsApp"** — não "o WhatsApp entregou a mensagem ao destinatário"
 pede `SENT` só depois de "o mecanismo de resposta do Android/WhatsApp **aceitar** o
 envio", e é exatamente essa a fronteira que o código marca. O estado `SENT` deste
 primeiro corte quer dizer *aceito pelo mecanismo*, e o RESUME registra isso em vez de
-inflar a garantia. `PendingIntent.CanceledException` → `FAILED` com motivo registrado.
+inflar a garantia. `PendingIntent.CanceledException` → volta a `PENDING` com backoff, e só vira `FAILED`
+depois de esgotar as tentativas. Nunca vira sucesso.
 
 ### Consequência de projeto
 
@@ -63,11 +64,6 @@ remoto), o envio entra **atrás da interface `ReplySender`**, com a implementaç
 implementação sem tocar na máquina de estados nem na UI — a épica não cai junto.
 
 ## Esperando o operador
-
-0. **Correção de rumo registrada:** o RESUME dizia antes que
-   `PendingIntent.CanceledException` viraria `FAILED`. Não vira: vira `PENDING` com
-   backoff, e `FAILED` só depois de esgotar as tentativas. A frase estava errada e foi
-   corrigida aqui.
 
 1. **Verificar no aparelho** que a notificação do WhatsApp instalado ainda expõe uma
    `Notification.Action` com `remoteInputs` não vazio, e que disparar o `PendingIntent`
@@ -118,7 +114,32 @@ implementação sem tocar na máquina de estados nem na UI — a épica não cai
    renomear o contato desvincula a mensagem em silêncio; a concorrência do claim é
    provada por simulação determinística, não por threads reais.
 
-7. **Nada nesta branch foi executado em aparelho.** O que está provado é teste unitário
+7. **Achados vivos depois da rodada 2 — decisão do operador, sem terceira rodada:**
+   - `NO_ACTION` deixou de consumir tentativa, então uma build do WhatsApp que **nunca**
+     exponha resposta direta deixa a linha `PENDING` indefinidamente, tentando a cada
+     notificação (freada por 60 s de backoff). O erro fica visível na tela desde a
+     rodada 2, mas não há estado terminal para a impossibilidade **permanente**.
+     Trocar isso por um teto separado exige coluna nova — ficou fora desta janela.
+   - `consumesAttempt = false` é passado por `NotificationReplySender`, que precisa de
+     `Context` e `PendingIntent` e por isso **não é alcançável por teste JVM**. Apagar
+     esse argumento não quebra nenhum dos 47 testes.
+   - `ScheduledMessageTrigger.looksLikeOwnMessage` (a extração dos sinais da
+     `Notification`) continua sem teste; só a decisão pura tem.
+   - A concorrência do claim é provada por simulação determinística, nunca por threads
+     reais disputando a linha.
+   - A migration 4→5 não tem teste e não pode ter: `exportSchema = false` e o projeto
+     não tem `room-testing`. Foi conferida coluna por coluna por leitura, por duas
+     lentes independentes, e as duas passaram.
+   - Um salto do relógio de parede maior que 5 min (NTP após boot, ajuste manual) pode
+     marcar como `FAILED` uma linha `CLAIMED` legítima.
+   - `CanceledException` **consome** tentativa, embora seja tão transitória quanto o
+     `NO_ACTION` que passou a não consumir. Assimetria conhecida.
+   - `TriggerOutcome.Vanished` é ramo praticamente morto: o `DELETE` recusa linhas
+     `CLAIMED`, então a linha não some depois do claim.
+   - `remove()` apaga o registro de uma linha encerrada; agora com confirmação, mas
+     ainda irreversível.
+
+8. **Nada nesta branch foi executado em aparelho.** O que está provado é teste unitário
    JVM da máquina de estados e da idempotência do claim. Nenhuma afirmação de
    funcionamento em dispositivo foi feita.
 
@@ -165,6 +186,33 @@ pernas mutuamente excludentes; `FakeStore` divergente do SQL real em 4 pontos;
 `NO_ACTION` queimando cota de tentativas e matando a mensagem por condição transitória;
 textos de UI e KDoc alegando entrega que o mecanismo não prova; linha `FAILED` sem saída
 na interface; `AlertDialog` sem `dismiss`.
+
+**Rodada 2** — mesmas 3 lentes redirecionadas para o artefato **corrigido** (`49607f1`),
+cada achado classificado como *antigo* / *pré-existente recém-visto* / *introduzido pela
+correção da rodada 1*, como o contrato exige.
+
+| contagem | valor |
+|---|---|
+| achados levantados | **18** (6 por lente) |
+| introduzidos pela correção da rodada 1 | **11** |
+| pré-existentes recém-vistos | **3** |
+| antigos | **4** |
+| fechados nesta rodada | **9** |
+| viraram teste | **3** (2 novos no coordenador; 1 da heurística invertido, porque a premissa estava errada) |
+| vivos depois da rodada 2 → **vão ao operador** | **9** |
+
+A rodada 2 pegou o que uma auto-revisão não pegaria: a correção do BLOCKER da rodada 1
+tinha **desarmado** justamente o item do DoD que ela queria reforçar. Ao devolver a
+tentativa no caso `NO_ACTION`, o `attempts` voltava a zero — e a tela só mostrava o erro
+quando `attempts > 0`. A impossibilidade que a #18 manda registrar sumia da interface, e
+três KDocs afirmavam o contrário. Junto com isso: o texto de `FAILED` dizia *"Não foi
+enviada"* sobre exatamente o caso em que o app **não sabe** se saiu; e o histórico de
+`RemoteInput` virou curto-circuito incondicional, o que faria uma resposta do usuário
+pela gaveta de notificações suprimir os gatilhos daquela conversa para sempre, em
+silêncio.
+
+**Teto de 2 rodadas atingido. Não houve terceira rodada.** Os 9 achados vivos estão na
+lista abaixo, para o operador.
 
 - Cadência: a cada 5 commits aprovados, ou no delivery commit — o que vier primeiro.
 - Teto: 2 rodadas. Achado vivo depois da rodada 2 vai ao operador.

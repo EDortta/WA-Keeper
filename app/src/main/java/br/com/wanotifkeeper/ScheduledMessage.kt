@@ -23,6 +23,15 @@ import kotlinx.coroutines.flow.Flow
 enum class ScheduledState { PENDING, CLAIMED, SENT, FAILED, CANCELLED }
 
 /**
+ * Motivo gravado quando o processo morreu com a linha em `CLAIMED`.
+ *
+ * É constante e não frase solta porque a tela precisa **reconhecê-lo**: este é o único
+ * `FAILED` em que o app não pode dizer "não foi enviada" — ele não sabe.
+ */
+const val STALE_CLAIM_REASON =
+    "o app foi encerrado durante o envio — não é possível saber se a mensagem saiu"
+
+/**
  * Uma mensagem armada para uma conversa, entregue **uma única vez** quando aquela
  * conversa mandar a próxima mensagem.
  *
@@ -184,7 +193,7 @@ interface ScheduledMessageDao {
      */
     @Query(
         "UPDATE scheduled_messages SET state = 'FAILED', updatedAt = :now, " +
-            "lastError = 'o app foi encerrado durante o envio — não é possível saber se a mensagem saiu' " +
+            "lastError = '" + STALE_CLAIM_REASON + "' " +
             "WHERE state = 'CLAIMED' AND claimedAt < :staleBefore"
     )
     suspend fun failStaleClaims(now: Long, staleBefore: Long): Int
