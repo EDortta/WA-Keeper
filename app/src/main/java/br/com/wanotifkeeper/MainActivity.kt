@@ -38,9 +38,6 @@ class MainActivity : AppCompatActivity() {
 
         /** Janela em que o pedido do botão mantém o microfone aberto. */
         const val DIRECT_COMMAND_WINDOW_MS = 20_000L
-
-        /** Por quanto tempo a dica "Pode falar o comando" fica na tela. */
-        const val MIC_HINT_MS = 6_000L
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -124,6 +121,13 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updatePermissionBanner()
+        renderMicState()
+        Prefs.registerChangeListener(this, micPrefsListener)
+    }
+
+    override fun onPause() {
+        Prefs.unregisterChangeListener(this, micPrefsListener)
+        super.onPause()
     }
 
     /**
@@ -134,6 +138,13 @@ class MainActivity : AppCompatActivity() {
      * isso foi uma escolha, e o botão leva aos Ajustes em vez de desfazê-la em silêncio.
      */
     private fun onMicTapped() {
+        // Segundo toque com o microfone aberto: fecha. O operador pediu explicitamente poder
+        // desligar por toque em vez de esperar a janela expirar.
+        if (isDirectListening()) {
+            Prefs.setDirectCommandUntil(this, 0L)
+            return
+        }
+
         if (!Prefs.isVoiceCommandsEnabled(this)) {
             Toast.makeText(this, "Ative os comandos de voz nos Ajustes", Toast.LENGTH_LONG).show()
             startActivity(Intent(this, SettingsActivity::class.java))
@@ -156,16 +167,29 @@ class MainActivity : AppCompatActivity() {
 
         // O serviço observa esta chave e reage na hora — ver NotifListenerService.voicePrefsListener.
         Prefs.setDirectCommandUntil(this, System.currentTimeMillis() + DIRECT_COMMAND_WINDOW_MS)
-        showMicHint()
     }
 
-    private fun showMicHint() {
-        binding.tvMicHint.visibility = View.VISIBLE
-        binding.tvMicHint.removeCallbacks(hideMicHint)
-        binding.tvMicHint.postDelayed(hideMicHint, MIC_HINT_MS)
+    private fun isDirectListening() = Prefs.directCommandUntil(this) > System.currentTimeMillis()
+
+    /**
+     * A tela não adivinha o estado do microfone: ela lê a mesma chave que o serviço escreve.
+     * Por isso a dica some sozinha quando a sessão termina — inclusive quando termina por
+     * silêncio, sem ninguém tocar em nada.
+     */
+    private fun renderMicState() {
+        val ouvindo = isDirectListening()
+        binding.tvMicHint.visibility = if (ouvindo) View.VISIBLE else View.GONE
+        binding.tvMicHint.text =
+            if (ouvindo) "Ouvindo — fale, ou toque de novo para fechar" else ""
+        binding.btnMic.setImageResource(
+            if (ouvindo) android.R.drawable.ic_media_pause else android.R.drawable.ic_btn_speak_now
+        )
     }
 
-    private val hideMicHint = Runnable { binding.tvMicHint.visibility = View.GONE }
+    private val micPrefsListener =
+        android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == Prefs.KEY_DIRECT_COMMAND_UNTIL) runOnUiThread { renderMicState() }
+        }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,

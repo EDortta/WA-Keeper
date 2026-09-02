@@ -33,7 +33,9 @@ class VoiceCommandEngine(
     private val isSpeakerBusy: () -> Boolean,
     private val defaultAccountPkg: () -> String,
     private val onSpeechPackMissing: () -> Unit,
-    private val onRecognitionWorking: () -> Unit
+    private val onRecognitionWorking: () -> Unit,
+    /** Avisa que a sessão pedida pelo botão terminou — por fala entendida ou por silêncio. */
+    private val onDirectSessionEnded: () -> Unit = {}
 ) {
     private val main = Handler(Looper.getMainLooper())
     private var recognizer: SpeechRecognizer? = null
@@ -61,6 +63,18 @@ class VoiceCommandEngine(
     // ativação junto com o comando. Se um turno disser só a palavra, o turno seguinte (dentro
     // da janela) é tentado como comando mesmo sem repeti-la.
     @Volatile private var wakeWordArmedUntil = 0L
+
+    /**
+     * Sessão pedida pelo botão de microfone. É um modo, não um detalhe: no ciclo normal o motor
+     * REINICIA a escuta indefinidamente à espera da palavra de ativação, e cada reinício faz o
+     * serviço on-device tocar seu próprio aviso sonoro — o "plac..plic-pluc" que o operador
+     * descreveu como insuportável, e que nenhuma API pública silencia.
+     *
+     * Quando o toque é que abriu o microfone, não há o que ficar vigiando: a pessoa vai falar
+     * agora. Então é UMA sessão só — um aviso no início, um no fim — e acabou. Terminou sem
+     * fala? Não reinicia; o botão volta ao normal e quem decide tentar de novo é a pessoa.
+     */
+    @Volatile private var directMode = false
 
     @Volatile private var disambiguation: Disambiguation? = null
 
@@ -100,6 +114,7 @@ class VoiceCommandEngine(
      */
     fun armDirectCommand(restart: Boolean) {
         wakeWordArmedUntil = System.currentTimeMillis() + DIRECT_COMMAND_GRACE_MS
+        directMode = true
         noSpeechStreak = 0
         if (!active) {
             start()
@@ -111,6 +126,7 @@ class VoiceCommandEngine(
     fun stop() {
         if (!active) return
         active = false
+        directMode = false
         generation.incrementAndGet()
         disambiguation = null
         wakeWordArmedUntil = 0L
@@ -160,6 +176,18 @@ class VoiceCommandEngine(
             // Literal, não via Locale(...).toString() — isso devolve "pt_BR" (underscore, formato
             // legado do Java) e o reconhecedor ignora silenciosamente, caindo pro inglês do sistema.
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "pt-BR")
+            if (directMode) {
+                // Uma sessão só precisa esperar a pessoa levar o telefone à boca. Sem isto ela
+                // fecha por silêncio em ~2 s e, no modo direto, não há reinício para compensar.
+                // São dicas: o reconhecedor on-device pode ignorá-las, e o modo continua correto
+                // se ignorar — só menos paciente.
+                putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, DIRECT_MIN_SESSION_MS)
+                putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, DIRECT_SILENCE_MS)
+                putExtra(
+                    RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,
+                    DIRECT_SILENCE_MS
+                )
+            }
         }
         runCatching { recognizer?.startListening(intent) }
             .onSuccess { android.util.Log.d(TAG, "startListening ok (gen=$gen)") }
@@ -176,6 +204,23 @@ class VoiceCommandEngine(
         SpeechRecognizer.ERROR_NETWORK -> "NETWORK"
         SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "INSUFFICIENT_PERMISSIONS"
         else -> "código $error"
+    }
+
+    /**
+     * Fecha a sessão do botão. Não desliga o motor por conta própria: quem decide se o
+     * microfone continua aberto é o gate (movimento, timer manual), e é o serviço que sabe
+     * disso — por isso o aviso sai por [onDirectSessionEnded].
+     */
+    private fun endDirectSession() {
+        directMode = false
+        wakeWordArmedUntil = 0L
+        main.post { onDirectSessionEnded() }
+    }
+
+    /** Volta ao ciclo normal depois da sessão do botão, quando o gate segue aberto. */
+    fun resumeAfterDirect() {
+        if (!active || directMode) return
+        main.post { recreate(generation.get()) }
     }
 
     private fun relistenSoon(gen: Int, delayMs: Long = COOLDOWN_MS) {
@@ -216,7 +261,7 @@ class VoiceCommandEngine(
             val text = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()
             android.util.Log.d(TAG, "ouviu: \"$text\"")
             if (!text.isNullOrBlank()) handleTranscript(text)
-            relistenSoon(gen)
+            if (directMode) endDirectSession() else relistenSoon(gen)
         }
 
         override fun onError(error: Int) {
@@ -226,6 +271,14 @@ class VoiceCommandEngine(
                     // Nada reconhecível nesse ciclo — espaça o próximo reinício (e o aviso
                     // sonoro que vem junto) em vez de manter o mesmo ritmo pra sempre. Volta a
                     // ficar responsivo assim que algo for de fato ouvido (onResults zera).
+                    if (directMode) {
+                        // Modo direto: silêncio encerra, não reinicia. É esta linha que impede o
+                        // "plac..plic-pluc" de voltar quando o microfone foi aberto por toque.
+                        android.util.Log.d(TAG, "${errorName(error)} — sessão do botão encerrada sem fala")
+                        errorStreak = 0
+                        endDirectSession()
+                        return
+                    }
                     val delay = NO_SPEECH_BACKOFF_MS.getOrElse(noSpeechStreak) { NO_SPEECH_BACKOFF_MS.last() }
                     android.util.Log.d(TAG, "${errorName(error)} — reescutando em ${delay}ms (streak=$noSpeechStreak)")
                     noSpeechStreak++
@@ -397,6 +450,12 @@ class VoiceCommandEngine(
 
         /** Janela do comando pedido por botão: tocar, levar à boca e falar leva mais tempo. */
         private const val DIRECT_COMMAND_GRACE_MS = 20_000L
+
+        /** Duração mínima pedida à sessão do botão — tempo de levar o telefone à boca. */
+        private const val DIRECT_MIN_SESSION_MS = 8_000
+
+        /** Silêncio que encerra a fala no modo direto. */
+        private const val DIRECT_SILENCE_MS = 2_000
         /** Falado quando a frase era claramente pro Godofredo mas não bateu com nenhum comando —
          * silêncio nesse caso é o que Esteban relatou como "eu falo e não faz nada" ao vivo. */
         private const val NOT_UNDERSTOOD_MESSAGE =

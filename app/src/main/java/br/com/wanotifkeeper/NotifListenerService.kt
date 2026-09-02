@@ -96,7 +96,7 @@ class NotifListenerService : NotificationListenerService() {
             }
         }
 
-    private val voiceEngine by lazy {
+    private val voiceEngine: VoiceCommandEngine by lazy {
         VoiceCommandEngine(
             context = applicationContext,
             scope = scope,
@@ -112,6 +112,17 @@ class NotifListenerService : NotificationListenerService() {
             onRecognitionWorking = {
                 if (Prefs.isSpeechPackMissing(applicationContext)) {
                     Prefs.setSpeechPackMissing(applicationContext, false)
+                }
+            },
+            onDirectSessionEnded = {
+                // Zerar o pedido fecha o gate quando ele só estava aberto por causa do botão —
+                // e é o que faz a tela voltar ao normal, porque a MainActivity observa esta
+                // mesma chave. Se o gate seguir aberto por movimento, o ciclo normal recomeça.
+                directCommandArmedFor = 0L
+                Prefs.setDirectCommandUntil(applicationContext, 0L)
+                scope.launch {
+                    updateListeningState()
+                    if (voiceListening) voiceEngine.resumeAfterDirect()
                 }
             }
         )
