@@ -126,65 +126,7 @@ class NotifListenerService : NotificationListenerService() {
         data class Audio(val path: String) : PendingPlayback()
     }
 
-    /**
-     * Registro de um post recente. O `rowId` chega depois do INSERT, que roda em coroutine —
-     * por isso é um sinal e não um valor: o repost que traz a imagem pode chegar antes de a
-     * linha existir, e precisa esperar por ela em vez de desistir.
-     */
-    private class RecentPost(
-        @Volatile var ts: Long,
-        @Volatile var hasImage: Boolean,
-        val rowIdSignal: CompletableDeferred<Long> = CompletableDeferred()
-    )
-
-    private sealed class RepostDecision {
-        /** Primeira vez que este pacote+remetente+texto aparece na janela: fluxo normal. */
-        data class New(val record: RecentPost) : RepostDecision()
-
-        /** Repost puro, sem nada de novo: ignora. */
-        object Drop : RepostDecision()
-
-        /**
-         * Repost que traz imagem que o primeiro não tinha. O WhatsApp costuma publicar o
-         * rótulo ("📷 Foto") e só depois atualizar a notificação com o bitmap/URI, com texto
-         * IDÊNTICO. Descartar essa segunda notificação como repost perdia a única imagem que
-         * a notificação jamais ofereceu — e inserir uma linha nova mostraria a mensagem
-         * duplicada na tela. O certo é anexar a imagem à linha que já existe.
-         */
-        data class AttachImage(val record: RecentPost) : RepostDecision()
-    }
-
-    private val recentPosts = ConcurrentHashMap<String, RecentPost>()
-
-    /**
-     * Classifica pacote+remetente+texto idênticos vistos há pouco (repost do WhatsApp).
-     *
-     * `hasImageContent` é imagem DE VERDADE na notificação (bitmap ou URI), nunca o palpite
-     * pelo texto: o rótulo "📷 Foto" casa a heurística já na primeira notificação, e usá-lo
-     * aqui faria a segunda — a que enfim traz a imagem — ser descartada.
-     */
-    private fun classifyRepost(
-        pkg: String,
-        sender: String,
-        text: String,
-        hasImageContent: Boolean
-    ): RepostDecision {
-        val now = System.currentTimeMillis()
-        val key = "$pkg|$sender|$text"
-        recentPosts.entries.removeAll { now - it.value.ts > DEDUP_WINDOW_MS }
-        val prev = recentPosts[key]
-        if (prev == null || now - prev.ts >= DEDUP_WINDOW_MS) {
-            val record = RecentPost(now, hasImageContent)
-            recentPosts[key] = record
-            return RepostDecision.New(record)
-        }
-        prev.ts = now
-        if (hasImageContent && !prev.hasImage) {
-            prev.hasImage = true
-            return RepostDecision.AttachImage(prev)
-        }
-        return RepostDecision.Drop
-    }
+    private val repostGuard = RepostGuard()
 
     /** Copia a imagem que veio na própria notificação (bitmap ou URI), se veio alguma. */
     private suspend fun imagePathFromNotification(
@@ -244,6 +186,14 @@ class NotifListenerService : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         if (sbn.packageName !in watchedPackages) return
 
+        // O resumo do grupo de notificações não é mensagem: é a linha que o WhatsApp publica
+        // para representar as demais. Quando há UMA conversa com UMA mensagem não lida, ele
+        // costuma repetir o próprio texto da mensagem em vez de "Novas mensagens: N" (que o
+        // NoiseFilter pegaria) — e aí a mesma mensagem chega duas vezes, pelo resumo e pela
+        // notificação filha, sendo lida em voz alta duas vezes e guardada duas vezes.
+        // Confirmado no aparelho: `flags=GROUP_SUMMARY` com `android.title=WA Business`.
+        if ((sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) return
+
         val extras = sbn.notification.extras ?: return
         val rawTitle = extras.getString(Notification.EXTRA_TITLE) ?: return
         // BigTextStyle traz o texto completo; EXTRA_TEXT vem truncado.
@@ -255,22 +205,7 @@ class NotifListenerService : NotificationListenerService() {
 
         if (NoiseFilter.isNoise(title, text)) return
 
-        // O WhatsApp costuma repostar/atualizar a mesma notificação poucos ms depois, com
-        // texto idêntico — sem isso, toda mensagem seria lida em voz alta e guardada em dobro.
         cacheReplyAction(sbn, title)
-
-        val isVoice = MediaVault.looksLikeVoiceMessage(text)
-
-        // Leitura em voz alta do TEXTO: só quando em movimento, com o switch da conta ligado,
-        // e apenas para mensagens de texto — mensagem de voz é tratada pelo player de áudio.
-        if (!isVoice && Prefs.isTtsEnabled(applicationContext, sbn.packageName) && motion.isInMotion()) {
-            if (callDetector.isInCall()) {
-                synchronized(pendingDuringCall) { pendingDuringCall.add(PendingPlayback.Text(title, text.trim())) }
-                beeper().beep()
-            } else {
-                speak(title, text.trim())
-            }
-        }
 
         val picture = runCatching {
             @Suppress("DEPRECATION")
@@ -283,20 +218,28 @@ class NotifListenerService : NotificationListenerService() {
         val isGroup = extras.getBoolean("android.isGroupConversation", false)
         val isImage = picture != null || messageImage != null ||
             MediaVault.looksLikeImageMessage(text, isGroup)
+        val isVoice = MediaVault.looksLikeVoiceMessage(text)
 
-        // O dedup roda DEPOIS de extrair a imagem, de propósito: sem isso, a segunda
-        // notificação — a que o WhatsApp publica com o bitmap/URI, texto idêntico — seria
-        // descartada como repost e a imagem se perderia. Ver RepostDecision.AttachImage.
-        val decision = classifyRepost(
-            sbn.packageName, title, text.trim(),
-            hasImageContent = picture != null || messageImage != null
+        // A extração da imagem vem ANTES do dedup de propósito: a segunda notificação — a que
+        // o WhatsApp publica com o bitmap/URI, texto idêntico — precisa ser reconhecida como
+        // "repost que traz imagem" e não como repost qualquer. Ver Decision.AttachImage.
+        //
+        // E o dedup inteiro vem ANTES de falar e de guardar, que é o que impede a mesma
+        // mensagem de ser lida em voz alta duas vezes.
+        val decision = repostGuard.classify(
+            packageName = sbn.packageName,
+            sender = title,
+            text = text.trim(),
+            messageTime = lastMessageTimestamp(sbn.notification),
+            hasImageContent = picture != null || messageImage != null,
+            now = System.currentTimeMillis()
         )
         val record = when (decision) {
-            is RepostDecision.Drop -> return
-            is RepostDecision.AttachImage -> {
+            is RepostGuard.Decision.Drop -> return
+            is RepostGuard.Decision.AttachImage -> {
                 scope.launch {
                     val rowId = withTimeoutOrNull(REPOST_ROWID_WAIT_MS) {
-                        decision.record.rowIdSignal.await()
+                        decision.record.rowId.await()
                     } ?: return@launch
                     val path = imagePathFromNotification(picture, messageImage, sbn.postTime)
                     if (path != null) {
@@ -307,7 +250,18 @@ class NotifListenerService : NotificationListenerService() {
                 }
                 return
             }
-            is RepostDecision.New -> decision.record
+            is RepostGuard.Decision.New -> decision.record
+        }
+
+        // Leitura em voz alta do TEXTO: só quando em movimento, com o switch da conta ligado,
+        // e apenas para mensagens de texto — mensagem de voz é tratada pelo player de áudio.
+        if (!isVoice && Prefs.isTtsEnabled(applicationContext, sbn.packageName) && motion.isInMotion()) {
+            if (callDetector.isInCall()) {
+                synchronized(pendingDuringCall) { pendingDuringCall.add(PendingPlayback.Text(title, text.trim())) }
+                beeper().beep()
+            } else {
+                speak(title, text.trim())
+            }
         }
 
         scope.launch {
@@ -323,7 +277,7 @@ class NotifListenerService : NotificationListenerService() {
                     imagePath = imagePath
                 )
             )
-            record.rowIdSignal.complete(rowId)
+            record.rowId.complete(rowId)
 
             // Algumas versões do WhatsApp não expõem bitmap/URI na notificação.
             // Nesses casos tentamos copiar a imagem recém-baixada do diretório oficial de mídia.
@@ -371,6 +325,19 @@ class NotifListenerService : NotificationListenerService() {
     /**
      * MessagingStyle pode carregar uma URI da imagem, mesmo quando EXTRA_PICTURE não existe.
      */
+    /**
+     * Horário da última mensagem do `MessagingStyle` — a identidade estável que o
+     * [RepostGuard] usa. Não muda entre reposts da mesma conversa, e é diferente para cada
+     * mensagem, então distingue "o WhatsApp repostou" de "chegou outra mensagem".
+     */
+    private fun lastMessageTimestamp(notification: Notification): Long? = runCatching {
+        @Suppress("DEPRECATION")
+        val bundles = notification.extras.getParcelableArray(Notification.EXTRA_MESSAGES)
+            ?: return null
+        Notification.MessagingStyle.Message.getMessagesFromBundleArray(bundles)
+            .lastOrNull()?.timestamp?.takeIf { it > 0L }
+    }.getOrNull()
+
     private fun extractMessagingStyleImage(notification: Notification, postTime: Long): NotificationImage? = runCatching {
         @Suppress("DEPRECATION")
         val bundles = notification.extras.getParcelableArray(Notification.EXTRA_MESSAGES) ?: return null
