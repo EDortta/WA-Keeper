@@ -49,6 +49,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Cancelar" />
+
+            <Button
+                android:id="@+id/btnReuse"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reutilizar" />
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

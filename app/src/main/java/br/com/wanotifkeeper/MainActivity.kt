@@ -235,7 +235,14 @@ class NotifAdapter(
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = getItem(position)
         holder.sender.text = item.sender
-        holder.text.text = if (item.imagePath != null) "📷 ${item.text}" else item.text
+        // O marcador de imagem só entra quando o texto ainda não tem um: agora que a captura
+        // funciona, o rótulo do próprio WhatsApp já vem como "📷 Foto" e o prefixo produzia
+        // "📷 📷 Foto" na lista.
+        holder.text.text = when {
+            item.imagePath == null -> item.text
+            MediaHints.startsWithImageEmoji(item.text) -> item.text
+            else -> "📷 ${item.text}"
+        }
         holder.time.text = fmt.format(Date(item.timestamp))
 
         holder.card.setOnClickListener { onClick(item) }

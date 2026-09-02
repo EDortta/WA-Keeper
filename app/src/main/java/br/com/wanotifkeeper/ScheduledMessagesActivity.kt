@@ -92,6 +92,10 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             row.btnCancel.text = if (item.isEditable) "Cancelar" else "Remover"
             row.btnEdit.setOnClickListener { promptEdit(item) }
             row.btnCancel.setOnClickListener { if (item.isEditable) cancel(item) else remove(item) }
+            // Reutilizar só faz sentido para linha encerrada: a que ainda está PENDING já
+            // vai sair, e a que está CLAIMED pode estar em voo.
+            row.btnReuse.visibility = if (encerrada) View.VISIBLE else View.GONE
+            row.btnReuse.setOnClickListener { reuse(item) }
             binding.containerArmed.addView(row.root)
         }
     }
@@ -160,6 +164,24 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             }
             .setNegativeButton("Voltar", null)
             .show()
+    }
+
+    /**
+     * Reutilizar: devolve o texto ao campo de escrita em vez de armar de novo direto.
+     *
+     * Dois motivos para não inserir a linha na hora. O primeiro é que reaproveitar quase
+     * sempre vem junto de ajustar uma palavra — sem passar pelo campo, seria preciso armar
+     * e logo editar. O segundo é que armar por um toque só, a partir de uma linha antiga,
+     * é o caminho mais fácil para acabar com duas mensagens armadas para a mesma conversa
+     * sem perceber — e se isso é desejável ainda é decisão em aberto (#18, "mensagens
+     * encadeadas"). Assim quem decide armar continua sendo quem toca em "Armar".
+     */
+    private fun reuse(item: ScheduledMessageEntity) {
+        binding.etMessage.setText(item.text)
+        binding.etMessage.setSelection(item.text.length)
+        binding.etMessage.requestFocus()
+        binding.scroller.smoothScrollTo(0, 0)
+        Toast.makeText(this, "Texto copiado. Ajuste se quiser e toque em Armar.", Toast.LENGTH_SHORT).show()
     }
 
     private fun remove(item: ScheduledMessageEntity) {

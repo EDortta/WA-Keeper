@@ -65,6 +65,10 @@ object MediaHints {
 
     fun looksLikeVoiceMessage(text: String): Boolean = VOICE_HINT.containsMatchIn(text)
 
+    /** O texto já começa com o emoji de mídia que o WhatsApp põe no rótulo. */
+    fun startsWithImageEmoji(text: String): Boolean =
+        IMAGE_EMOJI_PREFIX.containsMatchIn(normalize(text))
+
     /**
      * @param isGroup a notificação declara ser de conversa em grupo. Só nesse caso o prefixo
      *   "Fulano: " é removido antes de testar o rótulo — ver [SENDER_PREFIX].
