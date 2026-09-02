@@ -13,7 +13,18 @@ que dispara o concílio a cada 5 (ver `README.md` desta pasta).
 
 | # | commit | o quê | crítica por commit | conta p/ concílio |
 |---|---|---|---|---|
-| — | — | (nada ainda) | — | 0/5 |
+| 1 | `a29b3d5` | passo zero: viabilidade do `RemoteInput`+`PendingIntent` decidida por leitura | auto-crítica: conclusão é de leitura, não de aparelho — registrado como pendência explícita, sem alegar funcionamento | 1/5 |
+| 2 | `08abf31` | tabela `scheduled_messages` + DAO com claim atômico + `ScheduledMessageStore` + migration 4→5 | auto-crítica: (a) índice do `@Entity` e o da migration precisam ter o **mesmo nome**, senão o Room recusa o banco migrado — nomeado `index_scheduled_messages_conversation` nos dois lados; (b) compilação ainda não verificada, o build vem junto com o commit do coordenador+testes | 2/5 |
+| 3 | `a5bc9e5` | `ReplySender` (interface) + `NotificationReplySender` + `ReplyActionRegistry` extraído do listener | auto-crítica: toca `NotifListenerService.kt`, que é da frente B — o diff foi mantido em 3 trechos contíguos (campo removido, 2 métodos viram 1 delegação, 1 linha em `onNotificationRemoved`), longe do `onNotificationPosted` que a frente B mexe. Sem mudança de comportamento neste commit | 3/5 |
+| 4 | `7f5c20e` | `ScheduledMessageCoordinator` + `ScheduledMessageTrigger` + gancho no listener + 12 testes JVM | **build verde**: `:app:testDebugUnitTest` → 35 testes, 0 falhas (12 novos). O KSP do Room valida o SQL do DAO em tempo de compilação, então as queries do claim estão conferidas. Auto-crítica: (a) a corrida do claim é reproduzida por hook determinístico, não por threads — o que se prova é a **semântica** do `UPDATE` condicional, e o Room/SQLite é quem garante a serialização de verdade; (b) `looksLikeOwnMessage` depende de `MessagingStyle` e **não tem teste** — precisa de Robolectric ou aparelho, ficou como pendência | 4/5 |
+| 5 | `36a8d63` | UI: `ScheduledMessagesActivity` (armar + listar + editar + cancelar) e botão na `DetailActivity` | **build verde**: `:app:assembleDebug`. Auto-crítica: (a) a lista é **por conversa**, não global — a #18 pede "a partir da conversa", mas uma lista geral de tudo que está armado seria útil e ficou fora; (b) `render()` recria as views a cada emissão do Flow, aceitável para punhado de linhas, ruim se virar dezenas; (c) editar/cancelar dependem do `UPDATE ... WHERE state='PENDING'` devolver 0 quando tarde demais — a UI avisa em vez de mentir; (d) **nada disto foi visto rodando**, não há aparelho | 5/5 → concílio |
+| — | `690dd66` | estado da frente A no relatório da rodada (docs) | não conta para o concílio | — |
+| 6 | `49607f1` | **correções da rodada 1 do concílio** — 11 achados fechados, 10 testes novos | build verde: 45 testes, 0 falhas; `assembleDebug` ok. Auto-crítica: o BLOCKER foi fechado **mudando a semântica** (claim preso vira `FAILED` em vez de voltar à fila) — é a escolha conservadora, e custa uma mensagem não enviada quando o processo morre antes do envio. Registrado como decisão, não como acerto óbvio | rodada 2 |
+| 7 | (este) | **correções da rodada 2** — 9 achados fechados, incluindo 3 regressões que a própria rodada 1 introduziu | build verde: 47 testes, 0 falhas; `assembleDebug` ok. Auto-crítica: a rodada 1 fechou o BLOCKER e, no mesmo movimento, apagou da tela a impossibilidade que a #18 manda registrar — ninguém teria visto isso sem a segunda rodada contra o artefato corrigido. A defesa contra o eco deixou de ser heurística de conteúdo e passou a ser janela de tempo pós-entrega, que não depende do formato da notificação | entrega |
+
+Nota: a branch estava 3 commits atrás de `development` (só docs de coordenação).
+Fast-forward `cf9779a..b55378b` aplicado no próprio worktree para que `RESUME.md` e
+este ledger existissem na branch. Nenhum merge de trabalho, nenhum push.
 
 ## Frente B — EPIC 3 (#17/#19) · `feature/epic-3-image-retention`
 

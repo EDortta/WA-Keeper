@@ -1,7 +1,9 @@
 package br.com.wanotifkeeper
 
+import android.Manifest
 import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.Settings
 import android.text.Editable
@@ -11,7 +13,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
@@ -27,6 +32,13 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
+
+    private companion object {
+        const val REQ_MIC = 7301
+
+        /** Janela em que o pedido do botão mantém o microfone aberto. */
+        const val DIRECT_COMMAND_WINDOW_MS = 20_000L
+    }
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: NotifAdapter
@@ -75,6 +87,8 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
+        binding.btnMic.setOnClickListener { onMicTapped() }
+
         // Banner de permissão
         updatePermissionBanner()
         binding.bannerPermission.setOnClickListener {
@@ -107,6 +121,87 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updatePermissionBanner()
+        renderMicState()
+        Prefs.registerChangeListener(this, micPrefsListener)
+    }
+
+    override fun onPause() {
+        Prefs.unregisterChangeListener(this, micPrefsListener)
+        super.onPause()
+    }
+
+    /**
+     * Botão de microfone: caminho direto para falar um comando, sem depender de a palavra de
+     * ativação ser ouvida corretamente pelo reconhecedor on-device.
+     *
+     * Não liga o interruptor mestre por conta própria: se os comandos de voz estão desligados,
+     * isso foi uma escolha, e o botão leva aos Ajustes em vez de desfazê-la em silêncio.
+     */
+    private fun onMicTapped() {
+        // Segundo toque com o microfone aberto: fecha. O operador pediu explicitamente poder
+        // desligar por toque em vez de esperar a janela expirar.
+        if (isDirectListening()) {
+            Prefs.setDirectCommandUntil(this, 0L)
+            return
+        }
+
+        if (!Prefs.isVoiceCommandsEnabled(this)) {
+            Toast.makeText(this, "Ative os comandos de voz nos Ajustes", Toast.LENGTH_LONG).show()
+            startActivity(Intent(this, SettingsActivity::class.java))
+            return
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), REQ_MIC)
+            return
+        }
+
+        if (!isListenerEnabled()) {
+            // O motor de voz vive dentro do NotificationListenerService: sem o acesso a
+            // notificações concedido, o serviço não está de pé e não há quem ouça.
+            Toast.makeText(this, "Ative o acesso a notificações para usar comandos de voz", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // O serviço observa esta chave e reage na hora — ver NotifListenerService.voicePrefsListener.
+        Prefs.setDirectCommandUntil(this, System.currentTimeMillis() + DIRECT_COMMAND_WINDOW_MS)
+    }
+
+    private fun isDirectListening() = Prefs.directCommandUntil(this) > System.currentTimeMillis()
+
+    /**
+     * A tela não adivinha o estado do microfone: ela lê a mesma chave que o serviço escreve.
+     * Por isso a dica some sozinha quando a sessão termina — inclusive quando termina por
+     * silêncio, sem ninguém tocar em nada.
+     */
+    private fun renderMicState() {
+        val ouvindo = isDirectListening()
+        binding.tvMicHint.visibility = if (ouvindo) View.VISIBLE else View.GONE
+        binding.tvMicHint.text =
+            if (ouvindo) "Ouvindo — fale, ou toque de novo para fechar" else ""
+        binding.btnMic.setImageResource(
+            if (ouvindo) android.R.drawable.ic_media_pause else android.R.drawable.ic_btn_speak_now
+        )
+    }
+
+    private val micPrefsListener =
+        android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == Prefs.KEY_DIRECT_COMMAND_UNTIL) runOnUiThread { renderMicState() }
+        }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQ_MIC &&
+            grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED
+        ) {
+            onMicTapped()
+        }
     }
 
     private fun updatePermissionBanner() {
@@ -164,7 +259,14 @@ class NotifAdapter(
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = getItem(position)
         holder.sender.text = item.sender
-        holder.text.text = if (item.imagePath != null) "📷 ${item.text}" else item.text
+        // O marcador de imagem só entra quando o texto ainda não tem um: agora que a captura
+        // funciona, o rótulo do próprio WhatsApp já vem como "📷 Foto" e o prefixo produzia
+        // "📷 📷 Foto" na lista.
+        holder.text.text = when {
+            item.imagePath == null -> item.text
+            MediaHints.startsWithImageEmoji(item.text) -> item.text
+            else -> "📷 ${item.text}"
+        }
         holder.time.text = fmt.format(Date(item.timestamp))
 
         holder.card.setOnClickListener { onClick(item) }

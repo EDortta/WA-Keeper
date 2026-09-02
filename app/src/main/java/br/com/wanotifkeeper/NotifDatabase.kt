@@ -37,6 +37,9 @@ interface NotifDao {
     @Insert
     suspend fun insert(notif: NotifEntity): Long
 
+    @Query("UPDATE notifications SET imagePath = :path WHERE id = :id")
+    suspend fun setImagePath(id: Long, path: String)
+
     @Query("UPDATE notifications SET audioPath = :path WHERE id = :id")
     suspend fun setAudioPath(id: Long, path: String)
 
@@ -113,13 +116,14 @@ interface SettingsDao {
 }
 
 @Database(
-    entities = [NotifEntity::class, ConversationSettings::class],
-    version = 4,
+    entities = [NotifEntity::class, ConversationSettings::class, ScheduledMessageEntity::class],
+    version = 5,
     exportSchema = false
 )
 abstract class NotifDatabase : RoomDatabase() {
     abstract fun dao(): NotifDao
     abstract fun settings(): SettingsDao
+    abstract fun scheduled(): ScheduledMessageDao
 
     companion object {
         @Volatile private var INSTANCE: NotifDatabase? = null
@@ -149,12 +153,41 @@ abstract class NotifDatabase : RoomDatabase() {
             }
         }
 
+        // v5: mensagens armadas para o próximo contato (EPIC 4 / #18)
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS scheduled_messages (" +
+                        "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
+                        "packageName TEXT NOT NULL, " +
+                        "sender TEXT NOT NULL, " +
+                        "text TEXT NOT NULL, " +
+                        "state TEXT NOT NULL, " +
+                        "createdAt INTEGER NOT NULL, " +
+                        "updatedAt INTEGER NOT NULL, " +
+                        "claimedAt INTEGER, " +
+                        "sentAt INTEGER, " +
+                        "attempts INTEGER NOT NULL, " +
+                        "lastError TEXT, " +
+                        "nextAttemptAt INTEGER NOT NULL, " +
+                        "triggerNotificationKey TEXT, " +
+                        "triggeredAt INTEGER)"
+                )
+                // O gatilho consulta sempre por (pacote, remetente, estado): sem o índice,
+                // toda notificação do WhatsApp viraria varredura da tabela inteira.
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_scheduled_messages_conversation " +
+                        "ON scheduled_messages (packageName, sender, state)"
+                )
+            }
+        }
+
         fun get(ctx: Context): NotifDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(
                 ctx.applicationContext,
                 NotifDatabase::class.java,
                 "wanotif.db"
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build().also { INSTANCE = it }
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build().also { INSTANCE = it }
         }
     }
 }

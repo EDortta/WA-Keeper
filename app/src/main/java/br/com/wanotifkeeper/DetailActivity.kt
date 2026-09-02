@@ -37,8 +37,15 @@ class DetailActivity : AppCompatActivity() {
             binding.tvTime.text = fmt.format(Date(item.timestamp))
             binding.tvText.text = item.text
 
+            // EPIC 4 (#18): a partir da conversa, armar uma mensagem para o próximo contato.
+            binding.btnSchedule.setOnClickListener {
+                startActivity(
+                    ScheduledMessagesActivity.intent(this@DetailActivity, item.packageName, item.sender)
+                )
+            }
+
             val file = item.imagePath?.let(::File)
-            val bmp = file?.takeIf { it.exists() }?.let { BitmapFactory.decodeFile(it.absolutePath) }
+            val bmp = file?.takeIf { it.exists() && it.length() > 0L }?.let(::decodeSampled)
             when {
                 bmp != null -> {
                     binding.imgAttachment.setImageBitmap(bmp)
@@ -55,6 +62,21 @@ class DetailActivity : AppCompatActivity() {
             }
         }
     }
+
+    /**
+     * Antes da EPIC 3, `imagePath` só continha o bitmap da notificação, que o sistema já
+     * entregava reduzido. Agora contém o arquivo ORIGINAL do WhatsApp: `decodeFile` cru sobre
+     * uma foto de 12 MP aloca dezenas de MB de uma vez, sem `largeHeap` no manifesto.
+     */
+    private fun decodeSampled(file: File): android.graphics.Bitmap? = runCatching {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(file.absolutePath, bounds)
+        var sample = 1
+        while (bounds.outWidth / sample > MAX_IMAGE_PX || bounds.outHeight / sample > MAX_IMAGE_PX) {
+            sample *= 2
+        }
+        BitmapFactory.decodeFile(file.absolutePath, BitmapFactory.Options().apply { inSampleSize = sample })
+    }.getOrNull()
 
     private fun playAudio(file: File) {
         audioPreview?.release()
@@ -75,12 +97,21 @@ class DetailActivity : AppCompatActivity() {
         audioPreview = null
     }
 
-    private fun looksLikeMedia(text: String) = Regex(
-        "^(📷|🎥|🎤)|imagem|foto|imagen|photo|image|v[ií]deo|audio|áudio",
-        RegexOption.IGNORE_CASE
-    ).containsMatchIn(text.take(40))
+    /**
+     * S3 do concílio: aqui vivia a regra frouxa que o [MediaHints] foi criado para eliminar
+     * (`containsMatchIn` sobre "foto|imagem|…"), na mesma branch que a eliminou do caminho de
+     * captura. Ela não dispara varredura, mas afirmava "imagem não capturada" para qualquer
+     * mensagem que mencionasse a palavra — e era a regra que um mantenedor encontraria
+     * primeiro e replicaria. Passa a ser a mesma regra do resto do app.
+     */
+    private fun looksLikeMedia(text: String) =
+        MediaHints.looksLikeImageMessage(text, isGroup = true) ||
+            MediaHints.looksLikeVoiceMessage(text)
 
     companion object {
         const val EXTRA_ID = "notif_id"
+
+        /** Teto de lado maior ao decodificar a imagem, para não estourar a heap com foto original. */
+        private const val MAX_IMAGE_PX = 2048
     }
 }

@@ -4,40 +4,56 @@ import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.RemoteInput
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.ConcurrentHashMap
 
 class NotifListenerService : NotificationListenerService() {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    // Sem o handler, uma exceção não tratada num filho de `launch` sobe para o handler de
+    // thread padrão e derruba o app — SupervisorJob protege os irmãos, não o processo.
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO + CoroutineExceptionHandler { _, _ -> }
+    )
 
     companion object {
         private const val TAG = "WAK-ReplyAction"
         private const val TAG_VOICE_GATE = "WAK-VoiceGate"
         private const val DEDUP_WINDOW_MS = 2000L
 
+        /**
+         * Quanto o repost que traz a imagem espera pelo rowId da primeira notificação.
+         * O INSERT roda em coroutine, então a segunda notificação pode chegar antes de a
+         * linha existir; sem espera, a imagem se perderia por uma corrida de milissegundos.
+         */
+        private const val REPOST_ROWID_WAIT_MS = 5000L
+
         /** Menor SDK em que SpeechRecognizer.createOnDeviceSpeechRecognizer existe. */
         private const val MIN_SDK_VOICE_COMMANDS = Build.VERSION_CODES.S // 31
         private const val VOICE_GATE_CHECK_MS = 7000L
         private const val VOICE_CHANNEL_ID = "voice_commands"
         private const val NOTIF_ID_VOICE_LISTENING = 42
+
+        /** Distância máxima entre o horário da mensagem do MessagingStyle e o postTime. */
+        private const val MESSAGE_TS_TOLERANCE_MS = 60_000L
     }
 
     private val watchedPackages = setOf(
@@ -62,6 +78,11 @@ class NotifListenerService : NotificationListenerService() {
     // Janela de ativação dos comandos de voz: microfone só liga aqui dentro (ver runVoiceGateLoop).
     @Volatile private var voiceListening = false
 
+    // Qual pedido do botão de microfone já foi armado. Guardado por VALOR (o instante-limite do
+    // pedido) e não por booleano: assim um toque novo, que grava um limite novo, rearma; e os
+    // tiques do gate dentro da mesma janela não rearmam.
+    @Volatile private var directCommandArmedFor = 0L
+
     // Sem isso, desligar o switch em Ajustes só surtia efeito no próximo tick do
     // runVoiceGateLoop (até VOICE_GATE_CHECK_MS depois) — o microfone/beep continuava indo
     // nesse meio-tempo, e era fácil confundir com o recognizer não desligando de verdade.
@@ -69,13 +90,13 @@ class NotifListenerService : NotificationListenerService() {
     // fraca, um listener só em lambda local seria coletado e pararia de disparar.
     private val voicePrefsListener =
         SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == Prefs.KEY_VOICE_COMMANDS_ENABLED) {
-                android.util.Log.d(TAG_VOICE_GATE, "voice_commands_enabled mudou — reavaliando na hora")
+            if (key == Prefs.KEY_VOICE_COMMANDS_ENABLED || key == Prefs.KEY_DIRECT_COMMAND_UNTIL) {
+                android.util.Log.d(TAG_VOICE_GATE, "$key mudou — reavaliando na hora")
                 scope.launch { updateListeningState() }
             }
         }
 
-    private val voiceEngine by lazy {
+    private val voiceEngine: VoiceCommandEngine by lazy {
         VoiceCommandEngine(
             context = applicationContext,
             scope = scope,
@@ -92,6 +113,17 @@ class NotifListenerService : NotificationListenerService() {
                 if (Prefs.isSpeechPackMissing(applicationContext)) {
                     Prefs.setSpeechPackMissing(applicationContext, false)
                 }
+            },
+            onDirectSessionEnded = {
+                // Zerar o pedido fecha o gate quando ele só estava aberto por causa do botão —
+                // e é o que faz a tela voltar ao normal, porque a MainActivity observa esta
+                // mesma chave. Se o gate seguir aberto por movimento, o ciclo normal recomeça.
+                directCommandArmedFor = 0L
+                Prefs.setDirectCommandUntil(applicationContext, 0L)
+                scope.launch {
+                    updateListeningState()
+                    if (voiceListening) voiceEngine.resumeAfterDirect()
+                }
             }
         )
     }
@@ -105,27 +137,24 @@ class NotifListenerService : NotificationListenerService() {
         data class Audio(val path: String) : PendingPlayback()
     }
 
-    // Ação de "resposta rápida" que o próprio WhatsApp publica na notificação — guardada
-    // pra um futuro comando de voz reenviar sem precisar de API nenhuma do WhatsApp.
-    // Só em memória: um PendingIntent não sobrevive (nem faria sentido sobreviver) a um
-    // reinício do processo. Chave "pacote|remetente" pra não confundir contas.
-    private val replyActions = ConcurrentHashMap<String, CachedReply>()
+    private val repostGuard = RepostGuard()
 
-    private class CachedReply(
-        val actionIntent: PendingIntent,
-        val remoteInputs: Array<RemoteInput>,
-        val resultKey: String,
-        val notificationKey: String
-    )
-
-    private val recentPosts = ConcurrentHashMap<String, Long>()
-
-    /** true se pacote+remetente+texto idênticos já passaram por aqui há pouco (repost do WhatsApp). */
-    private fun isDuplicateRepost(pkg: String, sender: String, text: String): Boolean {
-        val now = System.currentTimeMillis()
-        recentPosts.entries.removeAll { now - it.value > DEDUP_WINDOW_MS }
-        val lastSeen = recentPosts.put("$pkg|$sender|$text", now)
-        return lastSeen != null && now - lastSeen < DEDUP_WINDOW_MS
+    /** Copia a imagem que veio na própria notificação (bitmap ou URI), se veio alguma. */
+    private suspend fun imagePathFromNotification(
+        picture: Bitmap?,
+        messageImage: NotificationImage?,
+        postTime: Long
+    ): String? {
+        picture?.let { bmp -> savePicture(bmp, postTime)?.let { return it } }
+        if (messageImage != null) {
+            return MediaVault.captureImageUri(
+                applicationContext,
+                messageImage.uri,
+                messageImage.mimeType,
+                postTime
+            )
+        }
+        return null
     }
 
     override fun onListenerConnected() {
@@ -168,6 +197,14 @@ class NotifListenerService : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         if (sbn.packageName !in watchedPackages) return
 
+        // O resumo do grupo de notificações não é mensagem: é a linha que o WhatsApp publica
+        // para representar as demais. Quando há UMA conversa com UMA mensagem não lida, ele
+        // costuma repetir o próprio texto da mensagem em vez de "Novas mensagens: N" (que o
+        // NoiseFilter pegaria) — e aí a mesma mensagem chega duas vezes, pelo resumo e pela
+        // notificação filha, sendo lida em voz alta duas vezes e guardada duas vezes.
+        // Confirmado no aparelho: `flags=GROUP_SUMMARY` com `android.title=WA Business`.
+        if ((sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) return
+
         val extras = sbn.notification.extras ?: return
         val rawTitle = extras.getString(Notification.EXTRA_TITLE) ?: return
         // BigTextStyle traz o texto completo; EXTRA_TEXT vem truncado.
@@ -179,13 +216,53 @@ class NotifListenerService : NotificationListenerService() {
 
         if (NoiseFilter.isNoise(title, text)) return
 
-        // O WhatsApp costuma repostar/atualizar a mesma notificação poucos ms depois, com
-        // texto idêntico — sem isso, toda mensagem seria lida em voz alta e guardada em dobro.
-        if (isDuplicateRepost(sbn.packageName, title, text.trim())) return
-
         cacheReplyAction(sbn, title)
 
+        val picture = runCatching {
+            @Suppress("DEPRECATION")
+            extras.getParcelable(Notification.EXTRA_PICTURE) as? Bitmap
+        }.getOrNull()
+
+        val messageImage = extractMessagingStyleImage(sbn.notification, sbn.postTime)
+        // EXTRA_IS_GROUP_CONVERSATION é API 28 e o minSdk é 26; a chave é estável desde então
+        // e ausente vira `false`, o lado seguro (não remove prefixo, não relaxa a regra).
+        val isGroup = extras.getBoolean("android.isGroupConversation", false)
+        val isImage = picture != null || messageImage != null ||
+            MediaVault.looksLikeImageMessage(text, isGroup)
         val isVoice = MediaVault.looksLikeVoiceMessage(text)
+
+        // A extração da imagem vem ANTES do dedup de propósito: a segunda notificação — a que
+        // o WhatsApp publica com o bitmap/URI, texto idêntico — precisa ser reconhecida como
+        // "repost que traz imagem" e não como repost qualquer. Ver Decision.AttachImage.
+        //
+        // E o dedup inteiro vem ANTES de falar e de guardar, que é o que impede a mesma
+        // mensagem de ser lida em voz alta duas vezes.
+        val decision = repostGuard.classify(
+            packageName = sbn.packageName,
+            sender = title,
+            text = text.trim(),
+            messageTime = lastMessageTimestamp(sbn.notification),
+            hasImageContent = picture != null || messageImage != null,
+            now = System.currentTimeMillis()
+        )
+        val record = when (decision) {
+            is RepostGuard.Decision.Drop -> return
+            is RepostGuard.Decision.AttachImage -> {
+                scope.launch {
+                    val rowId = withTimeoutOrNull(REPOST_ROWID_WAIT_MS) {
+                        decision.record.rowId.await()
+                    } ?: return@launch
+                    val path = imagePathFromNotification(picture, messageImage, sbn.postTime)
+                    if (path != null) {
+                        NotifDatabase.get(applicationContext).dao().setImagePath(rowId, path)
+                    } else {
+                        captureImage(rowId, sbn.packageName, sbn.postTime)
+                    }
+                }
+                return
+            }
+            is RepostGuard.Decision.New -> decision.record
+        }
 
         // Leitura em voz alta do TEXTO: só quando em movimento, com o switch da conta ligado,
         // e apenas para mensagens de texto — mensagem de voz é tratada pelo player de áudio.
@@ -198,13 +275,9 @@ class NotifListenerService : NotificationListenerService() {
             }
         }
 
-        val picture = runCatching {
-            @Suppress("DEPRECATION")
-            extras.getParcelable(Notification.EXTRA_PICTURE) as? Bitmap
-        }.getOrNull()
-
         scope.launch {
-            val imagePath = picture?.let { savePicture(it, sbn.postTime) }
+            val imagePath = imagePathFromNotification(picture, messageImage, sbn.postTime)
+
             val db = NotifDatabase.get(applicationContext)
             val rowId = db.dao().insert(
                 NotifEntity(
@@ -215,42 +288,96 @@ class NotifListenerService : NotificationListenerService() {
                     imagePath = imagePath
                 )
             )
+            record.rowId.complete(rowId)
+
+            // Algumas versões do WhatsApp não expõem bitmap/URI na notificação.
+            // Nesses casos tentamos copiar a imagem recém-baixada do diretório oficial de mídia.
+            // Em coroutine própria: o retry de imagem espera até 10,5 s quando não acha nada,
+            // e não pode empurrar a captura de ÁUDIO para depois disso — quanto mais tarde ela
+            // começa, mais chance o WhatsApp tem de apagar o .opus ("apagar para todos").
+            // Sai na frente do gancho da EPIC 4 pelo mesmo motivo: é o caminho sensível a tempo.
+            val imageJob = if (imagePath == null && isImage) {
+                scope.launch { captureImage(rowId, sbn.packageName, sbn.postTime) }
+            } else null
+
+            // EPIC 4 (#18): a mensagem recebida já foi persistida acima — só depois
+            // disso a mensagem armada para esta conversa pode disparar. Toda a lógica
+            // mora em ScheduledMessageTrigger; aqui é só o gancho.
+            runCatching { ScheduledMessageTrigger.onIncoming(applicationContext, sbn, title) }
+
             if (isVoice &&
                 Prefs.isAudioCaptureEnabled(applicationContext, sbn.packageName) &&
                 !Prefs.isAudioBlocked(applicationContext, title)
             ) {
                 captureAudio(rowId, sbn.packageName, sbn.postTime)
             }
+            // A retenção varre órfãos comparando com os caminhos gravados no banco; só pode
+            // rodar depois que a captura de imagem tiver registrado o dela.
+            imageJob?.join()
             runPurge()
         }
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
-        if (sbn.packageName in watchedPackages) invalidateReplyAction(sbn.key)
+        if (sbn.packageName in watchedPackages) ReplyActionRegistry.forget(sbn.key)
+    }
+
+    /** Delegado ao ReplyActionRegistry — o cache vive fora do serviço para o envio alcançá-lo. */
+    private fun cacheReplyAction(sbn: StatusBarNotification, sender: String) {
+        val resultKey = ReplyActionRegistry.remember(
+            packageName = sbn.packageName,
+            sender = sender,
+            notificationKey = sbn.key,
+            actions = sbn.notification.actions
+        ) ?: return
+        android.util.Log.d(TAG, "Reply action cached for ${sbn.packageName}|$sender (key=$resultKey)")
     }
 
     /**
-     * Guarda a ação de resposta rápida (se a notificação trouxer uma) pra essa conversa.
-     * Notificação mais nova sempre substitui a mais velha; se esta em particular não trouxer
-     * a ação (acontece em reposts de atualização), a entrada anterior é mantida como está.
+     * MessagingStyle pode carregar uma URI da imagem, mesmo quando EXTRA_PICTURE não existe.
      */
-    private fun cacheReplyAction(sbn: StatusBarNotification, sender: String) {
-        val action = sbn.notification.actions?.firstOrNull { !it.remoteInputs.isNullOrEmpty() } ?: return
-        val remoteInputs = action.remoteInputs ?: return
-        val actionIntent = action.actionIntent ?: return
-        replyActions["${sbn.packageName}|$sender"] = CachedReply(
-            actionIntent = actionIntent,
-            remoteInputs = remoteInputs,
-            resultKey = remoteInputs.first().resultKey,
-            notificationKey = sbn.key
-        )
-        android.util.Log.d(TAG, "Reply action cached for ${sbn.packageName}|$sender (key=${remoteInputs.first().resultKey})")
-    }
+    /**
+     * Horário da última mensagem do `MessagingStyle` — a identidade estável que o
+     * [RepostGuard] usa. Não muda entre reposts da mesma conversa, e é diferente para cada
+     * mensagem, então distingue "o WhatsApp repostou" de "chegou outra mensagem".
+     */
+    private fun lastMessageTimestamp(notification: Notification): Long? = runCatching {
+        @Suppress("DEPRECATION")
+        val bundles = notification.extras.getParcelableArray(Notification.EXTRA_MESSAGES)
+            ?: return null
+        Notification.MessagingStyle.Message.getMessagesFromBundleArray(bundles)
+            .lastOrNull()?.timestamp?.takeIf { it > 0L }
+    }.getOrNull()
 
-    /** A notificação some (lida, apagada, substituída sem ação) — a resposta cacheada não vale mais. */
-    private fun invalidateReplyAction(notificationKey: String) {
-        val stale = replyActions.entries.firstOrNull { it.value.notificationKey == notificationKey }?.key ?: return
-        replyActions.remove(stale)
+    private fun extractMessagingStyleImage(notification: Notification, postTime: Long): NotificationImage? = runCatching {
+        @Suppress("DEPRECATION")
+        val bundles = notification.extras.getParcelableArray(Notification.EXTRA_MESSAGES) ?: return null
+        // EXTRA_MESSAGES traz o HISTÓRICO recente da conversa, não só a mensagem que disparou
+        // esta notificação. Procurar "a última COM imagem" fazia uma mensagem de TEXTO herdar
+        // a foto anterior da mesma conversa — exatamente o que a #17 proíbe. Só a última
+        // entrada do bundle é a desta notificação; se ela não for imagem, não há imagem.
+        val last = Notification.MessagingStyle.Message.getMessagesFromBundleArray(bundles)
+            .lastOrNull() ?: return null
+        val uri = last.dataUri ?: return null
+        if (last.dataMimeType?.startsWith("image/", ignoreCase = true) != true) return null
+        // Segunda trava: mesmo sendo a última, se o horário dela está longe do postTime é
+        // histórico, não a mensagem que chegou agora.
+        if (last.timestamp > 0L && kotlin.math.abs(postTime - last.timestamp) > MESSAGE_TS_TOLERANCE_MS) {
+            return null
+        }
+        NotificationImage(uri, last.dataMimeType)
+    }.getOrNull()
+
+    /**
+     * A imagem pode aparecer alguns instantes após a notificação; tentamos algumas vezes.
+     */
+    private suspend fun captureImage(rowId: Long, pkg: String, postTime: Long) {
+        for (wait in MediaVault.IMAGE_RETRY_DELAYS_MS) {
+            delay(wait)
+            val path = MediaVault.captureLatestImage(applicationContext, pkg, postTime) ?: continue
+            NotifDatabase.get(applicationContext).dao().setImagePath(rowId, path)
+            return
+        }
     }
 
     /**
@@ -346,8 +473,26 @@ class NotifListenerService : NotificationListenerService() {
             gateOpen = gateOpen
         )
 
-        if (shouldListen && !voiceListening) startVoiceListening()
+        // Guardado antes de agir: se o motor está sendo ligado AGORA, o comando direto não
+        // deve recomeçar a sessão que acabou de nascer. Ver armDirectCommand(restart).
+        val startedNow = shouldListen && !voiceListening
+        if (startedNow) startVoiceListening()
         else if (!shouldListen && voiceListening) stopVoiceListening()
+
+        // Pedido do botão de microfone: dispensa a palavra de ativação para a próxima fala.
+        // Fica DEPOIS do start, para o motor já existir.
+        //
+        // O pedido NÃO é zerado aqui: é ele que mantém o gate aberto (ver voiceGateOpen) pelos
+        // segundos em que a pessoa leva o telefone à boca. Zerá-lo desligaria o microfone no
+        // mesmo instante em que o botão acabou de ligá-lo, quando não há movimento nem timer
+        // manual. Quem impede o rearme a cada tique é `directCommandArmedFor`, e a janela
+        // fecha sozinha ao expirar.
+        val directUntil = Prefs.directCommandUntil(applicationContext)
+        if (voiceListening && directUntil > System.currentTimeMillis() && directUntil != directCommandArmedFor) {
+            directCommandArmedFor = directUntil
+            voiceEngine.armDirectCommand(restart = !startedNow)
+            android.util.Log.d(TAG_VOICE_GATE, "comando direto armado pelo botão de microfone")
+        }
     }
 
     private fun voiceGateOpen(): Boolean {
@@ -364,7 +509,10 @@ class NotifListenerService : NotificationListenerService() {
                 manualOpen = false
             }
         }
-        return motionOpen || manualOpen
+        // Botão de microfone: pedido explícito e curto, não depende de movimento nem do timer.
+        val directOpen = Prefs.directCommandUntil(applicationContext) > now
+
+        return motionOpen || manualOpen || directOpen
     }
 
     private fun startVoiceListening() {
@@ -412,4 +560,9 @@ class NotifListenerService : NotificationListenerService() {
         lastPurge = now
         runCatching { Retention.purge(applicationContext, now) }
     }
+
+    private data class NotificationImage(
+        val uri: Uri,
+        val mimeType: String?
+    )
 }
