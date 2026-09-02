@@ -38,14 +38,38 @@ de inserir uma linha duplicada.
 - `:app:assembleRelease` verde. APK release (assinado com a chave de debug, `debuggable false`,
   como a SEC-0066 exige para uso diário).
 
+## Verificado no aparelho (sessão de 2026-09-01, à noite)
+
+Instalado como release por `adb install -r`, sem desinstalar: banco preservado, permissão de
+listener intacta, `run-as` recusado (release não-debuggable, como a SEC-0066 exige).
+
+- **Migration 4→5 passou** — o único ponto da EPIC 4 que nenhum teste JVM cobria
+  (`exportSchema = false`, sem `room-testing`), conferido antes só por leitura.
+- **EPIC 3 funciona**: o operador mandou uma foto e ela apareceu. Confirmado por ele.
+- **EPIC 4 alcançável** pela `DetailActivity`; e o histórico do aparelho mostra uma
+  mensagem armada tendo disparado.
+- **Botão de microfone** exercitado por `adb input tap` com logcat: gate abre pelo pedido
+  (sem movimento), sessão única, encerra sozinha por silêncio em 8,5 s.
+
+## Correções que só o uso real revelou
+
+| achado | como apareceu |
+|---|---|
+| resumo `GROUP_SUMMARY` lido como mensagem | operador ouviu a mesma mensagem duas vezes |
+| dedup rodando depois da leitura em voz alta (regressão de `ddc3761`) | idem |
+| identidade de mensagem frágil ("mesmo texto em 2 s") | operador: "precisamos de idempotência aí" |
+| reconhecedor iniciado duas vezes pelo botão | log: `gen=11`/`gen=12`/`RECOGNIZER_BUSY` |
+| microfone herdando o ciclo de reinício da palavra de ativação | operador: "plac plic-pluc. Insuportável." |
+| `📷 📷 Foto` na lista | visível assim que a captura passou a funcionar |
+| dica do microfone com fundo branco, igual a um cartão | visível na captura de tela |
+
 ## NÃO verificado
 
-**Nada foi exercitado em aparelho.** O celular foi desconectado antes da instalação.
-Os 16 achados vivos que sobraram (9 da EPIC 4, 7 da EPIC 3 depois de S1/S2/S3) continuam
-esperando decisão — ver os `RESUME.md` das issues 017 e 018.
+Os achados vivos das duas épicas continuam esperando decisão — ver os `RESUME.md` das
+issues 017 e 018. S1, S2 e S3 foram fechados aqui; os demais não.
 
-O item que **envia mensagem de verdade** pelo WhatsApp do operador nunca foi disparado, e
-não será sem ele escolher o destinatário.
+O disparo que **envia mensagem de verdade** nunca foi feito por mim: o único envio
+observado foi o do próprio operador.
 
 ## Confirmado no aparelho antes de ele sair (leitura, sem alterar nada)
 
