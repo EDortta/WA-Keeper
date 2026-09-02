@@ -462,7 +462,10 @@ class NotifListenerService : NotificationListenerService() {
             gateOpen = gateOpen
         )
 
-        if (shouldListen && !voiceListening) startVoiceListening()
+        // Guardado antes de agir: se o motor está sendo ligado AGORA, o comando direto não
+        // deve recomeçar a sessão que acabou de nascer. Ver armDirectCommand(restart).
+        val startedNow = shouldListen && !voiceListening
+        if (startedNow) startVoiceListening()
         else if (!shouldListen && voiceListening) stopVoiceListening()
 
         // Pedido do botão de microfone: dispensa a palavra de ativação para a próxima fala.
@@ -476,7 +479,7 @@ class NotifListenerService : NotificationListenerService() {
         val directUntil = Prefs.directCommandUntil(applicationContext)
         if (voiceListening && directUntil > System.currentTimeMillis() && directUntil != directCommandArmedFor) {
             directCommandArmedFor = directUntil
-            voiceEngine.armDirectCommand()
+            voiceEngine.armDirectCommand(restart = !startedNow)
             android.util.Log.d(TAG_VOICE_GATE, "comando direto armado pelo botão de microfone")
         }
     }

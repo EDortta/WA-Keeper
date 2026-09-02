@@ -171,13 +171,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="72dp"
-        android:background="@drawable/bg_search"
-        android:paddingHorizontal="14dp"
-        android:paddingVertical="8dp"
+        android:layout_marginBottom="76dp"
+        android:background="@drawable/bg_hint"
+        android:elevation="8dp"
+        android:paddingHorizontal="18dp"
+        android:paddingVertical="10dp"
         android:text="Pode falar o comando"
-        android:textColor="#1C1C1E"
-        android:textSize="13sp"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
         android:visibility="gone" />
 
 </FrameLayout>

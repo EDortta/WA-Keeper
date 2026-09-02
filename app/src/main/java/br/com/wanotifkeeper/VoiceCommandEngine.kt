@@ -89,16 +89,23 @@ class VoiceCommandEngine(
      * A janela é mais larga que a da fala porque aqui há um caminho humano no meio: tocar o
      * botão, levar o telefone à boca e só então falar.
      */
-    fun armDirectCommand() {
+    /**
+     * @param restart recomeçar a sessão de reconhecimento agora. Só faz sentido quando o motor
+     *   **já estava** ouvindo e pode estar num backoff longo (até 30 s sem ninguém falar):
+     *   esperar o próximo ciclo faria o botão parecer quebrado. Quando o motor acabou de ser
+     *   ligado pelo mesmo toque, recomeçar é destrutivo — a sessão recém-criada é destruída e
+     *   recriada em milissegundos, o reconhecedor devolve RECOGNIZER_BUSY, o serviço on-device
+     *   toca o beep de início duas vezes e a escuta só fica pronta ~1,1 s depois. Visto no
+     *   aparelho: `startListening ok (gen=11)` / `(gen=12)` / `RECOGNIZER_BUSY`.
+     */
+    fun armDirectCommand(restart: Boolean) {
         wakeWordArmedUntil = System.currentTimeMillis() + DIRECT_COMMAND_GRACE_MS
         noSpeechStreak = 0
         if (!active) {
             start()
             return
         }
-        // Já estava ouvindo, mas possivelmente num backoff longo (até 30 s sem ninguém falar).
-        // Esperar o próximo ciclo faria o botão parecer quebrado — recomeça a escuta na hora.
-        main.post { recreate(generation.get()) }
+        if (restart) main.post { recreate(generation.get()) }
     }
 
     fun stop() {

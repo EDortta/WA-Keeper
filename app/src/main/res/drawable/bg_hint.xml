@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Pílula da dica do microfone. Opaca e escura de propósito: ela flutua SOBRE a lista de
+    mensagens, e com o fundo branco do bg_search ficava indistinguível de um cartão — parecia
+    texto solto dentro de uma conversa em vez de um aviso do app.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#E61C1C1E"/>
+    <corners android:radius="20dp"/>
+</shape>
