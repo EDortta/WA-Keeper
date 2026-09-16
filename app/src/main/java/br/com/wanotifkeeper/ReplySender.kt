@@ -24,7 +24,7 @@ interface ReplySender {
         text: String,
         uri: String,
         mimeType: String
-    ): ReplyResult = ReplyResult.Rejected(MEDIA_NOT_SUPPORTED, consumesAttempt = false)
+    ): ReplyResult = ReplyResult.Rejected(MEDIA_NOT_SUPPORTED, consumesAttempt = true)
 
     companion object {
         const val MEDIA_NOT_SUPPORTED = "a ação de resposta atual não aceita mídia"
@@ -100,7 +100,7 @@ class NotificationReplySender(private val context: Context) : ReplySender {
 
         val dataInput = cached.remoteInputs.firstOrNull { remote ->
             remote.allowedDataTypes.any { allowed -> mimeMatches(allowed, mimeType) }
-        } ?: return ReplyResult.Rejected(ReplySender.MEDIA_NOT_SUPPORTED, consumesAttempt = false)
+        } ?: return ReplyResult.Rejected(ReplySender.MEDIA_NOT_SUPPORTED, consumesAttempt = true)
 
         return runCatching {
             val parsedUri = Uri.parse(uri)
