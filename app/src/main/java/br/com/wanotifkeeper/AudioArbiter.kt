@@ -20,9 +20,8 @@ import java.util.Locale
  * cooperativos (música, podcast etc.) pausam enquanto o WA-Keeper fala e retomam quando o foco
  * é devolvido.
  *
- * O mesmo objeto também é o semáforo entre microfone e alto-falante. Enquanto o microfone de
- * comandos está aberto, nenhuma nova saída começa; fala interrompida volta para o início da
- * fila e áudio em arquivo é pausado para continuar depois.
+ * O mesmo objeto também contém o semáforo que a camada de captura pode usar: enquanto o
+ * microfone estiver explicitamente marcado como ativo, nenhuma nova saída começa.
  */
 class AudioArbiter private constructor(context: Context) {
 
@@ -45,6 +44,7 @@ class AudioArbiter private constructor(context: Context) {
 
     private var tts: TextToSpeech? = null
     private var ttsReady = false
+    private var speechSpeaking = false
     private var player: MediaPlayer? = null
     private var playerPrepared = false
 
@@ -100,14 +100,14 @@ class AudioArbiter private constructor(context: Context) {
 
     /**
      * Só informa saída que pode estar efetivamente audível. Quando o microfone abre, a fila
-     * continua ocupada, mas está bloqueada; o SpeechRecognizer não pode esperar essa fila
-     * esvaziar porque ela só esvaziará depois que o próprio microfone fechar.
+     * continua ocupada, mas está bloqueada; o reconhecedor não deve esperar essa fila esvaziar.
      */
     fun isAudiblyBusy(): Boolean = synchronized(lock) { !microphoneActive && current != null }
 
     /**
-     * Semáforo de privacidade/concorrência: microfone aberto implica zero saída do WA-Keeper.
-     * Ao fechar, aguardamos dois segundos antes de retomar para não capturar o próprio áudio.
+     * Semáforo disponível para captura de áudio. A integração completa do microfone contínuo
+     * é deliberadamente separada: o gate atual pode ficar aberto durante todo o movimento e
+     * não deve, por si só, impedir a leitura automática no carro.
      */
     fun setMicrophoneActive(active: Boolean) {
         synchronized(lock) {
@@ -117,6 +117,7 @@ class AudioArbiter private constructor(context: Context) {
                 when (val now = current) {
                     is Output.Speech -> {
                         currentToken++
+                        speechSpeaking = false
                         runCatching { tts?.stop() }
                         queue.addFirst(now)
                         current = null
@@ -154,7 +155,7 @@ class AudioArbiter private constructor(context: Context) {
                 return
             }
             is Output.Speech -> {
-                if (!requestFocusLocked()) return
+                if (!requestFocusLocked() || speechSpeaking) return
                 startSpeechPartLocked(now)
                 return
             }
@@ -174,6 +175,7 @@ class AudioArbiter private constructor(context: Context) {
 
         current = next
         currentSpeechPart = 0
+        speechSpeaking = false
         currentToken++
         when (next) {
             is Output.Speech -> startSpeechPartLocked(next)
@@ -206,7 +208,7 @@ class AudioArbiter private constructor(context: Context) {
 
     private fun startSpeechPartLocked(speech: Output.Speech) {
         ensureTtsLocked()
-        if (!ttsReady || microphoneActive) return
+        if (!ttsReady || microphoneActive || speechSpeaking) return
         if (current !== speech) return
 
         if (currentSpeechPart >= speech.parts.size) {
@@ -219,8 +221,10 @@ class AudioArbiter private constructor(context: Context) {
         val params = Bundle().apply {
             putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, part.volume)
         }
+        speechSpeaking = true
         val result = tts?.speak(part.text, TextToSpeech.QUEUE_FLUSH, params, id)
         if (result == TextToSpeech.ERROR) {
+            speechSpeaking = false
             currentSpeechPart++
             startSpeechPartLocked(speech)
         }
@@ -231,6 +235,7 @@ class AudioArbiter private constructor(context: Context) {
             val speech = current as? Output.Speech ?: return
             val expected = "$currentToken:$currentSpeechPart"
             if (utteranceId != expected) return
+            speechSpeaking = false
             currentSpeechPart++
             if (currentSpeechPart < speech.parts.size) startSpeechPartLocked(speech)
             else finishCurrentLocked()
@@ -238,6 +243,7 @@ class AudioArbiter private constructor(context: Context) {
     }
 
     private fun failCurrentSpeechLocked() {
+        speechSpeaking = false
         if (current is Output.Speech) finishCurrentLocked()
     }
 
@@ -277,6 +283,7 @@ class AudioArbiter private constructor(context: Context) {
         releasePlayerLocked()
         current = null
         currentSpeechPart = 0
+        speechSpeaking = false
         currentToken++
         resumeLocked()
     }
@@ -313,6 +320,7 @@ class AudioArbiter private constructor(context: Context) {
                     when (val now = current) {
                         is Output.Speech -> {
                             currentToken++
+                            speechSpeaking = false
                             runCatching { tts?.stop() }
                             queue.addFirst(now)
                             current = null
