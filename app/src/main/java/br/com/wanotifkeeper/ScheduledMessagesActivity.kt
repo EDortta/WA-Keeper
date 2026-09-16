@@ -325,7 +325,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
         selectedScheduledAt = null
         binding.radioNextIncoming.isChecked = true
         binding.btnDateTime.text = "Escolher data e hora"
-        binding.btnArm.text = "Programar mensagem"
+        binding.btnArm.text = "Programar"
         binding.btnCancelEdit.visibility = View.GONE
         renderAttachmentSelection()
     }
