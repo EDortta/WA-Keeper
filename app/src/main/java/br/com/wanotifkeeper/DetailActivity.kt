@@ -35,7 +35,13 @@ class DetailActivity : AppCompatActivity() {
             binding.tvSender.text = item.sender
             binding.tvTime.text = fmt.format(Date(item.timestamp))
             binding.tvText.text = item.text
-            binding.btnPlayText.setOnClickListener { audio.speakText(item.text) }
+
+            val originalAudio = item.audioPath?.let(::File)?.takeIf { it.exists() }
+            val isVoiceMessage = originalAudio != null || MediaHints.looksLikeVoiceMessage(item.text)
+            binding.btnPlayText.visibility = if (isVoiceMessage) View.GONE else View.VISIBLE
+            if (!isVoiceMessage) {
+                binding.btnPlayText.setOnClickListener { audio.speakText(item.text) }
+            }
 
             binding.btnSchedule.setOnClickListener {
                 startActivity(
@@ -53,7 +59,6 @@ class DetailActivity : AppCompatActivity() {
                 looksLikeMedia(item.text) -> binding.tvNoImage.visibility = View.VISIBLE
             }
 
-            val originalAudio = item.audioPath?.let(::File)?.takeIf { it.exists() }
             if (originalAudio != null) {
                 binding.btnPlayAudio.visibility = View.VISIBLE
                 binding.btnPlayAudio.setOnClickListener { audio.play(originalAudio.absolutePath) }
