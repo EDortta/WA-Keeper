@@ -55,6 +55,66 @@ log_line() {
   fi
 }
 
+find_apksigner() {
+  if command -v apksigner >/dev/null 2>&1; then
+    command -v apksigner
+    return 0
+  fi
+
+  local sdk_root="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+  if [[ -z "$sdk_root" && -f local.properties ]]; then
+    sdk_root="$(sed -n 's/^sdk.dir=//p' local.properties | tail -n 1 | sed 's#\\:#:#g; s#\\\\#/#g')"
+  fi
+
+  if [[ -n "$sdk_root" && -d "$sdk_root/build-tools" ]]; then
+    find "$sdk_root/build-tools" -maxdepth 2 -type f -name apksigner -perm -u+x 2>/dev/null \
+      | sort -V \
+      | tail -n 1
+  fi
+}
+
+signature_diagnostics() {
+  local apk="$1"
+  local signer installed_remote tmp_dir installed_apk
+
+  log_line "==> Diagnóstico de assinatura"
+  signer="$(find_apksigner || true)"
+  if [[ -z "$signer" ]]; then
+    log_line "apksigner não encontrado; não consegui comparar os certificados automaticamente."
+    return 0
+  fi
+
+  installed_remote="$("${ADB[@]}" shell pm path "$APP_ID" 2>/dev/null \
+    | sed -n 's/^package://p' \
+    | head -n 1 \
+    | tr -d '\r')"
+
+  if [[ -z "$installed_remote" ]]; then
+    log_line "Não encontrei o APK instalado de $APP_ID para comparar a assinatura."
+    return 0
+  fi
+
+  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/wa-keeper-signature.XXXXXX")"
+  installed_apk="$tmp_dir/installed.apk"
+
+  if ! "${ADB[@]}" pull "$installed_remote" "$installed_apk" >/dev/null 2>&1; then
+    log_line "Não consegui copiar o APK instalado para comparar a assinatura."
+    rm -rf "$tmp_dir"
+    return 0
+  fi
+
+  {
+    printf '\n--- Assinatura do APK instalado no Android ---\n'
+    "$signer" verify --print-certs "$installed_apk" 2>&1 \
+      | grep -E 'Signer #1 certificate (DN|SHA-256 digest):' || true
+    printf '\n--- Assinatura do APK recém-compilado ---\n'
+    "$signer" verify --print-certs "$apk" 2>&1 \
+      | grep -E 'Signer #1 certificate (DN|SHA-256 digest):' || true
+  } | tee -a "$LOG_FILE"
+
+  rm -rf "$tmp_dir"
+}
+
 publish_failure() {
   local status="${1:-1}"
   [[ -n "${REPO_ROOT:-}" && -n "${LOG_FILE:-}" && -f "$LOG_FILE" ]] || return 0
@@ -68,13 +128,11 @@ publish_failure() {
   diag_worktree="$tmp_root/repo"
   safe_log="$tmp_root/output.log"
 
-  # Não publique o caminho absoluto da home nem um serial eventualmente presente no output.
   sed "s#${HOME:-/home/unknown}#~#g" "$LOG_FILE" > "$safe_log" || cp "$LOG_FILE" "$safe_log"
   if [[ -n "${ANDROID_SERIAL:-}" ]]; then
     sed -i "s#${ANDROID_SERIAL}#<ANDROID_SERIAL>#g" "$safe_log" || true
   fi
 
-  # Mantém o diagnóstico fora das branches funcionais que estão sendo testadas.
   set +e
   git fetch origin "$DIAGNOSTICS_BRANCH" >/dev/null 2>&1
   git worktree add --detach "$diag_worktree" "origin/$DIAGNOSTICS_BRANCH" >/dev/null 2>&1
@@ -200,7 +258,6 @@ fi
 git pull --ff-only origin "$TARGET_BRANCH"
 
 if [[ "$VARIANT" == "release" ]]; then
-  # build.gradle resolve RELEASE_STORE_FILE relativamente ao módulo app.
   STORE_FILE="$(sed -n 's/^RELEASE_STORE_FILE=//p' gradle.properties 2>/dev/null | tail -n 1 || true)"
   if [[ -n "$STORE_FILE" && ! -f "app/$STORE_FILE" && ! -f "$STORE_FILE" ]]; then
     fail "keystore de release '$STORE_FILE' não encontrado. Não vou cair para debug automaticamente, pois trocar assinatura pode exigir desinstalar o app e perder o banco local."
@@ -250,6 +307,10 @@ INSTALL_STATUS=${PIPESTATUS[0]}
 set -e
 
 if (( INSTALL_STATUS != 0 )); then
+  if grep -q 'INSTALL_FAILED_UPDATE_INCOMPATIBLE' "$LOG_FILE"; then
+    signature_diagnostics "$APK"
+  fi
+
   cat <<'EOF' | tee -a "$LOG_FILE" >&2
 
 A instalação falhou. NÃO desinstale o WA-Keeper para "resolver" assinatura incompatível:
