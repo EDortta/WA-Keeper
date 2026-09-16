@@ -8,21 +8,12 @@ import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import java.util.Locale
 
-/**
- * Autoridade única de saída de áudio do WA-Keeper.
- *
- * TTS e arquivos de áudio entram na mesma fila, portanto nunca se sobrepõem. Antes de
- * reproduzir, o arbiter pede AUDIOFOCUS_GAIN_TRANSIENT com willPauseWhenDucked=true: players
- * cooperativos (música, podcast etc.) pausam enquanto o WA-Keeper fala e retomam quando o foco
- * é devolvido.
- *
- * O mesmo objeto também contém o semáforo que a camada de captura pode usar: enquanto o
- * microfone estiver explicitamente marcado como ativo, nenhuma nova saída começa.
- */
+/** Autoridade única de saída de áudio do WA-Keeper. */
 class AudioArbiter private constructor(context: Context) {
 
     private val appContext = context.applicationContext
@@ -31,7 +22,7 @@ class AudioArbiter private constructor(context: Context) {
     private val lock = Any()
 
     private sealed class Output {
-        data class Speech(val parts: List<SpeechPart>) : Output()
+        data class Speech(val parts: List<SpeechPart>, val manualKey: String? = null) : Output()
         data class FileAudio(val path: String) : Output()
     }
 
@@ -50,6 +41,8 @@ class AudioArbiter private constructor(context: Context) {
 
     private var microphoneActive = false
     private var focusHeld = false
+    private var lastManualKey: String? = null
+    private var lastManualTapAt = 0L
 
     private val audioAttributes = AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_ASSISTANT)
@@ -81,34 +74,40 @@ class AudioArbiter private constructor(context: Context) {
         enqueue(Output.Speech(parts))
     }
 
-    /** TTS manual do conteúdo original, sem prefixar remetente. */
+    /**
+     * Reprodução solicitada pelo usuário. Diferente da leitura automática, não entra atrás da
+     * fila existente: o toque mais recente vence. Um duplo toque na mesma mensagem é ignorado.
+     */
     fun speakText(text: String) {
+        if (text.isBlank()) return
+        val key = text.trim()
+        val now = SystemClock.elapsedRealtime()
+        synchronized(lock) {
+            val playingSame = (current as? Output.Speech)?.manualKey == key
+            val duplicateTap = lastManualKey == key && now - lastManualTapAt < MANUAL_DEBOUNCE_MS
+            if (playingSame || duplicateTap) return
+
+            lastManualKey = key
+            lastManualTapAt = now
+            replaceWithManualSpeechLocked(Output.Speech(listOf(SpeechPart(text, NORMAL_VOLUME)), key))
+        }
+    }
+
+    /** Aviso/pergunta do motor de voz: mantém semântica FIFO. */
+    fun say(text: String) {
         if (text.isBlank()) return
         enqueue(Output.Speech(listOf(SpeechPart(text, NORMAL_VOLUME))))
     }
-
-    /** Aviso/pergunta do motor de voz, sem prefixo de remetente. */
-    fun say(text: String) = speakText(text)
 
     fun play(path: String) {
         if (path.isBlank()) return
         enqueue(Output.FileAudio(path))
     }
 
-    /** Inclui o item em execução e tudo o que ainda está esperando na fila. */
     fun isBusy(): Boolean = synchronized(lock) { current != null || queue.isNotEmpty() }
 
-    /**
-     * Só informa saída que pode estar efetivamente audível. Quando o microfone abre, a fila
-     * continua ocupada, mas está bloqueada; o reconhecedor não deve esperar essa fila esvaziar.
-     */
     fun isAudiblyBusy(): Boolean = synchronized(lock) { !microphoneActive && current != null }
 
-    /**
-     * Semáforo disponível para captura de áudio. A integração completa do microfone contínuo
-     * é deliberadamente separada: o gate atual pode ficar aberto durante todo o movimento e
-     * não deve, por si só, impedir a leitura automática no carro.
-     */
     fun setMicrophoneActive(active: Boolean) {
         synchronized(lock) {
             if (microphoneActive == active) return
@@ -144,7 +143,18 @@ class AudioArbiter private constructor(context: Context) {
         }
     }
 
-    /** Retoma o item pausado ou inicia o próximo item da fila. Chamado sempre sob [lock]. */
+    private fun replaceWithManualSpeechLocked(speech: Output.Speech) {
+        queue.clear()
+        currentToken++
+        speechSpeaking = false
+        runCatching { tts?.stop() }
+        releasePlayerLocked()
+        current = null
+        currentSpeechPart = 0
+        queue.addFirst(speech)
+        resumeLocked()
+    }
+
     private fun resumeLocked() {
         if (microphoneActive) return
 
@@ -314,7 +324,6 @@ class AudioArbiter private constructor(context: Context) {
                     if (!microphoneActive) {
                         resumeLocked()
                     }
-                    Unit
                 }
                 AudioManager.AUDIOFOCUS_LOSS,
                 AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
@@ -343,6 +352,7 @@ class AudioArbiter private constructor(context: Context) {
         private const val LINK_VOLUME = 0.5f
         private const val RESUME_AFTER_MIC_MS = 2_000L
         private const val FOCUS_RETRY_MS = 1_000L
+        private const val MANUAL_DEBOUNCE_MS = 750L
 
         @Volatile private var instance: AudioArbiter? = null
 
@@ -353,10 +363,6 @@ class AudioArbiter private constructor(context: Context) {
     }
 }
 
-/**
- * Modo manual e deliberado para ouvir mensagens novas mesmo parado (ex.: sozinho no escritório).
- * Não é persistido: se o processo morrer, volta desligado — comportamento seguro em ambiente novo.
- */
 object ManualReadMode {
     @Volatile private var value = false
 
