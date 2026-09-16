@@ -7,23 +7,21 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.hardware.TriggerEvent
 import android.hardware.TriggerEventListener
+import android.os.SystemClock
 import kotlin.math.abs
 import kotlin.math.sqrt
 
 /**
  * Detecta "em movimento" sem Google Play Services e sem localização.
  *
- * Preferimos o sensor de hardware [Sensor.TYPE_SIGNIFICANT_MOTION]: ele é disparado
- * pelo próprio chip quando o aparelho se desloca de forma relevante (andar, veículo),
- * com custo de bateria praticamente nulo porque não fica amostrando nada. É um
- * sensor "one-shot": cada disparo consome o registro, então re-registramos a cada
- * vez e mantemos uma janela de [WINDOW_MS] em que consideramos que há movimento.
+ * Entrada: quando disponível, TYPE_SIGNIFICANT_MOTION continua sendo o gatilho barato e rápido.
+ * Saída: depois da entrada, amostramos LINEAR_ACCELERATION (ou acelerômetro como fallback) para
+ * renovar o estado somente enquanto existe atividade física real. Sem atividade por 45 s, o
+ * estado encerra. Isso substitui a janela cega de 5 minutos que sabia começar, mas não sabia
+ * reconhecer adequadamente que o deslocamento terminou.
  *
- * Quando o aparelho não tem esse sensor (raro em celulares modernos), caímos para o
- * acelerômetro amostrado em taxa baixa, comparando a magnitude com a gravidade.
- *
- * Não é classificação "em veículo" (isso só existe via Play Services); é um proxy de
- * deslocamento físico, que é o que a leitura em voz alta no carro precisa.
+ * Em aparelhos sem TYPE_SIGNIFICANT_MOTION, o sensor de atividade fica registrado continuamente
+ * em taxa normal e cumpre também o papel de detectar a entrada.
  */
 class MotionDetector(context: Context) {
 
@@ -33,43 +31,58 @@ class MotionDetector(context: Context) {
     private val significantMotion: Sensor? =
         sensorManager?.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION)
 
-    private val accelerometer: Sensor? =
-        if (significantMotion == null)
-            sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        else null
+    private val linearAcceleration: Sensor? =
+        sensorManager?.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
 
-    @Volatile private var inMotionUntil = 0L
+    private val accelerometer: Sensor? =
+        sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
+    private val activitySensor: Sensor? = linearAcceleration ?: accelerometer
+    private val usesLinearAcceleration = linearAcceleration != null
+
+    private val tracker = MotionStateTracker(STILLNESS_MS)
+
     @Volatile private var started = false
+    @Volatile private var activitySampling = false
 
     private val triggerListener = object : TriggerEventListener() {
         override fun onTrigger(event: TriggerEvent?) {
-            refreshWindow()
-            // Sensor one-shot: re-arma para o próximo deslocamento.
+            tracker.markActivity(SystemClock.elapsedRealtime())
+            ensureActivitySampling()
+            // TYPE_SIGNIFICANT_MOTION é one-shot: rearma para detectar um novo episódio.
             significantMotion?.let { sensorManager?.requestTriggerSensor(this, it) }
         }
     }
 
-    private val accelListener = object : SensorEventListener {
+    private val activityListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
-            val (x, y, z) = event.values
-            val magnitude = sqrt(x * x + y * y + z * z)
-            if (abs(magnitude - SensorManager.GRAVITY_EARTH) > ACCEL_THRESHOLD) {
-                refreshWindow()
+            val activity = activityMagnitude(event)
+            val threshold = if (usesLinearAcceleration) LINEAR_ACTIVITY_THRESHOLD else ACCEL_ACTIVITY_THRESHOLD
+            val now = SystemClock.elapsedRealtime()
+
+            if (activity >= threshold) tracker.markActivity(now)
+
+            // Com o sensor significativo presente, a amostragem contínua só é necessária
+            // enquanto estamos validando que o movimento continua. Ao confirmar a parada,
+            // desliga novamente o sensor de maior consumo e volta ao one-shot barato.
+            if (significantMotion != null && !tracker.isInMotion(now)) {
+                stopActivitySampling()
             }
         }
-        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+        override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
     }
 
     fun start() {
         if (started || sensorManager == null) return
         started = true
-        when {
-            significantMotion != null ->
-                sensorManager.requestTriggerSensor(triggerListener, significantMotion)
-            accelerometer != null ->
-                sensorManager.registerListener(
-                    accelListener, accelerometer, SensorManager.SENSOR_DELAY_NORMAL
-                )
+        tracker.reset()
+
+        if (significantMotion != null) {
+            sensorManager.requestTriggerSensor(triggerListener, significantMotion)
+        } else {
+            // Sem one-shot, este sensor precisa observar tanto entrada quanto saída.
+            ensureActivitySampling()
         }
     }
 
@@ -77,20 +90,49 @@ class MotionDetector(context: Context) {
         if (!started || sensorManager == null) return
         started = false
         significantMotion?.let { sensorManager.cancelTriggerSensor(triggerListener, it) }
-        if (accelerometer != null) sensorManager.unregisterListener(accelListener)
+        stopActivitySampling()
+        tracker.reset()
     }
 
-    fun isInMotion(): Boolean = System.currentTimeMillis() < inMotionUntil
+    fun isInMotion(): Boolean = tracker.isInMotion(SystemClock.elapsedRealtime())
 
-    private fun refreshWindow() {
-        inMotionUntil = System.currentTimeMillis() + WINDOW_MS
+    @Synchronized
+    private fun ensureActivitySampling() {
+        if (!started || activitySampling || sensorManager == null || activitySensor == null) return
+        activitySampling = sensorManager.registerListener(
+            activityListener,
+            activitySensor,
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
+    }
+
+    @Synchronized
+    private fun stopActivitySampling() {
+        if (!activitySampling || sensorManager == null) return
+        sensorManager.unregisterListener(activityListener)
+        activitySampling = false
+    }
+
+    private fun activityMagnitude(event: SensorEvent): Float {
+        val x = event.values.getOrElse(0) { 0f }
+        val y = event.values.getOrElse(1) { 0f }
+        val z = event.values.getOrElse(2) { 0f }
+        val magnitude = sqrt(x * x + y * y + z * z)
+        return if (usesLinearAcceleration) {
+            magnitude
+        } else {
+            abs(magnitude - SensorManager.GRAVITY_EARTH)
+        }
     }
 
     companion object {
-        /** Após um disparo de movimento, seguimos "em movimento" por este tempo. */
-        private const val WINDOW_MS = 5 * 60 * 1000L
+        /** Tempo sem atividade suficiente para confirmar que o deslocamento terminou. */
+        private const val STILLNESS_MS = 45_000L
 
-        /** Desvio de gravidade (m/s²) que conta como movimento no fallback. */
-        private const val ACCEL_THRESHOLD = 1.8f
+        /** Movimento mínimo no sensor já descontado da gravidade. */
+        private const val LINEAR_ACTIVITY_THRESHOLD = 0.25f
+
+        /** Desvio mínimo da gravidade quando só existe acelerômetro bruto. */
+        private const val ACCEL_ACTIVITY_THRESHOLD = 0.35f
     }
 }
