@@ -9,10 +9,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
-/** Ciclo de vida de uma mensagem programada. */
 enum class ScheduledState { PENDING, CLAIMED, SENT, FAILED, CANCELLED }
-
-/** O que faz a mensagem ficar elegível para envio. */
 enum class ScheduledTrigger { NEXT_INCOMING, AT_TIME }
 
 const val STALE_CLAIM_REASON =
@@ -35,13 +32,10 @@ data class ScheduledMessageEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val packageName: String,
     val sender: String,
-    /** Legenda/texto. Pode ser vazio quando o payload é somente mídia. */
     val text: String,
     @ColumnInfo(defaultValue = "'NEXT_INCOMING'")
     val triggerType: String = ScheduledTrigger.NEXT_INCOMING.name,
-    /** Usado apenas por AT_TIME. */
     val scheduledAt: Long? = null,
-    /** URI persistível escolhida via Storage Access Framework. */
     val mediaUri: String? = null,
     val mediaMimeType: String? = null,
     val mediaName: String? = null,
@@ -88,7 +82,6 @@ interface ScheduledMessageDao {
     )
     fun forConversationFlow(pkg: String, sender: String): Flow<List<ScheduledMessageEntity>>
 
-    /** Próxima mensagem condicionada à chegada de uma mensagem desta conversa. */
     @Query(
         "SELECT * FROM scheduled_messages " +
             "WHERE packageName = :pkg AND sender = :sender " +
@@ -98,7 +91,6 @@ interface ScheduledMessageDao {
     )
     suspend fun nextEligible(pkg: String, sender: String, now: Long): ScheduledMessageEntity?
 
-    /** Mensagens de relógio que já venceram e podem ser tentadas agora. */
     @Query(
         "SELECT * FROM scheduled_messages " +
             "WHERE triggerType = 'AT_TIME' AND state = 'PENDING' " +
@@ -107,14 +99,27 @@ interface ScheduledMessageDao {
     )
     suspend fun dueTimed(now: Long): List<ScheduledMessageEntity>
 
-    /** Próximo instante em que vale acordar o app, respeitando também backoff. */
+    @Query(
+        "SELECT * FROM scheduled_messages " +
+            "WHERE packageName = :pkg AND sender = :sender " +
+            "AND triggerType = 'AT_TIME' AND state = 'PENDING' " +
+            "AND scheduledAt IS NOT NULL AND scheduledAt <= :now AND nextAttemptAt <= :now " +
+            "ORDER BY scheduledAt ASC, createdAt ASC"
+    )
+    suspend fun dueTimedForConversation(pkg: String, sender: String, now: Long): List<ScheduledMessageEntity>
+
+    /**
+     * Mensagem parada especificamente por falta de RemoteInput espera passivamente uma nova
+     * notificação da conversa; não acorda o telefone a cada minuto sem ter como mudar o cenário.
+     */
     @Query(
         "SELECT MIN(CASE " +
             "WHEN nextAttemptAt > scheduledAt THEN nextAttemptAt ELSE scheduledAt END) " +
             "FROM scheduled_messages " +
-            "WHERE triggerType = 'AT_TIME' AND state = 'PENDING' AND scheduledAt IS NOT NULL"
+            "WHERE triggerType = 'AT_TIME' AND state = 'PENDING' AND scheduledAt IS NOT NULL " +
+            "AND (lastError IS NULL OR lastError != :waitForConversationError)"
     )
-    suspend fun nextTimedAt(): Long?
+    suspend fun nextTimedAt(waitForConversationError: String): Long?
 
     @Query(
         "UPDATE scheduled_messages SET " +
