@@ -14,19 +14,15 @@ sealed class ReplyResult {
     data class Rejected(val reason: String, val consumesAttempt: Boolean = true) : ReplyResult()
 }
 
-/** Fronteira do mecanismo de envio. */
+/** Fronteira do mecanismo de envio. Mantém URI como String para a máquina de estados não depender de Android. */
 interface ReplySender {
     suspend fun send(packageName: String, sender: String, text: String): ReplyResult
 
-    /**
-     * Payload de mídia. Implementações antigas continuam compilando: sem capacidade explícita,
-     * a resposta é rejeitada e fica visível em vez de fingir que enviou.
-     */
     suspend fun sendMedia(
         packageName: String,
         sender: String,
         text: String,
-        uri: Uri,
+        uri: String,
         mimeType: String
     ): ReplyResult = ReplyResult.Rejected(MEDIA_NOT_SUPPORTED, consumesAttempt = false)
 
@@ -96,30 +92,27 @@ class NotificationReplySender(private val context: Context) : ReplySender {
         packageName: String,
         sender: String,
         text: String,
-        uri: Uri,
+        uri: String,
         mimeType: String
     ): ReplyResult {
         val cached = ReplyActionRegistry.get(packageName, sender)
             ?: return ReplyResult.Rejected(NO_ACTION, consumesAttempt = false)
 
-        // Android só aceita um data result quando a própria ação publicada pelo app de
-        // mensagens declara aquele tipo. Isto impede o WA-Keeper de afirmar suporte que o
-        // WhatsApp daquela versão não ofereceu.
         val dataInput = cached.remoteInputs.firstOrNull { remote ->
             remote.allowedDataTypes.any { allowed -> mimeMatches(allowed, mimeType) }
         } ?: return ReplyResult.Rejected(ReplySender.MEDIA_NOT_SUPPORTED, consumesAttempt = false)
 
         return runCatching {
+            val parsedUri = Uri.parse(uri)
             runCatching {
-                context.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                context.grantUriPermission(packageName, parsedUri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
 
             val intent = Intent().apply {
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-            RemoteInput.addDataResultToIntent(dataInput, intent, mapOf(mimeType to uri))
+            RemoteInput.addDataResultToIntent(dataInput, intent, mapOf(mimeType to parsedUri))
 
-            // Legenda opcional: só adiciona texto se houver RemoteInput livre para texto.
             if (text.isNotBlank()) {
                 val textInput = cached.remoteInputs.firstOrNull { it.allowFreeFormInput }
                 if (textInput != null) {
@@ -143,9 +136,9 @@ class NotificationReplySender(private val context: Context) : ReplySender {
 
     private fun mimeMatches(allowed: String, actual: String): Boolean {
         if (allowed == "*/*" || allowed.equals(actual, ignoreCase = true)) return true
-        val a = allowed.substringBefore('/', missingDelimiterValue = allowed)
-        val b = actual.substringBefore('/', missingDelimiterValue = actual)
-        return allowed.endsWith("/*") && a.equals(b, ignoreCase = true)
+        val allowedMajor = allowed.substringBefore('/', missingDelimiterValue = allowed)
+        val actualMajor = actual.substringBefore('/', missingDelimiterValue = actual)
+        return allowed.endsWith("/*") && allowedMajor.equals(actualMajor, ignoreCase = true)
     }
 
     companion object {
