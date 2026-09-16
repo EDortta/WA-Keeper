@@ -162,6 +162,24 @@ interface ScheduledMessageDao {
     suspend fun updateText(id: Long, text: String, now: Long): Int
 
     @Query(
+        "UPDATE scheduled_messages SET " +
+            "text = :text, triggerType = :triggerType, scheduledAt = :scheduledAt, " +
+            "mediaUri = :mediaUri, mediaMimeType = :mediaMimeType, mediaName = :mediaName, " +
+            "updatedAt = :now, lastError = NULL, nextAttemptAt = 0 " +
+            "WHERE id = :id AND state = 'PENDING'"
+    )
+    suspend fun updatePending(
+        id: Long,
+        text: String,
+        triggerType: String,
+        scheduledAt: Long?,
+        mediaUri: String?,
+        mediaMimeType: String?,
+        mediaName: String?,
+        now: Long
+    ): Int
+
+    @Query(
         "UPDATE scheduled_messages SET state = 'FAILED', updatedAt = :now, " +
             "lastError = '" + STALE_CLAIM_REASON + "' " +
             "WHERE state = 'CLAIMED' AND claimedAt < :staleBefore"
