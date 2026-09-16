@@ -5,13 +5,7 @@ import android.content.Context
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 
-/**
- * Cola entre o `NotifListenerService` e a máquina de estados da EPIC 4 (#18).
- *
- * Fica aqui, e não no listener, de propósito: o listener é território compartilhado
- * com outra frente, e tudo que é desta épica precisa caber em arquivos próprios.
- * O gancho no listener é uma chamada só.
- */
+/** Cola notificações/relógio à máquina de estados de mensagens programadas. */
 object ScheduledMessageTrigger {
 
     const val TAG = "WAK-ScheduledMsg"
@@ -27,16 +21,6 @@ object ScheduledMessageTrigger {
             ).also { coordinator = it }
         }
 
-    /**
-     * Uma notificação nova daquela conversa chegou: se houver mensagem armada, é agora.
-     *
-     * Chamado **depois** de a ação de resposta desta notificação já ter sido cacheada.
-     * Isso torna o `PendingIntent` fresco no caso normal — mas não é garantia: quando
-     * esta notificação em particular não traz ação, o `ReplyActionRegistry` mantém a
-     * entrada anterior de propósito, e o disparo pode usar um ponteiro de notificação
-     * já removida. Nesse caso o `send` falha com `CanceledException` e a entrega volta
-     * para a fila; o que não acontece é alegar sucesso.
-     */
     suspend fun onIncoming(ctx: Context, sbn: StatusBarNotification, sender: String): TriggerOutcome {
         val outcome = coordinator(ctx).onConversationActivity(
             packageName = sbn.packageName,
@@ -51,16 +35,21 @@ object ScheduledMessageTrigger {
     }
 
     /**
-     * A mensagem é do próprio usuário?
-     *
-     * Na convenção do `MessagingStyle` do Android, uma mensagem **sem** `Person` é a
-     * do próprio dono do aparelho. É assim que o eco da nossa própria resposta chega
-     * de volta — e a #18 é explícita: mensagem enviada pelo usuário não é gatilho.
-     *
-     * `EXTRA_REMOTE_INPUT_HISTORY` é o segundo sinal: o Android o preenche com o texto
-     * respondido por `RemoteInput`. Se a notificação só carrega isso, é o nosso próprio
-     * envio voltando.
+     * AlarmManager acordou o app. Cada linha vencida disputa seu próprio claim; alarmes
+     * duplicados são seguros porque o UPDATE condicional só deixa uma execução atravessar.
      */
+    suspend fun onTime(ctx: Context): List<TriggerOutcome> {
+        val dao = NotifDatabase.get(ctx).scheduled()
+        val due = dao.dueTimed(System.currentTimeMillis())
+        if (due.isEmpty()) return emptyList()
+
+        return due.map { row ->
+            coordinator(ctx).onTimedMessage(row.id).also { outcome ->
+                android.util.Log.d(TAG, "time#${row.id} ${row.packageName}|${row.sender} -> $outcome")
+            }
+        }
+    }
+
     fun looksLikeOwnMessage(notification: Notification): Boolean {
         val style = runCatching {
             NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(notification)
@@ -75,9 +64,6 @@ object ScheduledMessageTrigger {
             lastMessageHasNoPerson = hasMessages && style?.messages?.lastOrNull()?.person == null,
             hasRemoteInputHistory = !history.isNullOrEmpty()
         )
-        // O log nomeia os sinais porque a única forma de conferir a premissa
-        // ("mensagem sem Person é do dono do aparelho") é olhar um aparelho de verdade —
-        // que não existe nesta janela. Ver a pergunta parqueada no RESUME.md da 018.
         if (own) {
             android.util.Log.d(
                 TAG,
