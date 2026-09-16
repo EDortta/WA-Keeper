@@ -62,7 +62,7 @@
             android:contentDescription="Ativar leitura automática mesmo parado"
             android:focusable="true"
             android:clickable="true"
-            app:tint="#25D366" />
+            app:tint="#48484A" />
 
         <ImageView
             android:id="@+id/btnSettings"
