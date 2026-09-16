@@ -324,6 +324,7 @@ class AudioArbiter private constructor(context: Context) {
                     if (!microphoneActive) {
                         resumeLocked()
                     }
+                    Unit
                 }
                 AudioManager.AUDIOFOCUS_LOSS,
                 AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
