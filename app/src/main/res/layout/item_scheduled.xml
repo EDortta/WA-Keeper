@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:textColor="#8A8A8E"
+            android:textColor="#636366"
             android:textSize="12sp" />
 
         <LinearLayout
@@ -41,21 +41,27 @@
                 style="?android:attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Editar" />
+                android:text="Editar"
+                android:textAllCaps="false"
+                android:textColor="#1C1C1E" />
 
             <Button
                 android:id="@+id/btnCancel"
                 style="?android:attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cancelar" />
+                android:text="Excluir"
+                android:textAllCaps="false"
+                android:textColor="#D70015" />
 
             <Button
                 android:id="@+id/btnReuse"
                 style="?android:attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Reutilizar" />
+                android:text="Reutilizar"
+                android:textAllCaps="false"
+                android:textColor="#1C1C1E" />
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
