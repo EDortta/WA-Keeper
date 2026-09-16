@@ -20,3 +20,4 @@ keystore.properties
 # versionaria o ponteiro para o cofre pessoal.
 .credentials/
 .env
+gradle.properties
