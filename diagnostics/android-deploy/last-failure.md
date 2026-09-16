@@ -1,6 +1,6 @@
 # Última falha do android-deploy
 
-- Data UTC: `2026-09-16T17:11:29Z`
+- Data UTC: `2026-09-16T17:16:23Z`
 - Branch testada: `feature/audio-arbiter-manual-tts`
 - Commit testado: `98a499d695dd9bd46c34419fa8002e0ab3d946cb`
 - Variante: `release`
@@ -47,7 +47,7 @@
 > Task :app:processDebugUnitTestJavaRes UP-TO-DATE
 > Task :app:testDebugUnitTest UP-TO-DATE
 
-BUILD SUCCESSFUL in 3s
+BUILD SUCCESSFUL in 1s
 28 actionable tasks: 1 executed, 27 up-to-date
 ==> Compilando release
 > Task :app:buildKotlinToolingMetadata UP-TO-DATE
@@ -109,12 +109,21 @@ BUILD SUCCESSFUL in 3s
 > Task :app:createReleaseApkListingFileRedirect UP-TO-DATE
 > Task :app:assembleRelease
 
-BUILD SUCCESSFUL in 1s
+BUILD SUCCESSFUL in 887ms
 49 actionable tasks: 3 executed, 46 up-to-date
 ==> Instalando sem apagar dados
 Performing Streamed Install
 adb: failed to install app/build/outputs/apk/release/app-release.apk: Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE: Existing package br.com.wanotifkeeper signatures do not match newer version; ignoring!]
 
+==> Diagnóstico de assinatura
+
+--- Assinatura do APK instalado no Android ---
+Signer #1 certificate DN: C=US, O=Android, CN=Android Debug
+Signer #1 certificate SHA-256 digest: fe10b3b53c6031daf8843c5e2087edd625682f244b37d5ad12d28d313df90394
+
+--- Assinatura do APK recém-compilado ---
+Signer #1 certificate DN: CN=Esteban Dortta, OU=Desenvolvimento, O=Inovação Sistemas, L=Presidente Prudente, ST=SP, C=SP
+Signer #1 certificate SHA-256 digest: f3f0c5972100dd082e0c4f6e2bec2e8d4d3bc3e1597894a98450775bfbe84a48
 
 A instalação falhou. NÃO desinstale o WA-Keeper para "resolver" assinatura incompatível:
 a desinstalação apagaria o banco local. Corrija a assinatura/keystore e rode novamente.
