@@ -1,58 +1,21 @@
 package br.com.wanotifkeeper
 
-import android.media.AudioAttributes
-import android.media.MediaPlayer
+import android.content.Context
 
 /**
- * Toca os áudios recebidos em voz alta (canal de assistente, respeita o áudio do carro).
- * Fila serial: áudios em sequência tocam um após o outro, sem se cortarem.
+ * Fachada para reprodução de áudio recebido.
+ *
+ * O player real é compartilhado em [AudioArbiter], junto com TTS. Assim um áudio recebido não
+ * toca por cima de outra mensagem falada e vice-versa.
  */
-class AudioPlayer {
+class AudioPlayer(context: Context) {
 
-    private val queue = ArrayDeque<String>()
-    private var player: MediaPlayer? = null
-    private var playing = false
+    private val audio = AudioArbiter.get(context.applicationContext)
 
-    private val attrs = AudioAttributes.Builder()
-        .setUsage(AudioAttributes.USAGE_ASSISTANT)
-        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-        .build()
-
-    @Synchronized
     fun play(path: String) {
-        queue.addLast(path)
-        if (!playing) startNext()
+        audio.play(path)
     }
 
-    @Synchronized
-    private fun startNext() {
-        val path = queue.removeFirstOrNull()
-        if (path == null) { playing = false; return }
-        playing = true
-        player = MediaPlayer().apply {
-            setAudioAttributes(attrs)
-            setOnCompletionListener { onFinished() }
-            setOnErrorListener { _, _, _ -> onFinished(); true }
-            setOnPreparedListener { start() }
-            runCatching {
-                setDataSource(path)
-                prepareAsync()
-            }.onFailure { onFinished() }
-        }
-    }
-
-    @Synchronized
-    private fun onFinished() {
-        runCatching { player?.release() }
-        player = null
-        startNext()
-    }
-
-    @Synchronized
-    fun shutdown() {
-        queue.clear()
-        runCatching { player?.release() }
-        player = null
-        playing = false
-    }
+    /** O arbiter é singleton do processo; destruir esta fachada não encerra a fila global. */
+    fun shutdown() = Unit
 }
