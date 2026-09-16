@@ -22,22 +22,37 @@ object ScheduledMessageTrigger {
         }
 
     suspend fun onIncoming(ctx: Context, sbn: StatusBarNotification, sender: String): TriggerOutcome {
+        val fromSelf = looksLikeOwnMessage(sbn.notification)
         val outcome = coordinator(ctx).onConversationActivity(
             packageName = sbn.packageName,
             conversationSender = sender,
-            fromSelf = looksLikeOwnMessage(sbn.notification),
+            fromSelf = fromSelf,
             triggerNotificationKey = sbn.key
         )
         if (outcome !is TriggerOutcome.NothingArmed) {
             android.util.Log.d(TAG, "${sbn.packageName}|$sender -> $outcome")
         }
+
+        // Uma mensagem de relógio pode ter vencido quando ainda não existia RemoteInput válido.
+        // A nova notificação acabou de atualizar o ReplyActionRegistry, então ela é a ocasião
+        // correta para tentar novamente sem polling de minuto em minuto. Eco do próprio usuário
+        // não serve de gatilho para evitar realimentação.
+        if (!fromSelf) {
+            val dao = NotifDatabase.get(ctx).scheduled()
+            val due = dao.dueTimedForConversation(sbn.packageName, sender, System.currentTimeMillis())
+            if (due.isNotEmpty()) {
+                due.forEach { row ->
+                    val timedOutcome = coordinator(ctx).onTimedMessage(row.id)
+                    android.util.Log.d(TAG, "recovery#${row.id} ${sbn.packageName}|$sender -> $timedOutcome")
+                }
+                ScheduledMessageAlarmScheduler.reschedule(ctx)
+            }
+        }
+
         return outcome
     }
 
-    /**
-     * AlarmManager acordou o app. Cada linha vencida disputa seu próprio claim; alarmes
-     * duplicados são seguros porque o UPDATE condicional só deixa uma execução atravessar.
-     */
+    /** AlarmManager acordou o app. */
     suspend fun onTime(ctx: Context): List<TriggerOutcome> {
         val dao = NotifDatabase.get(ctx).scheduled()
         val due = dao.dueTimed(System.currentTimeMillis())
