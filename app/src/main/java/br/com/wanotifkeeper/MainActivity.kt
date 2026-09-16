@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
 import android.provider.Settings
 import android.text.Editable
@@ -36,6 +37,8 @@ class MainActivity : AppCompatActivity() {
     private companion object {
         const val REQ_MIC = 7301
         const val DIRECT_COMMAND_WINDOW_MS = 20_000L
+        const val READ_MODE_ON = "#25D366"
+        const val READ_MODE_OFF = "#48484A"
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -135,7 +138,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun renderReadMode() {
         val enabled = ManualReadMode.isEnabled()
-        binding.btnReadMode.alpha = if (enabled) 1f else 0.45f
+        binding.btnReadMode.alpha = 1f
+        binding.btnReadMode.setColorFilter(Color.parseColor(if (enabled) READ_MODE_ON else READ_MODE_OFF))
         binding.btnReadMode.contentDescription = if (enabled) {
             "Desativar leitura automática quando parado"
         } else {
@@ -143,11 +147,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Botão de microfone: caminho direto para falar um comando, sem depender da palavra de
-     * ativação. O semáforo de áudio é controlado pelo serviço no mesmo instante em que a
-     * captura efetivamente começa/termina.
-     */
     private fun onMicTapped() {
         if (isDirectListening()) {
             Prefs.setDirectCommandUntil(this, 0L)
