@@ -272,7 +272,7 @@ class NotifAdapter(
         holder.card.setOnClickListener { onClick(item) }
         val isVoiceMessage = item.audioPath != null || MediaHints.looksLikeVoiceMessage(item.text)
         holder.playText.visibility = if (isVoiceMessage) View.GONE else View.VISIBLE
-        holder.playText.setOnClickListener(if (isVoiceMessage) null else View.OnClickListener { onSpeak(item) })
+        holder.playText.setOnClickListener { if (!isVoiceMessage) onSpeak(item) }
         holder.settings.setOnClickListener { onSettings(item) }
 
         holder.avatar.text = item.sender.firstOrNull()?.uppercaseChar()?.toString() ?: "?"
