@@ -16,9 +16,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -30,7 +30,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -269,7 +270,9 @@ class NotifAdapter(
         holder.time.text = fmt.format(Date(item.timestamp))
 
         holder.card.setOnClickListener { onClick(item) }
-        holder.playText.setOnClickListener { onSpeak(item) }
+        val isVoiceMessage = item.audioPath != null || MediaHints.looksLikeVoiceMessage(item.text)
+        holder.playText.visibility = if (isVoiceMessage) View.GONE else View.VISIBLE
+        holder.playText.setOnClickListener { if (!isVoiceMessage) onSpeak(item) }
         holder.settings.setOnClickListener { onSettings(item) }
 
         holder.avatar.text = item.sender.firstOrNull()?.uppercaseChar()?.toString() ?: "?"

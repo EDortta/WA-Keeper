@@ -12,7 +12,7 @@
         android:layout_height="?attr/actionBarSize"
         android:background="#FFFFFF"
         app:navigationIcon="@android:drawable/ic_menu_revert"
-        app:title="Mensagens armadas"
+        app:title="Mensagens programadas"
         app:titleTextColor="#1C1C1E" />
 
     <ScrollView
@@ -40,7 +40,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="A mensagem fica guardada e o app tenta enviá-la assim que esta conversa mandar a próxima mensagem. Uma vez só — e se não der, o motivo aparece aqui."
+                android:text="Escolha o conteúdo e quando tentar enviar. Pode ser na próxima mensagem recebida ou em uma data e hora."
                 android:textColor="#8A8A8E"
                 android:textSize="12sp" />
 
@@ -51,7 +51,7 @@
                 android:layout_marginTop="14dp"
                 android:background="#FFFFFF"
                 android:gravity="top|start"
-                android:hint="Escreva a mensagem"
+                android:hint="Texto ou legenda (opcional se houver anexo)"
                 android:importantForAutofill="no"
                 android:inputType="textMultiLine|textCapSentences"
                 android:minLines="3"
@@ -61,18 +61,79 @@
                 android:textSize="15sp" />
 
             <Button
+                android:id="@+id/btnAttachment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Anexar ou trocar imagem, vídeo, áudio ou documento" />
+
+            <Button
+                android:id="@+id/btnRemoveAttachment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Remover anexo"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvAttachment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Sem anexo"
+                android:textColor="#8A8A8E"
+                android:textSize="12sp" />
+
+            <RadioGroup
+                android:id="@+id/rgTrigger"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/radioNextIncoming"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Quando esta pessoa mandar a próxima mensagem" />
+
+                <RadioButton
+                    android:id="@+id/radioAtTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Em uma data e hora" />
+            </RadioGroup>
+
+            <Button
+                android:id="@+id/btnDateTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Escolher data e hora"
+                android:visibility="gone" />
+
+            <Button
                 android:id="@+id/btnArm"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="Enviar quando esta pessoa falar comigo" />
+                android:text="Programar mensagem" />
+
+            <Button
+                android:id="@+id/btnCancelEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Cancelar edição"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/tvEmpty"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="22dp"
-                android:text="Nenhuma mensagem armada para esta conversa."
+                android:text="Nenhuma mensagem programada para esta conversa."
                 android:textColor="#8A8A8E"
                 android:textSize="13sp"
                 android:visibility="gone" />
