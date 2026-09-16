@@ -86,5 +86,9 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".ScheduledMessageAlarmReceiver"
+            android:exported="false" />
+
     </application>
 </manifest>
