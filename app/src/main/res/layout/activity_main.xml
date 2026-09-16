@@ -10,7 +10,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <!-- Banner de permissão -->
     <TextView
         android:id="@+id/bannerPermission"
         android:layout_width="match_parent"
@@ -23,7 +22,6 @@
         android:textSize="13sp"
         android:visibility="gone" />
 
-    <!-- Search bar flutuante + acesso aos ajustes -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -54,10 +52,23 @@
             android:focusableInTouchMode="true" />
 
         <ImageView
+            android:id="@+id/btnReadMode"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="6dp"
+            android:padding="10dp"
+            android:src="@android:drawable/ic_lock_silent_mode_off"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Ativar leitura automática mesmo parado"
+            android:focusable="true"
+            android:clickable="true"
+            app:tint="#25D366" />
+
+        <ImageView
             android:id="@+id/btnSettings"
             android:layout_width="44dp"
             android:layout_height="44dp"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="2dp"
             android:padding="10dp"
             android:src="@drawable/ic_settings"
             android:background="?attr/selectableItemBackgroundBorderless"
@@ -66,7 +77,6 @@
             android:clickable="true" />
     </LinearLayout>
 
-    <!-- Tabs -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
@@ -101,7 +111,6 @@
         android:layout_height="1dp"
         android:background="#E5E5EA" />
 
-    <!-- paddingBottom deixa espaço para o botão de microfone não cobrir o último cartão -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"
         android:layout_width="match_parent"
@@ -111,7 +120,6 @@
         android:paddingTop="8dp"
         android:paddingBottom="78dp" />
 
-    <!-- Empty state -->
     <LinearLayout
         android:id="@+id/emptyState"
         android:layout_width="match_parent"
@@ -148,11 +156,6 @@
 
 </LinearLayout>
 
-    <!--
-        Botão de microfone. Enquanto a palavra de ativação ("Godofredo") não é confiável no
-        reconhecedor on-device, este é o caminho direto: tocar e falar o comando, sem depender
-        de o aparelho ouvir a palavra certa. Centralizado embaixo, sobre a lista.
-    -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnMic"
         android:layout_width="wrap_content"
