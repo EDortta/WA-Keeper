@@ -99,6 +99,13 @@ class AudioArbiter private constructor(context: Context) {
     fun isBusy(): Boolean = synchronized(lock) { current != null || queue.isNotEmpty() }
 
     /**
+     * Só informa saída que pode estar efetivamente audível. Quando o microfone abre, a fila
+     * continua ocupada, mas está bloqueada; o SpeechRecognizer não pode esperar essa fila
+     * esvaziar porque ela só esvaziará depois que o próprio microfone fechar.
+     */
+    fun isAudiblyBusy(): Boolean = synchronized(lock) { !microphoneActive && current != null }
+
+    /**
      * Semáforo de privacidade/concorrência: microfone aberto implica zero saída do WA-Keeper.
      * Ao fechar, aguardamos dois segundos antes de retomar para não capturar o próprio áudio.
      */
