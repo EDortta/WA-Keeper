@@ -81,7 +81,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="Enviar quando esta pessoa falar comigo" />
+                        android:text="Programar mensagem" />
 
                     <TextView
                         android:id="@+id/tvText"
@@ -93,11 +93,20 @@
                         android:textSize="16sp" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPlayText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="▶  Ouvir texto"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#25D366" />
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnPlayAudio"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
-                        android:text="▶  Tocar áudio"
+                        android:layout_marginTop="10dp"
+                        android:text="▶  Tocar áudio original"
                         android:textColor="#FFFFFF"
                         app:backgroundTint="#25D366"
                         android:visibility="gone" />

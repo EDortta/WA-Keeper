@@ -1,7 +1,6 @@
 package br.com.wanotifkeeper
 
 import android.graphics.BitmapFactory
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -18,7 +17,7 @@ class DetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailBinding
     private val fmt = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
-    private var audioPreview: MediaPlayer? = null
+    private val audio by lazy { AudioArbiter.get(applicationContext) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,8 +35,8 @@ class DetailActivity : AppCompatActivity() {
             binding.tvSender.text = item.sender
             binding.tvTime.text = fmt.format(Date(item.timestamp))
             binding.tvText.text = item.text
+            binding.btnPlayText.setOnClickListener { audio.speakText(item.text) }
 
-            // EPIC 4 (#18): a partir da conversa, armar uma mensagem para o próximo contato.
             binding.btnSchedule.setOnClickListener {
                 startActivity(
                     ScheduledMessagesActivity.intent(this@DetailActivity, item.packageName, item.sender)
@@ -51,23 +50,17 @@ class DetailActivity : AppCompatActivity() {
                     binding.imgAttachment.setImageBitmap(bmp)
                     binding.imgAttachment.visibility = View.VISIBLE
                 }
-                // O WhatsApp anuncia a imagem no texto mas nem sempre embute o bitmap.
                 looksLikeMedia(item.text) -> binding.tvNoImage.visibility = View.VISIBLE
             }
 
-            val audio = item.audioPath?.let(::File)?.takeIf { it.exists() }
-            if (audio != null) {
+            val originalAudio = item.audioPath?.let(::File)?.takeIf { it.exists() }
+            if (originalAudio != null) {
                 binding.btnPlayAudio.visibility = View.VISIBLE
-                binding.btnPlayAudio.setOnClickListener { playAudio(audio) }
+                binding.btnPlayAudio.setOnClickListener { audio.play(originalAudio.absolutePath) }
             }
         }
     }
 
-    /**
-     * Antes da EPIC 3, `imagePath` só continha o bitmap da notificação, que o sistema já
-     * entregava reduzido. Agora contém o arquivo ORIGINAL do WhatsApp: `decodeFile` cru sobre
-     * uma foto de 12 MP aloca dezenas de MB de uma vez, sem `largeHeap` no manifesto.
-     */
     private fun decodeSampled(file: File): android.graphics.Bitmap? = runCatching {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.absolutePath, bounds)
@@ -78,40 +71,12 @@ class DetailActivity : AppCompatActivity() {
         BitmapFactory.decodeFile(file.absolutePath, BitmapFactory.Options().apply { inSampleSize = sample })
     }.getOrNull()
 
-    private fun playAudio(file: File) {
-        audioPreview?.release()
-        audioPreview = MediaPlayer().apply {
-            setOnCompletionListener { it.release(); if (audioPreview === it) audioPreview = null }
-            setOnErrorListener { mp, _, _ -> mp.release(); if (audioPreview === mp) audioPreview = null; true }
-            setOnPreparedListener { it.start() }
-            runCatching {
-                setDataSource(file.absolutePath)
-                prepareAsync()
-            }.onFailure { release(); audioPreview = null }
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        audioPreview?.release()
-        audioPreview = null
-    }
-
-    /**
-     * S3 do concílio: aqui vivia a regra frouxa que o [MediaHints] foi criado para eliminar
-     * (`containsMatchIn` sobre "foto|imagem|…"), na mesma branch que a eliminou do caminho de
-     * captura. Ela não dispara varredura, mas afirmava "imagem não capturada" para qualquer
-     * mensagem que mencionasse a palavra — e era a regra que um mantenedor encontraria
-     * primeiro e replicaria. Passa a ser a mesma regra do resto do app.
-     */
     private fun looksLikeMedia(text: String) =
         MediaHints.looksLikeImageMessage(text, isGroup = true) ||
             MediaHints.looksLikeVoiceMessage(text)
 
     companion object {
         const val EXTRA_ID = "notif_id"
-
-        /** Teto de lado maior ao decodificar a imagem, para não estourar a heap com foto original. */
         private const val MAX_IMAGE_PX = 2048
     }
 }
