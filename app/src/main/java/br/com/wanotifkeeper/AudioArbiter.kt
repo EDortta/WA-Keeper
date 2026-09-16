@@ -311,7 +311,10 @@ class AudioArbiter private constructor(context: Context) {
             when (change) {
                 AudioManager.AUDIOFOCUS_GAIN -> {
                     focusHeld = true
-                    if (!microphoneActive) resumeLocked()
+                    if (!microphoneActive) {
+                        resumeLocked()
+                    }
+                    Unit
                 }
                 AudioManager.AUDIOFOCUS_LOSS,
                 AudioManager.AUDIOFOCUS_LOSS_TRANSIENT,
@@ -330,6 +333,7 @@ class AudioArbiter private constructor(context: Context) {
                         null -> Unit
                     }
                 }
+                else -> Unit
             }
         }
     }
