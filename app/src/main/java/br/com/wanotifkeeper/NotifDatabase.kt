@@ -13,13 +13,10 @@ data class NotifEntity(
     val text: String,
     val timestamp: Long,
     val packageName: String = "com.whatsapp",
-    /** Caminho no filesDir da imagem anexada à notificação, quando o WhatsApp a inclui. */
     val imagePath: String? = null,
-    /** Caminho no filesDir do áudio de voz recebido, copiado da mídia do WhatsApp. */
     val audioPath: String? = null
 )
 
-/** Política de retenção de uma conversa. */
 enum class RetentionMode { NEVER, CUSTOM, FOREVER }
 
 @Entity(tableName = "conversation_settings")
@@ -61,14 +58,12 @@ interface NotifDao {
     @Query("SELECT DISTINCT sender FROM notifications ORDER BY sender ASC")
     fun sendersFlow(): Flow<List<String>>
 
-    /** Escopado por pacote: contatos com o mesmo nome de exibição no WhatsApp e no Business não se confundem. */
     @Query("SELECT DISTINCT sender FROM notifications WHERE packageName = :pkg ORDER BY sender ASC")
     suspend fun sendersByPackage(pkg: String): List<String>
 
     @Query("SELECT * FROM notifications WHERE sender = :sender ORDER BY timestamp DESC")
     fun bySenderFlow(sender: String): Flow<List<NotifEntity>>
 
-    /** Para "leia as últimas mensagens de X" — mais recentes primeiro, já escopado por conta. */
     @Query("SELECT * FROM notifications WHERE sender = :sender AND packageName = :pkg ORDER BY timestamp DESC LIMIT :limit")
     suspend fun lastNForSender(sender: String, pkg: String, limit: Int): List<NotifEntity>
 
@@ -117,7 +112,7 @@ interface SettingsDao {
 
 @Database(
     entities = [NotifEntity::class, ConversationSettings::class, ScheduledMessageEntity::class],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class NotifDatabase : RoomDatabase() {
@@ -128,12 +123,10 @@ abstract class NotifDatabase : RoomDatabase() {
     companion object {
         @Volatile private var INSTANCE: NotifDatabase? = null
 
-        // Schema não mudou entre v1 e v2 — migration vazia preserva os dados
         val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(db: SupportSQLiteDatabase) { /* sem alteração de schema */ }
+            override fun migrate(db: SupportSQLiteDatabase) { }
         }
 
-        // v3: imagem anexada por notificação + retenção configurável por conversa
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE notifications ADD COLUMN imagePath TEXT")
@@ -146,14 +139,12 @@ abstract class NotifDatabase : RoomDatabase() {
             }
         }
 
-        // v4: áudio de voz recebido copiado da mídia do WhatsApp
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE notifications ADD COLUMN audioPath TEXT")
             }
         }
 
-        // v5: mensagens armadas para o próximo contato (EPIC 4 / #18)
         val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
@@ -173,11 +164,27 @@ abstract class NotifDatabase : RoomDatabase() {
                         "triggerNotificationKey TEXT, " +
                         "triggeredAt INTEGER)"
                 )
-                // O gatilho consulta sempre por (pacote, remetente, estado): sem o índice,
-                // toda notificação do WhatsApp viraria varredura da tabela inteira.
                 db.execSQL(
                     "CREATE INDEX IF NOT EXISTS index_scheduled_messages_conversation " +
                         "ON scheduled_messages (packageName, sender, state)"
+                )
+            }
+        }
+
+        // v6: gatilho por data/hora e payload opcional de mídia.
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE scheduled_messages ADD COLUMN triggerType TEXT NOT NULL " +
+                        "DEFAULT 'NEXT_INCOMING'"
+                )
+                db.execSQL("ALTER TABLE scheduled_messages ADD COLUMN scheduledAt INTEGER")
+                db.execSQL("ALTER TABLE scheduled_messages ADD COLUMN mediaUri TEXT")
+                db.execSQL("ALTER TABLE scheduled_messages ADD COLUMN mediaMimeType TEXT")
+                db.execSQL("ALTER TABLE scheduled_messages ADD COLUMN mediaName TEXT")
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_scheduled_messages_time " +
+                        "ON scheduled_messages (triggerType, state, scheduledAt)"
                 )
             }
         }
@@ -187,7 +194,13 @@ abstract class NotifDatabase : RoomDatabase() {
                 ctx.applicationContext,
                 NotifDatabase::class.java,
                 "wanotif.db"
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build().also { INSTANCE = it }
+            ).addMigrations(
+                MIGRATION_1_2,
+                MIGRATION_2_3,
+                MIGRATION_3_4,
+                MIGRATION_4_5,
+                MIGRATION_5_6
+            ).build().also { INSTANCE = it }
         }
     }
 }
