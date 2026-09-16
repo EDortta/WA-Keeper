@@ -14,7 +14,7 @@ import kotlin.math.max
 /**
  * Acorda o app para mensagens AT_TIME. Usa setAndAllowWhileIdle: não exige a permissão especial
  * de alarmes exatos do Android 12+, portanto o sistema pode deslocar alguns minutos para poupar
- * bateria. A associação continua sendo por data/hora, sem criar uma permissão invasiva nova.
+ * bateria.
  */
 object ScheduledMessageAlarmScheduler {
     private const val ACTION = "br.com.wanotifkeeper.SEND_SCHEDULED_MESSAGES"
@@ -26,7 +26,8 @@ object ScheduledMessageAlarmScheduler {
         val pendingIntent = pendingIntent(app)
         alarm.cancel(pendingIntent)
 
-        val nextAt = NotifDatabase.get(app).scheduled().nextTimedAt() ?: return
+        val nextAt = NotifDatabase.get(app).scheduled()
+            .nextTimedAt(NotificationReplySender.NO_ACTION) ?: return
         val target = max(nextAt, System.currentTimeMillis() + 1_000L)
         alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, target, pendingIntent)
     }
