@@ -16,29 +16,15 @@ android {
         versionName "1.0.8"
     }
 
-    signingConfigs {
-      release {
-          storeFile file(RELEASE_STORE_FILE)
-          storePassword RELEASE_STORE_PASSWORD
-          keyAlias RELEASE_KEY_ALIAS
-          keyPassword RELEASE_KEY_PASSWORD
-      }
-    }
-
     buildTypes {
         release {
-            // SEC-0066: assinado com a chave de debug de propósito. Trocar de chave
-            // exigiria desinstalar o app, e o banco de mensagens não tem como ser
-            // restaurado depois (allowBackup=false + release não-debuggable). A chave
-            // de debug é pública, então não protege contra quem já tem adb no
-            // aparelho — mas fecha a brecha que importa aqui: com debuggable=false,
-            // `run-as` não consegue mais extrair o banco.
-            signingConfig signingConfigs.release
+            // SEC-0066: o APK instalado historicamente foi assinado com a debug.keystore
+            // deste ambiente. Manter signingConfigs.debug aqui preserva compatibilidade
+            // de atualização sem exigir desinstalação (o que apagaria o banco local).
+            // Isto NÃO torna o APK debuggable: apenas reutiliza a mesma chave histórica.
+            signingConfig signingConfigs.debug
 
-            // SEC-0066: build de release não pode ser debuggable — APK debug
-            // permite extrair o banco via `run-as` sem root. Uso diário deve
-            // ser sempre com o APK release assinado (assinatura: pendência do
-            // operador; keystore nunca deve ser commitado neste repo).
+            // Release continua não-debuggable; `run-as` permanece indisponível.
             debuggable false
             minifyEnabled false
         }
