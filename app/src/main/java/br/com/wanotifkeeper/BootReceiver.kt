@@ -3,11 +3,20 @@ package br.com.wanotifkeeper
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        // O NotificationListenerService é gerenciado pelo sistema automaticamente.
-        // Esse receiver existe para garantir que o app "acorde" após reboot
-        // e o sistema reconecte o listener.
+        val pending = goAsync()
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try {
+                ScheduledMessageAlarmScheduler.reschedule(context.applicationContext)
+            } finally {
+                pending.finish()
+            }
+        }
     }
 }

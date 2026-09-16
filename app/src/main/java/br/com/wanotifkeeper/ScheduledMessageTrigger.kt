@@ -5,13 +5,6 @@ import android.content.Context
 import android.service.notification.StatusBarNotification
 import androidx.core.app.NotificationCompat
 
-/**
- * Cola entre o `NotifListenerService` e a máquina de estados da EPIC 4 (#18).
- *
- * Fica aqui, e não no listener, de propósito: o listener é território compartilhado
- * com outra frente, e tudo que é desta épica precisa caber em arquivos próprios.
- * O gancho no listener é uma chamada só.
- */
 object ScheduledMessageTrigger {
 
     const val TAG = "WAK-ScheduledMsg"
@@ -27,40 +20,45 @@ object ScheduledMessageTrigger {
             ).also { coordinator = it }
         }
 
-    /**
-     * Uma notificação nova daquela conversa chegou: se houver mensagem armada, é agora.
-     *
-     * Chamado **depois** de a ação de resposta desta notificação já ter sido cacheada.
-     * Isso torna o `PendingIntent` fresco no caso normal — mas não é garantia: quando
-     * esta notificação em particular não traz ação, o `ReplyActionRegistry` mantém a
-     * entrada anterior de propósito, e o disparo pode usar um ponteiro de notificação
-     * já removida. Nesse caso o `send` falha com `CanceledException` e a entrega volta
-     * para a fila; o que não acontece é alegar sucesso.
-     */
     suspend fun onIncoming(ctx: Context, sbn: StatusBarNotification, sender: String): TriggerOutcome {
+        val fromSelf = looksLikeOwnMessage(sbn.notification)
         val outcome = coordinator(ctx).onConversationActivity(
             packageName = sbn.packageName,
             conversationSender = sender,
-            fromSelf = looksLikeOwnMessage(sbn.notification),
+            fromSelf = fromSelf,
             triggerNotificationKey = sbn.key
         )
         if (outcome !is TriggerOutcome.NothingArmed) {
             android.util.Log.d(TAG, "${sbn.packageName}|$sender -> $outcome")
         }
+
+        if (!fromSelf) {
+            val dao = NotifDatabase.get(ctx).scheduled()
+            val due = dao.dueTimedForConversation(sbn.packageName, sender, System.currentTimeMillis())
+            if (due.isNotEmpty()) {
+                due.forEach { row ->
+                    val timedOutcome = coordinator(ctx).onTimedMessage(row.id)
+                    android.util.Log.d(TAG, "recovery#${row.id} ${sbn.packageName}|$sender -> $timedOutcome")
+                }
+                ScheduledMessageAlarmScheduler.reschedule(ctx)
+            }
+        }
+
         return outcome
     }
 
-    /**
-     * A mensagem é do próprio usuário?
-     *
-     * Na convenção do `MessagingStyle` do Android, uma mensagem **sem** `Person` é a
-     * do próprio dono do aparelho. É assim que o eco da nossa própria resposta chega
-     * de volta — e a #18 é explícita: mensagem enviada pelo usuário não é gatilho.
-     *
-     * `EXTRA_REMOTE_INPUT_HISTORY` é o segundo sinal: o Android o preenche com o texto
-     * respondido por `RemoteInput`. Se a notificação só carrega isso, é o nosso próprio
-     * envio voltando.
-     */
+    suspend fun onTime(ctx: Context): List<TriggerOutcome> {
+        val dao = NotifDatabase.get(ctx).scheduled()
+        val due = dao.dueTimed(System.currentTimeMillis())
+        if (due.isEmpty()) return emptyList()
+
+        return due.map { row ->
+            coordinator(ctx).onTimedMessage(row.id).also { outcome ->
+                android.util.Log.d(TAG, "time#${row.id} ${row.packageName}|${row.sender} -> $outcome")
+            }
+        }
+    }
+
     fun looksLikeOwnMessage(notification: Notification): Boolean {
         val style = runCatching {
             NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(notification)
@@ -75,9 +73,6 @@ object ScheduledMessageTrigger {
             lastMessageHasNoPerson = hasMessages && style?.messages?.lastOrNull()?.person == null,
             hasRemoteInputHistory = !history.isNullOrEmpty()
         )
-        // O log nomeia os sinais porque a única forma de conferir a premissa
-        // ("mensagem sem Person é do dono do aparelho") é olhar um aparelho de verdade —
-        // que não existe nesta janela. Ver a pergunta parqueada no RESUME.md da 018.
         if (own) {
             android.util.Log.d(
                 TAG,
