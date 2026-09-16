@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
 import android.provider.Settings
 import android.text.Editable
@@ -35,17 +36,18 @@ class MainActivity : AppCompatActivity() {
 
     private companion object {
         const val REQ_MIC = 7301
-
-        /** Janela em que o pedido do botão mantém o microfone aberto. */
         const val DIRECT_COMMAND_WINDOW_MS = 20_000L
+        const val READ_MODE_ON = "#25D366"
+        const val READ_MODE_OFF = "#48484A"
     }
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: NotifAdapter
     private val db by lazy { NotifDatabase.get(this) }
+    private val audio by lazy { AudioArbiter.get(applicationContext) }
     private val fmt = SimpleDateFormat("dd/MM HH:mm", Locale.getDefault())
 
-    private var currentTab = 0   // 0=Todos, 1=WhatsApp, 2=Business
+    private var currentTab = 0
     private var currentQuery = ""
     private var collectJob: Job? = null
 
@@ -53,14 +55,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        // Toolbar manual (NoActionBar theme)
         setSupportActionBar(null)
 
-        // Impede o EditText de roubar foco ao abrir a activity ou mudar de aba
         window.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
 
-        // Retenção: ruído legado e mensagens fora da janela saem já na abertura
         lifecycleScope.launch { Retention.purge(this@MainActivity, System.currentTimeMillis()) }
 
         adapter = NotifAdapter(
@@ -76,26 +74,34 @@ class MainActivity : AppCompatActivity() {
                     Intent(this, RetentionActivity::class.java)
                         .putExtra(RetentionActivity.EXTRA_SENDER, item.sender)
                 )
-            }
+            },
+            onSpeak = { item -> audio.speakText(item.text) }
         )
         binding.recycler.layoutManager = LinearLayoutManager(this)
         binding.recycler.adapter = adapter
         binding.recycler.itemAnimator = null
 
-        // Ajustes
         binding.btnSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
+        binding.btnReadMode.setOnClickListener {
+            val enabled = ManualReadMode.toggle()
+            renderReadMode()
+            Toast.makeText(
+                this,
+                if (enabled) "Leitura automática ligada mesmo parado" else "Leitura automática voltou a depender do movimento",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
         binding.btnMic.setOnClickListener { onMicTapped() }
 
-        // Banner de permissão
         updatePermissionBanner()
         binding.bannerPermission.setOnClickListener {
             startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
         }
 
-        // Tabs
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 currentTab = tab.position
@@ -105,7 +111,6 @@ class MainActivity : AppCompatActivity() {
             override fun onTabReselected(tab: TabLayout.Tab) {}
         })
 
-        // Search — universal (sempre busca em todos os pacotes)
         binding.searchField.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 currentQuery = s?.toString() ?: ""
@@ -122,6 +127,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         updatePermissionBanner()
         renderMicState()
+        renderReadMode()
         Prefs.registerChangeListener(this, micPrefsListener)
     }
 
@@ -130,16 +136,18 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
     }
 
-    /**
-     * Botão de microfone: caminho direto para falar um comando, sem depender de a palavra de
-     * ativação ser ouvida corretamente pelo reconhecedor on-device.
-     *
-     * Não liga o interruptor mestre por conta própria: se os comandos de voz estão desligados,
-     * isso foi uma escolha, e o botão leva aos Ajustes em vez de desfazê-la em silêncio.
-     */
+    private fun renderReadMode() {
+        val enabled = ManualReadMode.isEnabled()
+        binding.btnReadMode.alpha = 1f
+        binding.btnReadMode.setColorFilter(Color.parseColor(if (enabled) READ_MODE_ON else READ_MODE_OFF))
+        binding.btnReadMode.contentDescription = if (enabled) {
+            "Desativar leitura automática quando parado"
+        } else {
+            "Ativar leitura automática mesmo parado"
+        }
+    }
+
     private fun onMicTapped() {
-        // Segundo toque com o microfone aberto: fecha. O operador pediu explicitamente poder
-        // desligar por toque em vez de esperar a janela expirar.
         if (isDirectListening()) {
             Prefs.setDirectCommandUntil(this, 0L)
             return
@@ -159,23 +167,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (!isListenerEnabled()) {
-            // O motor de voz vive dentro do NotificationListenerService: sem o acesso a
-            // notificações concedido, o serviço não está de pé e não há quem ouça.
             Toast.makeText(this, "Ative o acesso a notificações para usar comandos de voz", Toast.LENGTH_LONG).show()
             return
         }
 
-        // O serviço observa esta chave e reage na hora — ver NotifListenerService.voicePrefsListener.
         Prefs.setDirectCommandUntil(this, System.currentTimeMillis() + DIRECT_COMMAND_WINDOW_MS)
     }
 
     private fun isDirectListening() = Prefs.directCommandUntil(this) > System.currentTimeMillis()
 
-    /**
-     * A tela não adivinha o estado do microfone: ela lê a mesma chave que o serviço escreve.
-     * Por isso a dica some sozinha quando a sessão termina — inclusive quando termina por
-     * silêncio, sem ninguém tocar em nada.
-     */
     private fun renderMicState() {
         val ouvindo = isDirectListening()
         binding.tvMicHint.visibility = if (ouvindo) View.VISIBLE else View.GONE
@@ -217,7 +217,7 @@ class MainActivity : AppCompatActivity() {
                 else -> null
             }
             val flow = when {
-                currentQuery.isNotBlank() -> db.dao().searchFlow(currentQuery)          // search ignora tab
+                currentQuery.isNotBlank() -> db.dao().searchFlow(currentQuery)
                 pkg != null -> db.dao().byPackageFlow(pkg)
                 else -> db.dao().allFlow()
             }
@@ -238,7 +238,8 @@ class MainActivity : AppCompatActivity() {
 class NotifAdapter(
     private val fmt: SimpleDateFormat,
     private val onClick: (NotifEntity) -> Unit,
-    private val onSettings: (NotifEntity) -> Unit
+    private val onSettings: (NotifEntity) -> Unit,
+    private val onSpeak: (NotifEntity) -> Unit
 ) : ListAdapter<NotifEntity, NotifAdapter.VH>(DIFF) {
 
     inner class VH(val card: CardView) : RecyclerView.ViewHolder(card) {
@@ -247,6 +248,7 @@ class NotifAdapter(
         val text: TextView = card.findViewById(R.id.tvText)
         val time: TextView = card.findViewById(R.id.tvTime)
         val badge: TextView = card.findViewById(R.id.tvBadge)
+        val playText: ImageView = card.findViewById(R.id.btnPlayText)
         val settings: ImageView = card.findViewById(R.id.btnSettings)
     }
 
@@ -259,9 +261,6 @@ class NotifAdapter(
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = getItem(position)
         holder.sender.text = item.sender
-        // O marcador de imagem só entra quando o texto ainda não tem um: agora que a captura
-        // funciona, o rótulo do próprio WhatsApp já vem como "📷 Foto" e o prefixo produzia
-        // "📷 📷 Foto" na lista.
         holder.text.text = when {
             item.imagePath == null -> item.text
             MediaHints.startsWithImageEmoji(item.text) -> item.text
@@ -270,12 +269,11 @@ class NotifAdapter(
         holder.time.text = fmt.format(Date(item.timestamp))
 
         holder.card.setOnClickListener { onClick(item) }
+        holder.playText.setOnClickListener { onSpeak(item) }
         holder.settings.setOnClickListener { onSettings(item) }
 
-        // Avatar: inicial do remetente
         holder.avatar.text = item.sender.firstOrNull()?.uppercaseChar()?.toString() ?: "?"
 
-        // Badge Business
         if (item.packageName == "com.whatsapp.w4b") {
             holder.badge.visibility = View.VISIBLE
             holder.badge.text = "BIZ"

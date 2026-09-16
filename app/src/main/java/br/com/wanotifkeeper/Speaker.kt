@@ -1,110 +1,35 @@
 package br.com.wanotifkeeper
 
 import android.content.Context
-import android.media.AudioAttributes
-import android.os.Bundle
-import android.speech.tts.TextToSpeech
-import android.speech.tts.UtteranceProgressListener
-import java.util.Locale
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Leitura em voz alta via TTS nativo do Android.
+ * Fachada de TTS mantida para os chamadores existentes.
  *
- * Inicialização é assíncrona; mensagens que chegam antes do motor ficar pronto são
- * enfileiradas e faladas assim que possível. Usa o canal de assistente para se
- * comportar bem com o áudio do carro (Bluetooth, ducking de música).
+ * A serialização e o foco de áudio não moram mais aqui: toda saída passa pelo [AudioArbiter],
+ * que coordena TTS e arquivos de áudio na mesma fila e respeita o semáforo do microfone.
  */
 class Speaker(context: Context) {
 
-    private val appContext = context.applicationContext
-    private var tts: TextToSpeech? = null
-    @Volatile private var ready = false
-    private val pending = ArrayDeque<Utterance>()
-    // Conta utterances faladas OU só enfileiradas (ainda não despachadas ao motor) — usado
-    // pelo motor de comandos de voz pra nunca escutar por cima da própria fala do app.
-    private val inFlight = AtomicInteger(0)
+    private val audio = AudioArbiter.get(context.applicationContext)
 
-    private data class Utterance(val phrase: String, val volume: Float)
-
-    init {
-        tts = TextToSpeech(appContext) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                tts?.language = Locale.forLanguageTag("pt-BR")
-                tts?.setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_ASSISTANT)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                        .build()
-                )
-                tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                    override fun onStart(utteranceId: String?) {}
-                    override fun onDone(utteranceId: String?) { inFlight.decrementAndGet() }
-                    @Deprecated("Deprecated in Java")
-                    override fun onError(utteranceId: String?) { inFlight.decrementAndGet() }
-                })
-                ready = true
-                synchronized(pending) {
-                    while (pending.isNotEmpty()) {
-                        val u = pending.removeFirst()
-                        enqueue(u.phrase, u.volume)
-                    }
-                }
-            }
-        }
+    fun announce(sender: String, text: String) {
+        audio.announce(sender, text)
     }
+
+    fun say(text: String) {
+        audio.say(text)
+    }
+
+    /** TTS explícito de uma mensagem, independente de movimento/configuração automática. */
+    fun speakText(text: String) {
+        audio.speakText(text)
+    }
+
+    fun isBusy(): Boolean = audio.isBusy()
 
     /**
-     * Lê "Fulano diz: texto" em voz alta. URLs no texto viram um aside resumido
-     * ("link do YouTube") em volume mais baixo, sem baixar nada (ver [UrlHints]) —
-     * cada trecho é uma chamada separada de fala em QUEUE_ADD, então soa como uma
-     * frase só apesar da mudança de volume no meio.
+     * O arbiter é compartilhado pelo processo inteiro, inclusive Activities; destruir a fachada
+     * do NotificationListenerService não pode derrubar uma reprodução iniciada pela UI.
      */
-    fun announce(sender: String, text: String) {
-        val prefix = "$sender diz:"
-        var first = true
-        for (segment in UrlHints.segments(text)) {
-            when (segment) {
-                is UrlHints.Segment.Text -> {
-                    val phrase = if (first) "$prefix ${segment.text}" else segment.text
-                    speak(phrase, NORMAL_VOLUME)
-                }
-                is UrlHints.Segment.Link -> speak("(${segment.label})", LINK_VOLUME)
-            }
-            first = false
-        }
-    }
-
-    /** Fala um aviso/pergunta do motor de comandos de voz, sem prefixo de remetente. */
-    fun say(text: String) {
-        speak(text, NORMAL_VOLUME)
-    }
-
-    /** Ainda tem fala pendente ou em andamento — o motor de comandos não deve escutar agora. */
-    fun isBusy(): Boolean = inFlight.get() > 0
-
-    private fun speak(phrase: String, volume: Float) {
-        inFlight.incrementAndGet()
-        if (ready) enqueue(phrase, volume)
-        else synchronized(pending) { pending.addLast(Utterance(phrase, volume)) }
-    }
-
-    private fun enqueue(phrase: String, volume: Float) {
-        val params = Bundle().apply { putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, volume) }
-        // QUEUE_ADD: mensagens em rajada são lidas em sequência, sem se cortarem.
-        tts?.speak(phrase, TextToSpeech.QUEUE_ADD, params, phrase.hashCode().toString())
-    }
-
-    fun shutdown() {
-        ready = false
-        tts?.stop()
-        tts?.shutdown()
-        tts = null
-    }
-
-    companion object {
-        private const val NORMAL_VOLUME = 1f
-        /** URLs viram um aside falado mais baixo, como se estivesse entre parênteses. */
-        private const val LINK_VOLUME = 0.5f
-    }
+    fun shutdown() = Unit
 }
