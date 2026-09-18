@@ -1,0 +1,54 @@
+$ adb shell appops get br.com.wanotifkeeper
+Uid mode: COARSE_LOCATION: ignore
+FINE_LOCATION: ignore
+READ_CONTACTS: ignore
+WRITE_CONTACTS: ignore
+READ_CALL_LOG: ignore
+WRITE_CALL_LOG: ignore
+READ_CALENDAR: ignore
+WRITE_CALENDAR: ignore
+CALL_PHONE: ignore
+READ_SMS: ignore
+RECEIVE_SMS: ignore
+RECEIVE_MMS: ignore
+RECEIVE_WAP_PUSH: ignore
+SEND_SMS: ignore
+CAMERA: ignore
+RECORD_AUDIO: foreground
+READ_PHONE_STATE: ignore
+ADD_VOICEMAIL: ignore
+USE_SIP: ignore
+PROCESS_OUTGOING_CALLS: ignore
+BODY_SENSORS: ignore
+READ_CELL_BROADCASTS: ignore
+READ_EXTERNAL_STORAGE: ignore
+WRITE_EXTERNAL_STORAGE: ignore
+GET_ACCOUNTS: ignore
+READ_PHONE_NUMBERS: ignore
+ANSWER_PHONE_CALLS: ignore
+ACCEPT_HANDOVER: ignore
+BLUETOOTH_SCAN: ignore
+ACTIVITY_RECOGNITION: ignore
+READ_MEDIA_AUDIO: ignore
+READ_MEDIA_VIDEO: ignore
+READ_MEDIA_IMAGES: ignore
+ACCESS_MEDIA_LOCATION: ignore
+MANAGE_EXTERNAL_STORAGE: allow
+BLUETOOTH_CONNECT: ignore
+UWB_RANGING: ignore
+BLUETOOTH_ADVERTISE: ignore
+NEARBY_WIFI_DEVICES: ignore
+READ_MEDIA_VISUAL_USER_SELECTED: ignore
+READ_HEART_RATE: ignore
+READ_SKIN_TEMPERATURE: ignore
+RANGING: ignore
+READ_OXYGEN_SATURATION: ignore
+RECORD_AUDIO: allow; time=+1d10h49m11s932ms ago; rejectTime=+8d1h46m48s897ms ago; duration=+8s356ms
+TAKE_AUDIO_FOCUS: foreground; time=+37m58s290ms ago
+START_FOREGROUND: allow; time=+6d6h58m55s216ms ago; duration=+6h56m21s966ms
+WRITE_MEDIA_AUDIO: deny; rejectTime=+31d17h30m4s202ms ago
+MANAGE_EXTERNAL_STORAGE: default; time=+3h5m13s57ms ago; rejectTime=+31d17h30m4s207ms ago
+ACCESS_RESTRICTED_SETTINGS: default; rejectTime=+30d4h38m26s902ms ago
+RECEIVE_SENSITIVE_NOTIFICATIONS: ignore; rejectTime=+2d1h13m1s782ms ago
+CONTROL_AUDIO: foreground; time=+1d3h12m44s289ms ago; rejectTime=+37m58s290ms ago
+CONTROL_AUDIO_PARTIAL: foreground; time=+1h25m30s520ms ago; duration=+25s946ms

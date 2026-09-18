@@ -1,0 +1,59 @@
+WA KEEPER - RESUMO AUTOMÁTICO
+Gerado: Fri Sep 18 06:17:45 PM -03 2026
+Package: br.com.wanotifkeeper
+Filtro contato: Nanda
+
+=== SINAIS IMPORTANTES ===
+[ACHADO] Exceções/crashes
+    wa-keeper-diagnose-20260918-181734/logcat-relevant.txt:09-16 15:00:00.293 23970 23970 E AndroidRuntime: FATAL EXCEPTION: main
+    wa-keeper-diagnose-20260918-181734/logcat-relevant.txt:09-16 15:00:00.293 23970 23970 E AndroidRuntime: java.lang.IllegalStateException: A migration from 6 to 5 was required but not found. Please provide the necessary Migration path via RoomDatabase.Builder.addMigration(Migration ...) or allow for destructive migrations via one of the RoomDatabase.Builder.fallbackToDestructiveMigration* methods.
+    wa-keeper-diagnose-20260918-181734/logcat-relevant.txt:09-16 15:00:00.293 23970 23970 E AndroidRuntime: 	Suppressed: kotlinx.coroutines.internal.DiagnosticCoroutineContextException: [StandaloneCoroutine{Cancelling}@f587e05, Dispatchers.Main.immediate]
+    wa-keeper-diagnose-20260918-181734/logcat-relevant.txt:09-18 16:58:03.379  1810  3020 E AppOps  : java.lang.SecurityException: Specified package "com.android.phone" under uid 10239 but it is not
+    wa-keeper-diagnose-20260918-181734/logcat-relevant.txt:09-18 16:58:04.375  1810  1841 E AppOps  : java.lang.SecurityException: Specified package "com.android.phone" under uid 10239 but it is not
+    wa-keeper-diagnose-20260918-181734/logcat-relevant.txt:09-18 16:58:33.937  6059 25874 E LoadedApk: Exception : java.lang.NullPointerException: Attempt to invoke virtual method 'boolean android.os.Looper.isPerfLogEnable()' on a null object reference
+    wa-keeper-diagnose-20260918-181734/logcat-relevant.txt:09-18 16:58:56.624  1810  2598 E AppOpService: java.lang.RuntimeException
+    wa-keeper-diagnose-20260918-181734/logcat-relevant.txt:09-18 16:58:58.925  1810  2598 E AppOpService: java.lang.RuntimeException
+
+[não visto] Bloqueio por execução em background
+
+[ACHADO] Problema com alarme exato
+    wa-keeper-diagnose-20260918-181734/logcat-relevant.txt:09-18 18:17:38.265  3568  3568 I adbd    :   cmd appops get 'br.com.wanotifkeeper' SCHEDULE_EXACT_ALARM 2>/dev/null || true
+    wa-keeper-diagnose-20260918-181734/battery_optimization.txt:  cmd appops get 'br.com.wanotifkeeper' SCHEDULE_EXACT_ALARM 2>/dev/null || true
+
+[ACHADO] WorkManager/Worker falhou ou foi cancelado
+    09-18 17:28:59.909  1810  1980 W SemAppFunctionDumpHelper: Failed to get all packages: java.util.concurrent.ExecutionException: java.lang.RuntimeException: java.lang.IllegalStateException: IllegalStateException: UserHandle{150} is locked or not running.
+    09-18 17:30:28.837  1810  2845 W SemAppFunctionDumpHelper: Failed to get all packages: java.util.concurrent.ExecutionException: java.lang.RuntimeException: java.lang.IllegalStateException: IllegalStateException: UserHandle{150} is locked or not running.
+    09-18 17:31:25.834  1810  2577 W SemAppFunctionDumpHelper: Failed to get all packages: java.util.concurrent.ExecutionException: java.lang.RuntimeException: java.lang.IllegalStateException: IllegalStateException: UserHandle{150} is locked or not running.
+    09-18 17:45:45.001 17990 17990 I ImeTracker: br.com.wanotifkeeper:4e33546d: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+    09-18 17:45:45.933 17990 17990 I ImeTracker: br.com.wanotifkeeper:d18a4d30: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+    09-18 17:46:01.291 17990 17990 I ImeTracker: br.com.wanotifkeeper:707c31c0: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+    09-18 17:46:03.330 17990 17990 I ImeTracker: br.com.wanotifkeeper:a6557257: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+    09-18 17:46:13.296 17990 17990 I ImeTracker: br.com.wanotifkeeper:76b6f1db: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+
+[ACHADO] Job/alarme do WA Keeper existe
+    wa-keeper-diagnose-20260918-181734/jobs_app.txt:    10545:br.com.wanotifkeeper=false
+    wa-keeper-diagnose-20260918-181734/jobs_app.txt:    TopAppTimer{<0>br.com.wanotifkeeper} NOT active
+    wa-keeper-diagnose-20260918-181734/jobs_app.txt:      <0>br.com.wanotifkeeper: ShrinkableDebits { debit tally: 0, bucket: 0 }
+    wa-keeper-diagnose-20260918-181734/jobs_app.txt:  10545: {br.com.wanotifkeeper}
+
+[ACHADO] Doze/App Standby pode ter interferido
+    wa-keeper-diagnose-20260918-181734/deviceidle.txt:    quick_doze_delay_to=+1m0s0ms
+    wa-keeper-diagnose-20260918-181734/deviceidle.txt:  Doze Allowlist Gatekeeper: false
+    wa-keeper-diagnose-20260918-181734/battery_optimization.txt:  echo '--- app standby bucket ---'
+    wa-keeper-diagnose-20260918-181734/battery_optimization.txt:  am get-standby-bucket 'br.com.wanotifkeeper'
+    wa-keeper-diagnose-20260918-181734/battery_optimization.txt:--- app standby bucket ---
+
+[ACHADO PARCIAL] 'Nanda' apareceu no logcat, mas não em log específico do agendador.
+
+run-as disponível: 0
+
+Arquivos prioritários para revisar:
+  1. diagnosis.txt
+  2. logcat-contact.txt
+  3. logcat-scheduled-contact.txt
+  4. logcat-scheduled.txt
+  5. logcat-relevant.txt
+  6. alarms_app.txt
+  7. jobs_app.txt
+  8. battery_optimization.txt
+  9. sqlite-data.txt (se existir)

@@ -1,0 +1,33 @@
+$ adb shell 
+  for p in $(pm list packages | sed "s/package://" | grep -Ei "whatsapp|com\\.wa" | head -10); do
+    echo "===== $p ====="
+    dumpsys package "$p" | grep -E "versionName=|versionCode=|enabled=|stopped=" | head -30
+  done
+
+Error: java.lang.SecurityException: Shell does not have permission to access user 150
+ com.android.server.am.ActivityManagerService.handleIncomingUser:8 android.app.ActivityManager.handleIncomingUser:6316 com.android.server.pm.PackageManagerShellCommand.translateUserId:24 
+===== br.com.wanotifkeeper =====
+    versionCode=8 minSdk=26 targetSdk=34
+    versionName=1.0.8
+    User 0: ceDataInode=140969 deDataInode=382904 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false
+    User 150: ceDataInode=0 deDataInode=0 installed=false hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false
+===== com.waze =====
+    versionCode=1030665 minSdk=29 targetSdk=35
+    versionName=5.15.5.0
+    User 0: ceDataInode=66267 deDataInode=66270 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=4 instant=false virtual=false quarantined=false
+    User 150: ceDataInode=0 deDataInode=0 installed=false hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false
+===== com.marsvard.stickermakerforwhatsapp =====
+    versionCode=1000934 minSdk=23 targetSdk=35
+    versionName=1.0.9-34
+    User 0: ceDataInode=65788 deDataInode=65777 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=4 instant=false virtual=false quarantined=false
+    User 150: ceDataInode=0 deDataInode=0 installed=false hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false
+===== com.whatsapp.w4b =====
+    versionCode=263607214 minSdk=23 targetSdk=36
+    versionName=2.26.36.72
+    User 0: ceDataInode=52082 deDataInode=52087 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false
+    User 150: ceDataInode=0 deDataInode=0 installed=false hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false
+===== com.whatsapp =====
+    versionCode=263607422 minSdk=23 targetSdk=36
+    versionName=2.26.36.74
+    User 0: ceDataInode=52521 deDataInode=52524 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false
+    User 150: ceDataInode=0 deDataInode=0 installed=false hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false

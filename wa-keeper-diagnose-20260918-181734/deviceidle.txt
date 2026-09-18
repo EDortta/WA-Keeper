@@ -1,0 +1,495 @@
+$ adb shell dumpsys deviceidle
+  Flags:
+    com.android.server.deviceidle.use_cpu_time_for_temp_allowlist=true
+    com.android.server.deviceidle.remove_idle_location=true
+    com.android.server.deviceidle.stop_power_save_temp_whitelist_broadcast=false
+
+  Settings:
+    flex_time_short=+1m0s0ms
+    light_after_inactive_to=+1m0s0ms
+    light_idle_to=+5m0s0ms
+    light_idle_to_initial_flex=+1m0s0ms
+    light_max_idle_to_flex=+15m0s0ms
+    light_idle_factor=2.0
+    light_idle_increase_linearly=false
+    light_idle_linear_increase_factor_ms=300000
+    light_idle_flex_linear_increase_factor_ms=60000
+    light_max_idle_to=+15m0s0ms
+    light_idle_maintenance_min_budget=+1m0s0ms
+    light_idle_maintenance_max_budget=+5m0s0ms
+    min_light_maintenance_time=+5s0ms
+    min_deep_maintenance_time=+30s0ms
+    inactive_to=+30m0s0ms
+    sensing_to=+4m0s0ms
+    locating_to=+30s0ms
+    location_accuracy=20.0m
+    motion_inactive_to=+10m0s0ms
+    motion_inactive_to_flex=+1m0s0ms
+    idle_after_inactive_to=+30m0s0ms
+    idle_pending_to=+5m0s0ms
+    max_idle_pending_to=+10m0s0ms
+    idle_pending_factor=2.0
+    quick_doze_delay_to=+1m0s0ms
+    idle_to=+1h0m0s0ms
+    max_idle_to=+6h0m0s0ms
+    idle_factor=2.0
+    min_time_to_alarm=+1h0m0s0ms
+    max_temp_app_allowlist_duration_ms=+5m0s0ms
+    mms_temp_app_allowlist_duration_ms=+1m0s0ms
+    sms_temp_app_allowlist_duration_ms=+20s0ms
+    notification_allowlist_duration_ms=+30s0ms
+    wait_for_unlock=true
+    use_window_alarms=true
+    use_mode_manager=false
+    skip_sensing=false
+    skip_locating=true
+    dna_request_version=1
+  Idling history:
+     light-idle: -2d5h54m50s889ms
+         normal: -2d5h52m2s384ms (screen)
+     light-idle: -2d1h43m43s6ms
+         normal: -2d1h41m58s800ms (charging)
+     light-idle: -1d23h42m54s312ms
+         normal: -1d23h41m30s869ms (unlocked)
+     light-idle: -1d23h28m0s489ms
+    light-maint: -1d23h22m22s915ms
+     light-idle: -1d23h22m17s833ms
+         normal: -1d23h21m52s176ms (unlocked)
+     light-idle: -1d22h57m58s903ms
+         normal: -1d22h54m38s539ms (unlocked)
+     light-idle: -1d18h53m24s541ms
+    light-maint: -1d18h44m51s205ms
+     light-idle: -1d18h44m43s423ms
+    light-maint: -1d18h25m21s850ms
+     light-idle: -1d18h24m46s62ms
+    light-maint: -1d17h56m25s872ms
+      deep-idle: -1d17h54m7s506ms
+     deep-maint: -1d16h54m5s890ms
+      deep-idle: -1d16h48m5s867ms
+     deep-maint: -1d14h48m4s910ms
+      deep-idle: -1d14h44m23s409ms
+         normal: -1d12h24m37s632ms (unlocked)
+     light-idle: -1d10h17m53s82ms
+    light-maint: -1d10h12m31s810ms
+     light-idle: -1d10h12m22s712ms
+         normal: -1d10h11m30s257ms (unlocked)
+     light-idle: -1d9h56m32s297ms
+         normal: -1d9h56m28s537ms (unlocked)
+     light-idle: -1d9h34m16s949ms
+         normal: -1d9h33m11s311ms (unlocked)
+     light-idle: -1d9h29m37s295ms
+         normal: -1d9h28m47s920ms (unlocked)
+     light-idle: -1d9h0m53s566ms
+         normal: -1d9h0m44s452ms (unlocked)
+     light-idle: -1d8h57m8s433ms
+         normal: -1d8h57m4s50ms (unlocked)
+     light-idle: -1d4h33m38s562ms
+         normal: -1d4h32m58s928ms (charging)
+     light-idle: -1d4h23m58s235ms
+         normal: -1d4h23m53s766ms (unlocked)
+     light-idle: -1d4h16m40s616ms
+    light-maint: -1d4h9m58s628ms
+     light-idle: -1d4h9m53s558ms
+         normal: -1d4h5m17s172ms (unlocked)
+     light-idle: -1d4h1m18s631ms
+    light-maint: -1d3h55m31s991ms
+     light-idle: -1d3h55m23s532ms
+         normal: -1d3h50m57s123ms (unlocked)
+     light-idle: -1d3h47m53s975ms
+    light-maint: -1d3h40m2s326ms
+     light-idle: -1d3h39m52s735ms
+    light-maint: -1d3h18m1s531ms
+     light-idle: -1d3h15m58s321ms
+         normal: -1d3h13m14s619ms (unlocked)
+     light-idle: -1d3h1m1s631ms
+         normal: -1d2h56m50s762ms (unlocked)
+     light-idle: -1d1h40m35s632ms
+    light-maint: -1d1h34m32s200ms
+     light-idle: -1d1h33m20s743ms
+    light-maint: -1d1h17m34s593ms
+     light-idle: -1d1h16m9s182ms
+         normal: -1d1h13m35s601ms (unlocked)
+     light-idle: -1d1h1m1s637ms
+    light-maint: -1d0h51m38s625ms
+     light-idle: -1d0h51m14s228ms
+    light-maint: -1d0h35m13s773ms
+         normal: -1d0h35m6s276ms (unlocked)
+     light-idle: -1d0h20m48s598ms
+    light-maint: -1d0h11m21s594ms
+     light-idle: -1d0h11m2s216ms
+    light-maint: -23h58m28s977ms
+         normal: -23h58m25s920ms (unlocked)
+     light-idle: -23h42m36s818ms
+    light-maint: -23h37m13s636ms
+     light-idle: -23h36m37s167ms
+         normal: -23h35m44s174ms (unlocked)
+     light-idle: -20h21m7s632ms
+         normal: -20h16m30s573ms (unlocked)
+     light-idle: -8h44m7s22ms
+         normal: -8h38m42s829ms (unlocked)
+     light-idle: -8h26m13s550ms
+    light-maint: -8h20m36s829ms
+     light-idle: -8h18m36s824ms
+         normal: -8h18m15s60ms (unlocked)
+     light-idle: -8h3m5s773ms
+         normal: -8h0m42s523ms (unlocked)
+     light-idle: -7h51m50s121ms
+         normal: -7h51m32s521ms (unlocked)
+     light-idle: -4h8m58s342ms
+    light-maint: -4h2m20s505ms
+     light-idle: -4h2m15s430ms
+    light-maint: -3h41m57s25ms
+     light-idle: -3h41m41s309ms
+         normal: -3h35m36s267ms (unlocked)
+     light-idle: -3h29m16s607ms
+         normal: -3h28m40s876ms (unlocked)
+     light-idle: -3h19m37s954ms
+         normal: -3h15m45s383ms (screen)
+  Whitelist (except idle) system apps:
+    com.sec.vsim.ericssonnsds.webapp
+    com.android.providers.calendar
+    com.osp.app.signin
+    com.sec.android.app.safetyassurance
+    com.samsung.android.knox.containercore
+    com.samsung.android.easysetup
+    com.samsung.android.aware.service
+    com.sec.android.easyonehand
+    com.samsung.android.rubin.app
+    com.android.providers.downloads
+    com.sec.android.widgetapp.easymodecontactswidget
+    com.samsung.android.app.parentalcare
+    com.sec.android.app.samsungapps
+    com.samsung.android.inputshare
+    com.sec.android.daemonapp
+    com.android.vending
+    com.samsung.android.intellivoiceservice
+    com.samsung.android.kmxservice
+    com.samsung.ssu
+    com.samsung.android.sm.devicesecurity
+    com.samsung.android.service.stplatform
+    com.samsung.klmsagent
+    com.sec.imsservice
+    com.facebook.services
+    com.samsung.android.mobileservice
+    com.samsung.android.mdx.kit
+    com.samsung.android.kgclient
+    com.samsung.android.game.gametools
+    com.samsung.android.app.contacts
+    com.samsung.android.service.peoplestripe
+    com.samsung.android.app.smartcapture
+    com.samsung.android.privateaccesstokens
+    com.samsung.android.server.wifi.mobilewips
+    com.google.android.gms
+    com.sec.spp.push
+    com.android.proxyhandler
+    com.samsung.android.app.routines
+    com.google.android.syncadapters.calendar
+    com.android.managedprovisioning
+    com.samsung.android.authfw
+    com.samsung.android.dialer
+    com.samsung.android.game.gos
+    com.samsung.android.forest
+    com.samsung.android.beaconmanager
+    com.samsung.android.callassistant
+    com.samsung.android.mdm
+    com.samsung.android.scs
+    com.samsung.android.sia
+    com.sec.unifiedwfc
+    com.samsung.android.audiomirroring
+    com.samsung.android.app.updatecenter
+    com.samsung.android.samsungpass
+    com.samsung.android.app.sharelive
+    com.samsung.android.dbsc
+    com.samsung.android.fast
+    com.samsung.android.settingshelper
+    com.samsung.android.knox.analytics.uploader
+    com.sec.android.easyMover
+    com.google.android.apps.turbo
+    com.samsung.android.bluelightfilter
+    com.samsung.android.shortcutbackupservice
+    com.samsung.android.mcfserver
+    com.android.shell
+    com.sec.enterprise.knox.cloudmdm.smdms
+    com.google.android.apps.carrier.carrierwifi
+    com.dti.samsung
+    com.samsung.android.sdk.handwriting
+    com.facebook.appmanager
+    com.google.android.cellbroadcastreceiver
+    com.samsung.android.allshare.service.mediashare
+    com.samsung.android.cidmanager
+    com.samsung.sec.android.application.csc
+    com.samsung.android.sdm.config
+    com.samsung.android.mcfds
+    com.samsung.android.video
+  Whitelist system apps:
+    com.sec.vsim.ericssonnsds.webapp
+    com.android.providers.calendar
+    com.osp.app.signin
+    com.sec.android.app.safetyassurance
+    com.samsung.android.knox.containercore
+    com.samsung.android.easysetup
+    com.samsung.android.aware.service
+    com.sec.android.easyonehand
+    com.samsung.android.rubin.app
+    com.android.providers.downloads
+    com.sec.android.widgetapp.easymodecontactswidget
+    com.samsung.android.app.parentalcare
+    com.sec.android.app.samsungapps
+    com.samsung.android.inputshare
+    com.sec.android.daemonapp
+    com.samsung.android.intellivoiceservice
+    com.samsung.android.kmxservice
+    com.samsung.ssu
+    com.samsung.android.sm.devicesecurity
+    com.samsung.android.service.stplatform
+    com.samsung.klmsagent
+    com.sec.imsservice
+    com.facebook.services
+    com.samsung.android.mobileservice
+    com.samsung.android.mdx.kit
+    com.samsung.android.kgclient
+    com.samsung.android.game.gametools
+    com.samsung.android.app.contacts
+    com.samsung.android.service.peoplestripe
+    com.samsung.android.app.smartcapture
+    com.samsung.android.privateaccesstokens
+    com.samsung.android.server.wifi.mobilewips
+    com.google.android.gms
+    com.sec.spp.push
+    com.samsung.android.app.routines
+    com.google.android.syncadapters.calendar
+    com.android.managedprovisioning
+    com.samsung.android.authfw
+    com.samsung.android.dialer
+    com.samsung.android.game.gos
+    com.samsung.android.forest
+    com.samsung.android.beaconmanager
+    com.samsung.android.callassistant
+    com.samsung.android.mdm
+    com.samsung.android.scs
+    com.samsung.android.sia
+    com.sec.unifiedwfc
+    com.samsung.android.audiomirroring
+    com.samsung.android.app.updatecenter
+    com.samsung.android.samsungpass
+    com.samsung.android.app.sharelive
+    com.samsung.android.dbsc
+    com.samsung.android.fast
+    com.samsung.android.settingshelper
+    com.samsung.android.knox.analytics.uploader
+    com.sec.android.easyMover
+    com.samsung.android.bluelightfilter
+    com.samsung.android.shortcutbackupservice
+    com.samsung.android.mcfserver
+    com.android.shell
+    com.sec.enterprise.knox.cloudmdm.smdms
+    com.dti.samsung
+    com.samsung.android.sdk.handwriting
+    com.google.android.cellbroadcastreceiver
+    com.samsung.android.allshare.service.mediashare
+    com.samsung.android.cidmanager
+    com.samsung.sec.android.application.csc
+    com.samsung.android.sdm.config
+    com.samsung.android.mcfds
+    com.samsung.android.video
+  Whitelist user apps:
+    com.truecaller
+    br.com.amt.v2
+    com.samsung.android.simagent
+    com.samsung.android.app.watchmanager
+    com.samsung.android.app.find
+    com.sonelli.juicessh
+    com.samsung.android.app.notes
+  Whitelist (except idle) all app ids:
+    1000
+    1001
+    2000
+    5006
+    5025
+    5026
+    5250
+    5278
+    5959
+    10046
+    10047
+    10053
+    10059
+    10060
+    10062
+    10063
+    10068
+    10071
+    10074
+    10076
+    10079
+    10081
+    10083
+    10085
+    10086
+    10087
+    10088
+    10090
+    10092
+    10093
+    10095
+    10097
+    10098
+    10099
+    10101
+    10102
+    10105
+    10106
+    10107
+    10108
+    10109
+    10110
+    10112
+    10115
+    10116
+    10119
+    10124
+    10126
+    10133
+    10138
+    10139
+    10154
+    10155
+    10159
+    10163
+    10164
+    10169
+    10179
+    10182
+    10204
+    10207
+    10208
+    10210
+    10213
+    10216
+    10218
+    10230
+    10236
+    10238
+    10239
+    10243
+    10283
+    10295
+    10308
+    10312
+    10314
+    10340
+    10363
+    10496
+    10512
+  Whitelist user app ids:
+    10295
+    10308
+    10312
+    10314
+    10340
+    10363
+    10496
+  Whitelist all app ids:
+    1000
+    1001
+    2000
+    5006
+    5025
+    5026
+    5250
+    5278
+    5959
+    10046
+    10047
+    10053
+    10059
+    10060
+    10062
+    10063
+    10068
+    10071
+    10074
+    10076
+    10079
+    10081
+    10083
+    10085
+    10086
+    10087
+    10088
+    10090
+    10092
+    10095
+    10097
+    10098
+    10099
+    10101
+    10102
+    10105
+    10106
+    10107
+    10108
+    10109
+    10110
+    10112
+    10115
+    10116
+    10119
+    10124
+    10126
+    10133
+    10138
+    10139
+    10154
+    10155
+    10163
+    10164
+    10169
+    10179
+    10182
+    10204
+    10207
+    10208
+    10210
+    10213
+    10216
+    10218
+    10239
+    10243
+    10283
+    10295
+    10308
+    10312
+    10314
+    10340
+    10363
+    10496
+    10512
+  Allowlist History:
+  - history count : 7
+    [2026-09-12 07:39:05][add    ] com.truecaller(appid=10496) by deviceidle.xml
+    [2026-09-12 07:39:05][add    ] br.com.amt.v2(appid=10340) by deviceidle.xml
+    [2026-09-12 07:39:05][add    ] com.samsung.android.simagent(appid=10295) by deviceidle.xml
+    [2026-09-12 07:39:05][add    ] com.samsung.android.app.watchmanager(appid=10308) by deviceidle.xml
+    [2026-09-12 07:39:05][add    ] com.samsung.android.app.find(appid=10314) by deviceidle.xml
+    [2026-09-12 07:39:05][add    ] com.samsung.android.app.notes(appid=10312) by deviceidle.xml
+    [2026-09-16 06:22:38][add    ] com.sonelli.juicessh(appid=10363) by com.android.settings(pid 16668)
+  Doze Allowlist Gatekeeper: false
+  mLightEnabled=true  mDeepEnabled=true
+  mForceIdle=false
+  mUseMotionSensor=true mMotionSensor={Sensor name="Significant Motion", vendor="Samsung Inc.", version=2, type=17, maxRange=1.0, resolution=1.0, power=0.16, minDelay=-1}
+  mScreenOn=true
+  mScreenLocked=false
+  mNetworkConnected=true
+  mCharging=true
+  activeEmergencyCall=false
+  mMotionActive=true
+  mNotMoving=true
+  mMotionListener.activatedTimeElapsed=502001207
+  mLastMotionEventElapsed=501655207
+  1 stationary listeners registered
+  Location prefetching disabled
+  mState=ACTIVE mLightState=ACTIVE
+  mInactiveTimeout=+30m0s0ms
+  mNextLightIdleDelay=+5m0s0ms (flex=+1m0s0ms)
+  mCurLightIdleBudget=+1m0s0ms

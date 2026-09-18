@@ -1,0 +1,180 @@
+$ adb shell 
+  echo '--- whitelist ---'
+  dumpsys deviceidle whitelist
+  echo
+  echo '--- app standby bucket ---'
+  am get-standby-bucket 'br.com.wanotifkeeper'
+  echo
+  echo '--- background restrictions ---'
+  cmd appops get 'br.com.wanotifkeeper' RUN_IN_BACKGROUND 2>/dev/null || true
+  cmd appops get 'br.com.wanotifkeeper' RUN_ANY_IN_BACKGROUND 2>/dev/null || true
+  echo
+  echo '--- exact alarm capability ---'
+  cmd appops get 'br.com.wanotifkeeper' SCHEDULE_EXACT_ALARM 2>/dev/null || true
+
+--- whitelist ---
+system-excidle,com.sec.vsim.ericssonnsds.webapp,10088
+system-excidle,com.android.providers.calendar,10102
+system-excidle,com.osp.app.signin,10105
+system-excidle,com.sec.android.app.safetyassurance,10119
+system-excidle,com.samsung.android.knox.containercore,5250
+system-excidle,com.samsung.android.easysetup,10068
+system-excidle,com.samsung.android.aware.service,10139
+system-excidle,com.sec.android.easyonehand,10154
+system-excidle,com.samsung.android.rubin.app,10095
+system-excidle,com.android.providers.downloads,10063
+system-excidle,com.sec.android.widgetapp.easymodecontactswidget,10155
+system-excidle,com.samsung.android.app.parentalcare,10182
+system-excidle,com.sec.android.app.samsungapps,10083
+system-excidle,com.samsung.android.inputshare,10090
+system-excidle,com.sec.android.daemonapp,10207
+system-excidle,com.android.vending,10238
+system-excidle,com.samsung.android.intellivoiceservice,10109
+system-excidle,com.samsung.android.kmxservice,10081
+system-excidle,com.samsung.ssu,10126
+system-excidle,com.samsung.android.sm.devicesecurity,10208
+system-excidle,com.samsung.android.service.stplatform,10124
+system-excidle,com.samsung.klmsagent,10079
+system-excidle,com.sec.imsservice,1000
+system-excidle,com.facebook.services,10071
+system-excidle,com.samsung.android.mobileservice,10108
+system-excidle,com.samsung.android.mdx.kit,5025
+system-excidle,com.samsung.android.kgclient,5959
+system-excidle,com.samsung.android.game.gametools,10076
+system-excidle,com.samsung.android.app.contacts,10107
+system-excidle,com.samsung.android.service.peoplestripe,10092
+system-excidle,com.samsung.android.app.smartcapture,10213
+system-excidle,com.samsung.android.privateaccesstokens,10179
+system-excidle,com.samsung.android.server.wifi.mobilewips,10087
+system-excidle,com.google.android.gms,10239
+system-excidle,com.sec.spp.push,10101
+system-excidle,com.android.proxyhandler,10093
+system-excidle,com.samsung.android.app.routines,10062
+system-excidle,com.google.android.syncadapters.calendar,10243
+system-excidle,com.android.managedprovisioning,10086
+system-excidle,com.samsung.android.authfw,5278
+system-excidle,com.samsung.android.dialer,10110
+system-excidle,com.samsung.android.game.gos,10074
+system-excidle,com.samsung.android.forest,1000
+system-excidle,com.samsung.android.beaconmanager,5006
+system-excidle,com.samsung.android.callassistant,10059
+system-excidle,com.samsung.android.mdm,10169
+system-excidle,com.samsung.android.scs,10106
+system-excidle,com.samsung.android.sia,10099
+system-excidle,com.sec.unifiedwfc,10216
+system-excidle,com.samsung.android.audiomirroring,10047
+system-excidle,com.samsung.android.app.updatecenter,10046
+system-excidle,com.samsung.android.samsungpass,10116
+system-excidle,com.samsung.android.app.sharelive,5026
+system-excidle,com.samsung.android.dbsc,10060
+system-excidle,com.samsung.android.fast,10164
+system-excidle,com.samsung.android.settingshelper,10098
+system-excidle,com.samsung.android.knox.analytics.uploader,10133
+system-excidle,com.sec.android.easyMover,10210
+system-excidle,com.google.android.apps.turbo,10236
+system-excidle,com.samsung.android.bluelightfilter,10053
+system-excidle,com.samsung.android.shortcutbackupservice,10204
+system-excidle,com.samsung.android.mcfserver,10112
+system-excidle,com.android.shell,2000
+system-excidle,com.sec.enterprise.knox.cloudmdm.smdms,10218
+system-excidle,com.google.android.apps.carrier.carrierwifi,10230
+system-excidle,com.dti.samsung,10512
+system-excidle,com.samsung.android.sdk.handwriting,10163
+system-excidle,com.facebook.appmanager,10159
+system-excidle,com.google.android.cellbroadcastreceiver,10283
+system-excidle,com.samsung.android.allshare.service.mediashare,10138
+system-excidle,com.samsung.android.cidmanager,1001
+system-excidle,com.samsung.sec.android.application.csc,1001
+system-excidle,com.samsung.android.sdm.config,10097
+system-excidle,com.samsung.android.mcfds,10085
+system-excidle,com.samsung.android.video,10115
+system,com.sec.vsim.ericssonnsds.webapp,10088
+system,com.android.providers.calendar,10102
+system,com.osp.app.signin,10105
+system,com.sec.android.app.safetyassurance,10119
+system,com.samsung.android.knox.containercore,5250
+system,com.samsung.android.easysetup,10068
+system,com.samsung.android.aware.service,10139
+system,com.sec.android.easyonehand,10154
+system,com.samsung.android.rubin.app,10095
+system,com.android.providers.downloads,10063
+system,com.sec.android.widgetapp.easymodecontactswidget,10155
+system,com.samsung.android.app.parentalcare,10182
+system,com.sec.android.app.samsungapps,10083
+system,com.samsung.android.inputshare,10090
+system,com.sec.android.daemonapp,10207
+system,com.samsung.android.intellivoiceservice,10109
+system,com.samsung.android.kmxservice,10081
+system,com.samsung.ssu,10126
+system,com.samsung.android.sm.devicesecurity,10208
+system,com.samsung.android.service.stplatform,10124
+system,com.samsung.klmsagent,10079
+system,com.sec.imsservice,1000
+system,com.facebook.services,10071
+system,com.samsung.android.mobileservice,10108
+system,com.samsung.android.mdx.kit,5025
+system,com.samsung.android.kgclient,5959
+system,com.samsung.android.game.gametools,10076
+system,com.samsung.android.app.contacts,10107
+system,com.samsung.android.service.peoplestripe,10092
+system,com.samsung.android.app.smartcapture,10213
+system,com.samsung.android.privateaccesstokens,10179
+system,com.samsung.android.server.wifi.mobilewips,10087
+system,com.google.android.gms,10239
+system,com.sec.spp.push,10101
+system,com.samsung.android.app.routines,10062
+system,com.google.android.syncadapters.calendar,10243
+system,com.android.managedprovisioning,10086
+system,com.samsung.android.authfw,5278
+system,com.samsung.android.dialer,10110
+system,com.samsung.android.game.gos,10074
+system,com.samsung.android.forest,1000
+system,com.samsung.android.beaconmanager,5006
+system,com.samsung.android.callassistant,10059
+system,com.samsung.android.mdm,10169
+system,com.samsung.android.scs,10106
+system,com.samsung.android.sia,10099
+system,com.sec.unifiedwfc,10216
+system,com.samsung.android.audiomirroring,10047
+system,com.samsung.android.app.updatecenter,10046
+system,com.samsung.android.samsungpass,10116
+system,com.samsung.android.app.sharelive,5026
+system,com.samsung.android.dbsc,10060
+system,com.samsung.android.fast,10164
+system,com.samsung.android.settingshelper,10098
+system,com.samsung.android.knox.analytics.uploader,10133
+system,com.sec.android.easyMover,10210
+system,com.samsung.android.bluelightfilter,10053
+system,com.samsung.android.shortcutbackupservice,10204
+system,com.samsung.android.mcfserver,10112
+system,com.android.shell,2000
+system,com.sec.enterprise.knox.cloudmdm.smdms,10218
+system,com.dti.samsung,10512
+system,com.samsung.android.sdk.handwriting,10163
+system,com.google.android.cellbroadcastreceiver,10283
+system,com.samsung.android.allshare.service.mediashare,10138
+system,com.samsung.android.cidmanager,1001
+system,com.samsung.sec.android.application.csc,1001
+system,com.samsung.android.sdm.config,10097
+system,com.samsung.android.mcfds,10085
+system,com.samsung.android.video,10115
+user,com.truecaller,10496
+user,br.com.amt.v2,10340
+user,com.samsung.android.simagent,10295
+user,com.samsung.android.app.watchmanager,10308
+user,com.samsung.android.app.find,10314
+user,com.sonelli.juicessh,10363
+user,com.samsung.android.app.notes,10312
+
+--- app standby bucket ---
+10
+
+--- background restrictions ---
+No operations.
+Default mode: allow
+No operations.
+Default mode: allow
+
+--- exact alarm capability ---
+No operations.
+Default mode: default

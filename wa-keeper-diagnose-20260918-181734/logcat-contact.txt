@@ -1,0 +1,426 @@
+09-18 16:58:56.624  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 16:58:56.624  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 16:58:56.624  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 16:58:58.925  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 16:58:58.925  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 16:58:58.925  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 17:02:02.912  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 17:02:02.912  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 17:02:02.912  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 17:02:04.534  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 17:02:04.534  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 17:02:04.534  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 17:12:00.758  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 17:12:00.758  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 17:12:00.758  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 17:12:01.733  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 17:12:01.733  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 17:12:01.733  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 17:35:52.566  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 17:35:52.566  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 17:35:52.566  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 17:36:02.090  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 17:36:02.090  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 17:36:02.090  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 17:39:44.809  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 17:39:44.809  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 17:39:44.809  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 17:39:46.483  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 17:39:46.483  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 17:39:46.483  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 17:46:51.133  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 17:46:51.133  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 17:46:51.133  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 18:01:04.813  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 18:01:04.813  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 18:01:04.813  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 18:01:25.493  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 18:01:25.493  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 18:01:25.493  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 18:08:05.873  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 18:08:05.873  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 18:08:05.873  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 18:08:06.802  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 18:08:06.802  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 18:08:06.802  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 18:12:10.635  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 18:12:10.635  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 18:12:10.635  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 18:12:24.631  1810  2598 E AppOpService: Blocked setUidMode call for runtime permission app op: uid = 1000, code = CAMERA, mode = foreground, callingUid = 1000, oldMode = allow
+09-18 18:12:24.631  1810  2598 E AppOpService: java.lang.RuntimeException
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.server.permission.access.appop.AppOpService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:145)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:56)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.server.appop.AppOpsService.setUidMode(qb/112117793 38de871893778a3cff3335e2907ea36328ca1b4849b9bf3b787d0bbfcb1c6baa:1)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at android.app.AppOpsManager.setUidMode(AppOpsManager.java:8782)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpModeAsUser(Permissions.java:908)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.setAppOpUidModeAsUser(Permissions.java:885)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantPermissionAndAppOpAsUser(Permissions.java:373)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantSingleAsUser(Permissions.java:247)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.role.controller.model.Permissions.grantAsUser(Permissions.java:205)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.role.controller.model.Role.grantAsUser(Role.java:947)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.addRoleHolderInternal(RoleControllerServiceImpl.java:380)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.role.controller.service.RoleControllerServiceImpl.onGrantDefaultRoles(RoleControllerServiceImpl.java:163)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.lambda$grantDefaultRoles$1(LocalRoleController.java:56)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController.$r8$lambda$ye-flP7Mf14AbTzwSmiTgndT6Cg(LocalRoleController.java:0)
+09-18 18:12:24.631  1810  2598 E AppOpService: 	at com.android.role.LocalRoleController$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+--
+09-18 18:14:03.506  3093 18576 I HoneySpace.PackageEventOperator: shortcut changed. shortcutInfo : ShortcutInfo {id=***, flags=0x486 [PinIc-rStrRets], packageName=com.openai.chatgpt, activity=ComponentInfo{com.openai.chatgpt/com.openai.chatgpt.MainActivity}, shortLabel=***, resId=0[null], longLabel=***, resId=0[null], disabledMessage=***, resId=0[null], disabledReason=[Not disabled], categories=null, persons=null, icon=null, rank=0, timestamp=1789740071020, intents=null, extras=null}
+09-18 18:14:03.507  3093 18568 W BitmapFactory: Null Options, creating a new one.
+09-18 18:14:03.507  3093 18576 I HoneySpace.ShortcutDataSourceImpl: shortcutIcon is null or empty
+09-18 18:14:03.507  3093 18576 I HoneySpace.ShortcutDataSourceImpl: getShortcutIcon is null, ShortcutInfo {id=***, flags=0x486 [PinIc-rStrRets], packageName=com.openai.chatgpt, activity=ComponentInfo{com.openai.chatgpt/com.openai.chatgpt.MainActivity}, shortLabel=***, resId=0[null], longLabel=***, resId=0[null], disabledMessage=***, resId=0[null], disabledReason=[Not disabled], categories=null, persons=null, icon=null, rank=0, timestamp=1789740071020, intents=null, extras=null}
+09-18 18:14:03.508  3093 18576 I HoneySpace.AppTimerDataSourceImpl: items: 0
+09-18 18:14:03.508  3093 15693 I HoneySpace.ShortcutDataSourceImpl: shortcutIcon is null or empty
+09-18 18:14:03.509  3093 15693 I HoneySpace.ShortcutDataSourceImpl: getShortcutIcon is null, ShortcutInfo {id=***, flags=0x486 [PinIc-rStrRets], packageName=com.openai.chatgpt, activity=ComponentInfo{com.openai.chatgpt/com.openai.chatgpt.MainActivity}, shortLabel=***, resId=0[null], longLabel=***, resId=0[null], disabledMessage=***, resId=0[null], disabledReason=[Not disabled], categories=null, persons=null, icon=null, rank=0, timestamp=1789740071020, intents=null, extras=null}
+09-18 18:14:03.509  3093 18568 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.509  3093 18576 I HoneySpace.AbsFolderViewModel: Package shortcut updated: DeepShortcut(item=[#Intent, action=android.intent.action.MAIN, category=com.android.launcher3.DEEP_SHORTCUT, launchFlags=0x10200000, package=com.openai.chatgpt, component=com.openai.chatgpt/.MainActivity, i.userid=0, S.shortcut_id=Y29udmVyc2F0aW9uXzY5YWI0MGI0LTY4MTQtODMyZS05MjFmLThmNjJhN2YyMWU2YQ==, end], rank=5, isHomeFolder=true)  [id:48] [title:Nanda] [color:-2424613] [items:6] [container:0]
+09-18 18:14:03.509  3093 18576 I HoneySpace.DataCache: updateItem : id=626, title=Resumo de Esteban, type=DEEP_SHORTCUT, containerType=FOLDER, containerId=48, x=3, y=0, rank=5, spanX=-1, spanY=-1, scale=1.0, component=null, profileId=0, intent=[#Intent, action=android.intent.action.MAIN, category=com.android.launcher3.DEEP_SHORTCUT, launchFlags=0x10200000, package=com.openai.chatgpt, component=com.openai.chatgpt/.MainActivity, i.userid=0, S.shortcut_id=Y29udmVyc2F0aW9uXzY5YWI0MGI0LTY4MTQtODMyZS05MjFmLThmNjJhN2YyMWU2YQ==, end], restored=0, hidden=UNHIDDEN, appWidgetId=-1, options=0, refPackageName=null, customLabel=null, labelColor=null
+09-18 18:14:03.510  3093 18576 I HoneySpace.PackageEventOperator: shortcut changed. shortcutInfo : ShortcutInfo {id=***, flags=0x486 [PinIc-rStrRets], packageName=com.openai.chatgpt, activity=ComponentInfo{com.openai.chatgpt/com.openai.chatgpt.MainActivity}, shortLabel=***, resId=0[null], longLabel=***, resId=0[null], disabledMessage=***, resId=0[null], disabledReason=[Not disabled], categories=null, persons=null, icon=null, rank=0, timestamp=1789740071021, intents=null, extras=null}
+09-18 18:14:03.510  3093 18568 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.511  3093 18568 I AppIconSolution: getThemeIconWithBG called with public API, pkg = null, mode = 1
+09-18 18:14:03.514  3093 18568 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.514  3093 18568 I AppIconSolution: start to load, pkg=null, bg=192-192, dr=77-77, forDefault=true, density=0
+09-18 18:14:03.515  3093 18568 I AppIconSolution: getIconScale, pkg=null, size=77, iconScale=IconScale[alpha=6, scale=0.72, isCrop=false]
+09-18 18:14:03.515  3093 18568 I AppIconSolution: default container[Contain], pkg=null, bg=90-90, dr=77-77, isNight = true
+--
+09-18 18:14:03.524  3093 18576 I AppIconSolution: getIconScale, pkg=null, size=77, iconScale=IconScale[alpha=7, scale=0.72, isCrop=false]
+09-18 18:14:03.524  3093 18576 I AppIconSolution: default container[Contain], pkg=null, bg=88-88, dr=77-77, isNight = true
+09-18 18:14:03.525  3093 18568 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.525  3093 15693 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.526  3093 15693 I AppIconSolution: start to load, pkg=null, bg=192-192, dr=77-77, forDefault=true, density=0
+09-18 18:14:03.526  3093 15693 I AppIconSolution: getIconScale, pkg=null, size=77, iconScale=IconScale[alpha=6, scale=0.72, isCrop=false]
+09-18 18:14:03.526  3093 15693 I AppIconSolution: default container[Contain], pkg=null, bg=90-90, dr=77-77, isNight = true
+09-18 18:14:03.529  3093 18576 I HoneySpace.AppTimerDataSourceImpl: items: 0
+09-18 18:14:03.530  3093 18576 I HoneySpace.AbsFolderViewModel: Package shortcut updated: DeepShortcut(item=[#Intent, action=android.intent.action.MAIN, category=com.android.launcher3.DEEP_SHORTCUT, launchFlags=0x10200000, package=com.openai.chatgpt, component=com.openai.chatgpt/.MainActivity, i.userid=0, S.shortcut_id=Y29udmVyc2F0aW9uXzY5ZTI4ZTNmLWFmZmMtODNlOS04Y2FmLTAyN2JmMmJlNjU5OA==, end], rank=3, isHomeFolder=true)  [id:48] [title:Nanda] [color:-2424613] [items:6] [container:0]
+09-18 18:14:03.530  3093 18576 I HoneySpace.DataCache: updateItem : id=2569, title=Rel com Fer, type=DEEP_SHORTCUT, containerType=FOLDER, containerId=48, x=1, y=0, rank=3, spanX=-1, spanY=-1, scale=1.0, component=null, profileId=0, intent=[#Intent, action=android.intent.action.MAIN, category=com.android.launcher3.DEEP_SHORTCUT, launchFlags=0x10200000, package=com.openai.chatgpt, component=com.openai.chatgpt/.MainActivity, i.userid=0, S.shortcut_id=Y29udmVyc2F0aW9uXzY5ZTI4ZTNmLWFmZmMtODNlOS04Y2FmLTAyN2JmMmJlNjU5OA==, end], restored=0, hidden=UNHIDDEN, appWidgetId=-1, options=0, refPackageName=null, customLabel=null, labelColor=null
+09-18 18:14:03.530  3093 18576 I HoneySpace.PackageEventOperator: shortcut changed. shortcutInfo : ShortcutInfo {id=***, flags=0x268a [PinIc-fIc-aStrRetsLiv], packageName=com.openai.chatgpt, activity=ComponentInfo{com.openai.chatgpt/com.openai.chatgpt.MainActivity}, shortLabel=***, resId=0[null], longLabel=***, resId=0[null], disabledMessage=***, resId=0[null], disabledReason=[Not disabled], categories=null, persons=null, icon=null, rank=0, timestamp=1787664119052, intents=null, extras=null}
+09-18 18:14:03.531  3093 18576 W BitmapFactory: Null Options, creating a new one.
+09-18 18:14:03.532  3093 18576 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.534  3093 18568 I AppIconSolution: getThemeIconWithBG called with public API, pkg = null, mode = 1
+09-18 18:14:03.534  3093 18568 I AppIconSolution: return adaptive icon for null, isNight = true
+09-18 18:14:03.534  3093 15693 I AppIconSolution: getThemeIconWithBG called with public API, pkg = null, mode = 1
+09-18 18:14:03.536  3093 18576 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+--
+09-18 18:14:03.543  3093 18576 I AppIconSolution: return adaptive icon for null, isNight = true
+09-18 18:14:03.545  3093 18568 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.546  3093 31424 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.548  1247  1247 I BufferQueueProducer: [com.sec.android.app.launcher/com.sec.android.app.launcher.activities.LauncherActivity$_3093#102307](this:0xb40000791c20f6b0,id:-1,api:0,p:-1,c:1247) queueBuffer: fps=0.26 dur=99719.38 max=99353.14 min=10.88
+09-18 18:14:03.551  1177  1192 I hwcomposer: [HWCDisplay] (0 updateFps():4131), (type:1, mode:2) fps:0.571992,dur:3496.55,max:3435.82,min:60.73  
+09-18 18:14:03.552  3093 18568 I AppIconSolution: getThemeIconWithBG called with public API, pkg = null, mode = 1
+09-18 18:14:03.552  3093 18576 I HoneySpace.AppTimerDataSourceImpl: items: 0
+09-18 18:14:03.552  3093 18568 I AppIconSolution: return adaptive icon for null, isNight = true
+09-18 18:14:03.552  3093 18576 I HoneySpace.AbsFolderViewModel: Package shortcut updated: DeepShortcut(item=[#Intent, action=android.intent.action.MAIN, category=com.android.launcher3.DEEP_SHORTCUT, launchFlags=0x10200000, package=com.openai.chatgpt, component=com.openai.chatgpt/.MainActivity, i.userid=0, S.shortcut_id=Y29udmVyc2F0aW9uXzZhOGNhODZiLWYzODAtODNlOS04YzA5LTM4NTljNmVhOWFmYg==, end], rank=4, isHomeFolder=true)  [id:48] [title:Nanda] [color:-2424613] [items:6] [container:0]
+09-18 18:14:03.552  3093 18576 I HoneySpace.DataCache: updateItem : id=18224, title=Simulador Fernanda, type=DEEP_SHORTCUT, containerType=FOLDER, containerId=48, x=3, y=0, rank=4, spanX=-1, spanY=-1, scale=1.0, component=null, profileId=0, intent=[#Intent, action=android.intent.action.MAIN, category=com.android.launcher3.DEEP_SHORTCUT, launchFlags=0x10200000, package=com.openai.chatgpt, component=com.openai.chatgpt/.MainActivity, i.userid=0, S.shortcut_id=Y29udmVyc2F0aW9uXzZhOGNhODZiLWYzODAtODNlOS04YzA5LTM4NTljNmVhOWFmYg==, end], restored=0, hidden=UNHIDDEN, appWidgetId=-1, options=0, refPackageName=null, customLabel=null, labelColor=null
+09-18 18:14:03.553  3093 18576 I HoneySpace.AbsFolderViewModel: updateIcon null  [id:48] [title:Nanda] [color:-2424613] [items:6] [container:0]
+09-18 18:14:03.554  1247  1306 I SurfaceFlinger: Current= 90, Period= 90, hwcPeriod= 90
+09-18 18:14:03.555  1247  1306 I SurfaceFlinger: Current= 90, Period= 90, Distance= 0
+09-18 18:14:03.555  3093 18576 W BitmapFactory: Null Options, creating a new one.
+09-18 18:14:03.556  3093 18576 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.558  3093 18568 I HoneySpace.AppTimerDataSourceImpl: items: 0
+09-18 18:14:03.558  3093 18576 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.558  3093 18568 I HoneySpace.DataCache: updateItem : id=2578, title=Arquitetura AI Hub, type=DEEP_SHORTCUT, containerType=ITEM_GROUP, containerId=7, x=2, y=0, rank=-1, spanX=-1, spanY=-1, scale=1.0, component=null, profileId=0, intent=[#Intent, action=android.intent.action.MAIN, category=com.android.launcher3.DEEP_SHORTCUT, launchFlags=0x10200000, package=com.openai.chatgpt, component=com.openai.chatgpt/.MainActivity, i.userid=0, S.shortcut_id=Y29udmVyc2F0aW9uXzZhMGExMDM3LTc3NDQtODNlOS04MmJmLTFhMDI2ZDllZDgxZA==, end], restored=0, hidden=UNHIDDEN, appWidgetId=-1, options=0, refPackageName=null, customLabel=null, labelColor=null
+09-18 18:14:03.558  3093 18568 I HoneySpace.PackageEventOperator: shortcut changed. shortcutInfo : ShortcutInfo {id=***, flags=0x268a [PinIc-fIc-aStrRetsLiv], packageName=com.openai.chatgpt, activity=ComponentInfo{com.openai.chatgpt/com.openai.chatgpt.MainActivity}, shortLabel=***, resId=0[null], longLabel=***, resId=0[null], disabledMessage=***, resId=0[null], disabledReason=[Not disabled], categories=null, persons=null, icon=null, rank=0, timestamp=1787745525892, intents=null, extras=null}
+--
+09-18 18:14:03.649  3093 18568 I HoneySpace.DataCache: updateItem : id=19136, title=QCardapio, type=DEEP_SHORTCUT, containerType=ITEM_GROUP, containerId=7, x=3, y=1, rank=-1, spanX=-1, spanY=-1, scale=1.0, component=null, profileId=0, intent=[#Intent, action=android.intent.action.MAIN, category=com.android.launcher3.DEEP_SHORTCUT, launchFlags=0x10200000, package=com.openai.chatgpt, component=com.openai.chatgpt/.MainActivity, i.userid=0, S.shortcut_id=cHJvamVjdF9nLXAtNmE4ZWQzNDA3N2FjODE5MWE0ODE3ZDhjN2RkYjgzZGM=, end], restored=0, hidden=UNHIDDEN, appWidgetId=-1, options=0, refPackageName=null, customLabel=null, labelColor=null
+09-18 18:14:03.649  3093 18568 I HoneySpace.PackageEventOperator: shortcut changed. shortcutInfo : ShortcutInfo {id=***, flags=0x268a [PinIc-fIc-aStrRetsLiv], packageName=com.openai.chatgpt, activity=ComponentInfo{com.openai.chatgpt/com.openai.chatgpt.MainActivity}, shortLabel=***, resId=0[null], longLabel=***, resId=0[null], disabledMessage=***, resId=0[null], disabledReason=[Not disabled], categories=null, persons=null, icon=null, rank=0, timestamp=1788262411216, intents=null, extras=null}
+09-18 18:14:03.650  3093 18568 W BitmapFactory: Null Options, creating a new one.
+09-18 18:14:03.650  3093 18576 W BitmapFactory: Null Options, creating a new one.
+09-18 18:14:03.650  3093 18576 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.652  3093 18568 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.652  3093 18576 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.654  3093 18568 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.654  3093  3093 I HoneySpace.AbsFolderPot: itemChanged refreshData loading: false  [id:48] [title:Nanda] [color:-2424613] [items:6] [container:0]
+09-18 18:14:03.654  3093  3093 I HoneySpace.AbsFolderPot: onItemRefreshed  [id:48] [title:Nanda] [color:-2424613] [items:6] [container:0]
+09-18 18:14:03.654  3093  3093 I HoneySpace.AbsFolderPot: resetItemChildren:  [id:48] [title:Nanda] [color:-2424613] [items:6] [container:0]
+09-18 18:14:03.654  3093  3093 I HoneySpace.AbsFolderPot: resetItemChildren put: id:49 label:WhatsApp component:com.whatsapp/.Main#UserHandle{0} badgeCount:0 drag:false iconState:NONE customLabel:null labelColor:null
+09-18 18:14:03.655  3093  3093 I HoneySpace.AbsFolderPot: resetItemChildren put: id:50 label:NoRoot Firewall component:app.greyshirts.firewall/.ui.ActivityPager#UserHandle{0} badgeCount:0 drag:false iconState:NONE customLabel:null labelColor:null
+09-18 18:14:03.655  3093  3093 I HoneySpace.AbsFolderPot: resetItemChildren put: id:51 label:Gravador de voz component:com.sec.android.app.voicenote/.main.VNMainActivity#UserHandle{0} badgeCount:0 drag:false iconState:NONE customLabel:null labelColor:null
+09-18 18:14:03.655  3093  3093 I HoneySpace.AbsFolderPot: resetItemChildren put: [#Intent, action=android.intent.action.MAIN, category=com.android.launcher3.DEEP_SHORTCUT, launchFlags=0x10200000, package=com.openai.chatgpt, component=com.openai.chatgpt/.MainActivity, i.userid=0, S.shortcut_id=Y29udmVyc2F0aW9uXzY5ZTI4ZTNmLWFmZmMtODNlOS04Y2FmLTAyN2JmMmJlNjU5OA==, end]
+09-18 18:14:03.655  3093  3093 I HoneySpace.AbsFolderPot: resetItemChildren put: [#Intent, action=android.intent.action.MAIN, category=com.android.launcher3.DEEP_SHORTCUT, launchFlags=0x10200000, package=com.openai.chatgpt, component=com.openai.chatgpt/.MainActivity, i.userid=0, S.shortcut_id=Y29udmVyc2F0aW9uXzZhOGNhODZiLWYzODAtODNlOS04YzA5LTM4NTljNmVhOWFmYg==, end]
+09-18 18:14:03.655  3093  3093 I HoneySpace.AbsFolderPot: resetItemChildren put: [#Intent, action=android.intent.action.MAIN, category=com.android.launcher3.DEEP_SHORTCUT, launchFlags=0x10200000, package=com.openai.chatgpt, component=com.openai.chatgpt/.MainActivity, i.userid=0, S.shortcut_id=Y29udmVyc2F0aW9uXzY5YWI0MGI0LTY4MTQtODMyZS05MjFmLThmNjJhN2YyMWU2YQ==, end]
+09-18 18:14:03.655  3093  3093 I HoneySpace.FolderIconUpdater: createIconBitmap: updateInBackground: true fromInit: false  [id:48] [title:Nanda] [color:-2424613] [items:6] [container:0]
+09-18 18:14:03.659  3093 18576 I AppIconSolution: getThemeIconWithBG called with public API, pkg = null, mode = 1
+09-18 18:14:03.659  3093 18576 I AppIconSolution: return adaptive icon for null, isNight = true
+09-18 18:14:03.666  3093 18568 I AppIconSolution: getThemeIconWithBG called with public API, pkg = null, mode = 1
+09-18 18:14:03.666  3093 18568 I AppIconSolution: return adaptive icon for null, isNight = true
+09-18 18:14:03.671  3093 18576 I HoneySpace.FolderIconUpdater: createBitmapInBackground launched in 1948   [id:48] [title:Nanda] [color:-2424613] [items:6] [container:0]
+09-18 18:14:03.672  3093 18568 I HoneySpace.AppTimerDataSourceImpl: items: 0
+09-18 18:14:03.672  2576  2691 I PluginActionManager[com.android.systemui.action.PLUGIN_NOTIFICATION_MENU_ROW]: Found 0 plugins
+09-18 18:14:03.672  3093 18568 I HoneySpace.DataCache: updateItem : id=23928, title=Conectar ChatGPT ao Codex, type=DEEP_SHORTCUT, containerType=ITEM_GROUP, containerId=7, x=0, y=3, rank=-1, spanX=-1, spanY=-1, scale=1.0, component=null, profileId=0, intent=[#Intent, action=android.intent.action.MAIN, category=com.android.launcher3.DEEP_SHORTCUT, launchFlags=0x10200000, package=com.openai.chatgpt, component=com.openai.chatgpt/.MainActivity, i.userid=0, S.shortcut_id=Y29udmVyc2F0aW9uXzZhNjhiOTRlLTY1YzgtODNlOS1hODEzLWQ4NGJmZDE1NjhiZA==, end], restored=0, hidden=UNHIDDEN, appWidgetId=-1, options=0, refPackageName=null, customLabel=null, labelColor=null
+09-18 18:14:03.672  3093 18568 I HoneySpace.PackageEventOperator: shortcut changed. shortcutInfo : ShortcutInfo {id=***, flags=0x268a [PinIc-fIc-aStrRetsLiv], packageName=com.openai.chatgpt, activity=ComponentInfo{com.openai.chatgpt/com.openai.chatgpt.MainActivity}, shortLabel=***, resId=0[null], longLabel=***, resId=0[null], disabledMessage=***, resId=0[null], disabledReason=[Not disabled], categories=null, persons=null, icon=null, rank=0, timestamp=1785280479344, intents=null, extras=null}
+09-18 18:14:03.673  2576  2691 I PluginActionManager[com.android.systemui.action.PLUGIN_NOTIFICATION_MENU_ROW]: Found 0 plugins
+09-18 18:14:03.673  3093 18568 W BitmapFactory: Null Options, creating a new one.
+09-18 18:14:03.673  2576  2691 I PluginActionManager[com.android.systemui.action.PLUGIN_NOTIFICATION_MENU_ROW]: Found 0 plugins
+09-18 18:14:03.674  2576  2691 I PluginActionManager[com.android.systemui.action.PLUGIN_NOTIFICATION_MENU_ROW]: Found 0 plugins
+--
+09-18 18:14:03.681  2576  2576 I DateTimeView: getTimeFormat
+09-18 18:14:03.682  2576  2576 I DateTimeView: getTimeFormat
+09-18 18:14:03.683  3093 18576 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.683  2576  2576 I DateTimeView: getTimeFormat
+09-18 18:14:03.684  2576  2576 I DateTimeView: getTimeFormat
+09-18 18:14:03.684  2576  2576 I DateTimeView: getTimeFormat
+09-18 18:14:03.685  2576  2576 I DateTimeView: getTimeFormat
+09-18 18:14:03.686  1810  2298 D NetdEventListenerService: DNS Requested by 200, 10330(com.openai.chatgpt), SUCCESS, 221ms
+09-18 18:14:03.686  3093 18576 I HoneySpace.FolderIconUpdater: updateIconWithBg 1948  [id:48] [title:Nanda] [color:-2424613] [items:6] [container:0]
+09-18 18:14:03.688  3093 31424 W BitmapFactory: Null Options, creating a new one.
+09-18 18:14:03.689  3093 18568 I AppIconSolution: getThemeIconWithBG called with public API, pkg = null, mode = 1
+09-18 18:14:03.689  3093 18568 I AppIconSolution: return adaptive icon for null, isNight = true
+09-18 18:14:03.690  3093 31424 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.692  3093 31424 I Kumiho-Kumiho: getPackageName: com.sec.android.app.launcher
+09-18 18:14:03.692  2576  2576 W RefactorFlag: New code path expects SceneContainerFlag to be enabled.
+09-18 18:14:03.693  2576  2576 D ExpandableNotifRow: mMaxSmallHeight different before reInflateViews mMaxSmallHeight: 230 mTempSmallHeight:0 0|com.openai.chatgpt|595233003|6aad2033-d0e4-83e9-9bde-190cb472af17|10330
+09-18 18:14:03.693  2576  2576 D ExpandableNotifRow: mMaxSmallHeight different before reInflateViews mMaxSmallHeight: 230 mTempSmallHeight:0 0|com.openai.chatgpt|595233003|6aad2033-d0e4-83e9-9bde-190cb472af17|10330
+09-18 18:14:03.695  2576  2576 I LockscreenNotificationIconsOnlyController: onNotificationInfoUpdated 0
+09-18 18:14:03.695  3093 18576 I HoneySpace.FolderIconUpdater: createIconWithBg drawOnlyIcon:false  [id:48] [title:Nanda] [color:-2424613] [items:6] [container:0]
+09-18 18:14:03.695  2576  2576 I AODNotificationManager: updateNotification() 
+09-18 18:14:03.695  3093  3093 I HoneySpace.FolderIconUpdater: createIconWithBg set final icon in main dispatcher drawWithLowResIcon:false id:1948  [id:48] [title:Nanda] [color:-2424613] [items:6] [container:0]
+09-18 18:14:03.696  3093  3093 I HoneySpace.FolderSharedViewModel: setFolderIconCache id:48 type:-1 size:0 nightMode:true drawIconCount:6
+09-18 18:14:03.696  3093 15693 I HoneySpace.FolderSharedViewModel: setFolderIconCache - insertFolderIcon 48
+09-18 18:14:03.696  3093 18576 I HoneySpace.FolderIconUpdater: createBitmap density: 510 iconStyle: 183 folderStyle: 185  [id:48] [title:Nanda] [color:-2424613] [items:6] [container:0]
+09-18 18:14:03.696  2576  3121 E ndroid.systemui: No package ID 7f found for resource ID 0x7f170000.
+09-18 18:14:03.696  2576  3121 W LocaleConfig: The resource file pointed to by the given resource ID isn't found.
+09-18 18:14:03.697  2576  3121 E ndroid.systemui: No package ID 7f found for resource ID 0x7f170000.
+09-18 18:14:03.697  2576  3121 W LocaleConfig: The resource file pointed to by the given resource ID isn't found.
+09-18 18:14:03.698  3093 31424 I AppIconSolution: getThemeIconWithBG called with public API, pkg = null, mode = 1
+09-18 18:14:03.698  3093 31424 I AppIconSolution: return adaptive icon for null, isNight = true
+09-18 18:14:03.700  3093 18568 I HoneySpace.AppTimerDataSourceImpl: items: 0
+09-18 18:14:03.700  3093 18568 I HoneySpace.DataCache: updateItem : id=8792, title=Desenvolvimento, type=DEEP_SHORTCUT, containerType=ITEM_GROUP, containerId=7, x=1, y=3, rank=-1, spanX=-1, spanY=-1, scale=1.0, component=null, profileId=0, intent=[#Intent, action=android.intent.action.MAIN, category=com.android.launcher3.DEEP_SHORTCUT, launchFlags=0x10200000, package=com.openai.chatgpt, component=com.openai.chatgpt/.MainActivity, i.userid=0, S.shortcut_id=cHJvamVjdF9nLXAtNmE0OTNmOGYxYmI4ODE5MWI2NmIwOTNkMWI0YjUwNjM=, end], restored=0, hidden=UNHIDDEN, appWidgetId=-1, options=0, refPackageName=null, customLabel=null, labelColor=null

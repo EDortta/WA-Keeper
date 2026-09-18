@@ -1,0 +1,2 @@
+$ adb shell ps -A | grep -F 'br.com.wanotifkeeper' || true
+u0_a545      17990  1161    9519036 155316 0                   0 S br.com.wanotifkeeper

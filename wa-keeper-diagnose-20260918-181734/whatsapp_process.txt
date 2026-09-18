@@ -1,0 +1,4 @@
+$ adb shell ps -A | grep -Ei 'whatsapp|com\.wa' || true
+u0_a328       2828  1161   13014584 144220 0                   0 S com.whatsapp.w4b
+u0_a329      14317  1161   11535912 141660 0                   0 S com.whatsapp
+u0_a545      17990  1161    9519036 155700 0                   0 S br.com.wanotifkeeper

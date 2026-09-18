@@ -1,0 +1,9 @@
+[18:17:34] Verificando ADB...
+[18:17:35] Package detectado: br.com.wanotifkeeper
+[18:17:35] Contato/filtro: Nanda
+[18:17:35] Logs desde: 2026-09-18 00:00:00
+[18:17:40] Coletando logcat...
+[18:17:45] run-as indisponível: APK provavelmente não é debuggable. Banco interno não pôde ser lido.
+[18:17:45] Diagnóstico concluído.
+[18:17:45] Abra primeiro: wa-keeper-diagnose-20260918-181734/diagnosis.txt
+[18:17:45] Depois, se necessário: wa-keeper-diagnose-20260918-181734/logcat-contact.txt e wa-keeper-diagnose-20260918-181734/logcat-relevant.txt
