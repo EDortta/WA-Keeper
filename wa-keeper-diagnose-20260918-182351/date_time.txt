@@ -1,0 +1,6 @@
+$ adb shell echo "date=$(date)"; echo "epoch=$(date +%s)"; getprop persist.sys.timezone; settings get global auto_time; settings get global auto_time_zone
+date=Fri Sep 18 18:23:51 -03 2026
+epoch=1789766631
+America/Sao_Paulo
+1
+1

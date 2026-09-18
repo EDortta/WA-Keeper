@@ -1,0 +1,3 @@
+./databases/wanotif.db
+./shared_prefs/android.app.ActivityThread.IDS.xml
+./shared_prefs/wa_keeper_prefs.xml

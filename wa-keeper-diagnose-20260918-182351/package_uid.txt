@@ -1,0 +1,4 @@
+$ adb shell dumpsys package 'br.com.wanotifkeeper' | grep -E 'userId=|appId=|versionName=|versionCode='
+    appId=10545
+    versionCode=8 minSdk=26 targetSdk=34
+    versionName=1.0.8

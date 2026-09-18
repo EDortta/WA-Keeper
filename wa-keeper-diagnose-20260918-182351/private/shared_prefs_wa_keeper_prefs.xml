@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <int name="voice_manual_duration_minutes" value="0" />
+    <long name="voice_direct_command_until" value="0" />
+    <boolean name="tts_enabled_com.whatsapp.w4b" value="true" />
+    <boolean name="voice_speech_pack_missing" value="false" />
+    <long name="voice_manual_listen_until" value="0" />
+    <boolean name="audio_capture_enabled_com.whatsapp.w4b" value="true" />
+    <boolean name="voice_manual_timer_motion_seen" value="false" />
+    <string name="voice_default_account_pkg">com.whatsapp</string>
+    <boolean name="voice_commands_enabled" value="true" />
+    <boolean name="audio_capture_enabled_com.whatsapp" value="true" />
+    <boolean name="tts_enabled_com.whatsapp" value="true" />
+    <boolean name="audio_capture_enabled" value="true" />
+    <boolean name="audio_play_in_motion" value="true" />
+</map>

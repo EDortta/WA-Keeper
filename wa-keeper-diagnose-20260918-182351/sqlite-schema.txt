@@ -1,0 +1,12 @@
+===== DB: wa-keeper-diagnose-20260918-182351/private/databases_wanotif.db =====
+android_metadata       notifications          scheduled_messages   
+conversation_settings  room_master_table    
+CREATE TABLE android_metadata (locale TEXT);
+CREATE TABLE sqlite_sequence(name,seq);
+CREATE TABLE room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT);
+CREATE TABLE `notifications` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sender` TEXT NOT NULL, `text` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `packageName` TEXT NOT NULL, imagePath TEXT, audioPath TEXT);
+CREATE TABLE conversation_settings (sender TEXT NOT NULL PRIMARY KEY, mode TEXT NOT NULL, durationMillis INTEGER NOT NULL);
+CREATE TABLE scheduled_messages (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, packageName TEXT NOT NULL, sender TEXT NOT NULL, text TEXT NOT NULL, state TEXT NOT NULL, createdAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL, claimedAt INTEGER, sentAt INTEGER, attempts INTEGER NOT NULL, lastError TEXT, nextAttemptAt INTEGER NOT NULL, triggerNotificationKey TEXT, triggeredAt INTEGER, triggerType TEXT NOT NULL DEFAULT 'NEXT_INCOMING', scheduledAt INTEGER, mediaUri TEXT, mediaMimeType TEXT, mediaName TEXT);
+CREATE INDEX index_scheduled_messages_conversation ON scheduled_messages (packageName, sender, state);
+CREATE INDEX index_scheduled_messages_time ON scheduled_messages (triggerType, state, scheduledAt);
+

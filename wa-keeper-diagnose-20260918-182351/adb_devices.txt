@@ -1,0 +1,4 @@
+$ adb devices -l
+List of devices attached
+RX8Y903RVWD            device usb:1-4.3 product:a17xx model:SM_A175F device:a17 transport_id:2
+

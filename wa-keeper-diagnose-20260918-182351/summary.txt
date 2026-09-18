@@ -1,0 +1,9 @@
+[18:23:51] Verificando ADB...
+[18:23:52] Package detectado: br.com.wanotifkeeper
+[18:23:52] Contato/filtro: Nanda
+[18:23:52] Logs desde: 2026-09-18 00:00:00
+[18:23:57] Coletando logcat...
+[18:23:59] run-as disponível: vou inspecionar arquivos internos sem modificá-los.
+[18:23:59] Diagnóstico concluído.
+[18:23:59] Abra primeiro: wa-keeper-diagnose-20260918-182351/diagnosis.txt
+[18:23:59] Depois, se necessário: wa-keeper-diagnose-20260918-182351/logcat-contact.txt e wa-keeper-diagnose-20260918-182351/logcat-relevant.txt

@@ -1,0 +1,357 @@
+$ adb shell dumpsys package br.com.wanotifkeeper
+Activity Resolver Table:
+  Non-Data Actions:
+      android.intent.action.MAIN:
+        df248c3 br.com.wanotifkeeper/.MainActivity filter c269540
+          Action: "android.intent.action.MAIN"
+          Category: "android.intent.category.LAUNCHER"
+
+Receiver Resolver Table:
+  Non-Data Actions:
+      androidx.profileinstaller.action.SAVE_PROFILE:
+        426ae1f br.com.wanotifkeeper/androidx.profileinstaller.ProfileInstallReceiver filter 35f07ca
+          Action: "androidx.profileinstaller.action.SAVE_PROFILE"
+      androidx.profileinstaller.action.INSTALL_PROFILE:
+        426ae1f br.com.wanotifkeeper/androidx.profileinstaller.ProfileInstallReceiver filter 87fc56c
+          Action: "androidx.profileinstaller.action.INSTALL_PROFILE"
+      androidx.profileinstaller.action.SKIP_FILE:
+        426ae1f br.com.wanotifkeeper/androidx.profileinstaller.ProfileInstallReceiver filter a162735
+          Action: "androidx.profileinstaller.action.SKIP_FILE"
+      androidx.profileinstaller.action.BENCHMARK_OPERATION:
+        426ae1f br.com.wanotifkeeper/androidx.profileinstaller.ProfileInstallReceiver filter 4120d3b
+          Action: "androidx.profileinstaller.action.BENCHMARK_OPERATION"
+      android.intent.action.BOOT_COMPLETED:
+        d673c79 br.com.wanotifkeeper/.BootReceiver filter 7f7cdbe
+          Action: "android.intent.action.BOOT_COMPLETED"
+
+Service Resolver Table:
+  Non-Data Actions:
+      android.service.notification.NotificationListenerService:
+        259cc58 br.com.wanotifkeeper/.NotifListenerService filter 8f01b1 permission android.permission.BIND_NOTIFICATION_LISTENER_SERVICE
+          Action: "android.service.notification.NotificationListenerService"
+
+Domain verification status:
+
+Permissions:
+  Permission [br.com.wanotifkeeper.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION] (a666bb9):
+    sourcePackage=br.com.wanotifkeeper
+    uid=10545 gids=[] type=0 prot=signature
+    perm=PermissionInfo{d0c8fb br.com.wanotifkeeper.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION}
+    flags=0x0
+
+Registered ContentProviders:
+  br.com.wanotifkeeper/androidx.startup.InitializationProvider:
+    Provider{3443d18 br.com.wanotifkeeper/androidx.startup.InitializationProvider}
+
+ContentProvider Authorities:
+  [br.com.wanotifkeeper.androidx-startup]:
+    Provider{3443d18 br.com.wanotifkeeper/androidx.startup.InitializationProvider}
+      applicationInfo=ApplicationInfo{c846bfe br.com.wanotifkeeper}
+
+Key Set Manager:
+  [br.com.wanotifkeeper]
+      Signing KeySets: 242
+
+Packages:
+  Package [br.com.wanotifkeeper] (8c5b3a0):
+    appId=10545
+    pkg=Package{c99556 br.com.wanotifkeeper}
+    codePath=/data/app/~~OFkxLKpeR1nQUpcF5VRxtw==/br.com.wanotifkeeper-XZoy8K3UW_CmAVLv2qNMnQ==
+    resourcePath=/data/app/~~OFkxLKpeR1nQUpcF5VRxtw==/br.com.wanotifkeeper-XZoy8K3UW_CmAVLv2qNMnQ==
+    legacyNativeLibraryDir=/data/app/~~OFkxLKpeR1nQUpcF5VRxtw==/br.com.wanotifkeeper-XZoy8K3UW_CmAVLv2qNMnQ==/lib
+    extractNativeLibs=false
+    primaryCpuAbi=null
+    secondaryCpuAbi=null
+    cpuAbiOverride=null
+    versionCode=8 minSdk=26 targetSdk=34
+    minExtensionVersions=[]
+    versionName=1.0.8
+    hiddenApiEnforcementPolicy=2
+    usesNonSdkApi=false
+    splits=[base]
+    apkSigningVersion=2
+    flags=[ DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA ]
+    privateFlags=[ PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION ALLOW_AUDIO_PLAYBACK_CAPTURE PARTIALLY_DIRECT_BOOT_AWARE PRIVATE_FLAG_ALLOW_NATIVE_HEAP_POINTER_TAGGING ]
+    forceQueryable=false
+    pageSizeCompat=0
+    scannedAsStoppedSystemApp=false
+    supportsScreens=[small, medium, large, xlarge, resizeable, anyDensity]
+    timeStamp=2026-09-18 18:22:36
+    lastUpdateTime=2026-09-18 18:22:39
+    installerPackageName=null
+    installerPackageUid=-1
+    initiatingPackageName=com.android.shell
+    originatingPackageName=null
+    category=manifest: -1, override: -1, by user: -1
+    packageSource=1
+    appMetadataFilePath=null
+    appMetadataSource=0
+    signatures=PackageSignatures{17850c4 version:2, signatures:[27773c6c], past signatures:[]}
+    installPermissionsFixed=false
+    pkgFlags=[ DEBUGGABLE HAS_CODE ALLOW_CLEAR_USER_DATA ]
+    privatePkgFlags=[ PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION ALLOW_AUDIO_PLAYBACK_CAPTURE PARTIALLY_DIRECT_BOOT_AWARE PRIVATE_FLAG_ALLOW_NATIVE_HEAP_POINTER_TAGGING ]
+    apexModuleName=null
+    componentsDeclared=9
+    declared permissions:
+      br.com.wanotifkeeper.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: prot=signature
+    requested permissions:
+      android.permission.POST_NOTIFICATIONS
+      android.permission.MODIFY_AUDIO_SETTINGS
+      android.permission.MANAGE_EXTERNAL_STORAGE
+      android.permission.FOREGROUND_SERVICE
+      android.permission.RECEIVE_BOOT_COMPLETED
+      android.permission.FOREGROUND_SERVICE_MICROPHONE
+      android.permission.SCHEDULE_EXACT_ALARM
+      br.com.wanotifkeeper.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+      android.permission.RECORD_AUDIO
+    install permissions:
+      android.permission.MODIFY_AUDIO_SETTINGS: granted=true
+      android.permission.FOREGROUND_SERVICE: granted=true
+      android.permission.RECEIVE_BOOT_COMPLETED: granted=true
+      android.permission.FOREGROUND_SERVICE_MICROPHONE: granted=true
+      br.com.wanotifkeeper.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: granted=true
+    User 0: ceDataInode=140969 deDataInode=382904 installed=true hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false
+      installReason=0
+      dataDir=/data/user/0/br.com.wanotifkeeper
+      firstInstallTime=2026-06-27 16:30:27
+      uninstallReason=0
+      runtime permissions:
+        android.permission.POST_NOTIFICATIONS: granted=true, flags=[ USER_SET|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+        android.permission.RECORD_AUDIO: granted=true, flags=[ USER_SET|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]
+    User 150: ceDataInode=0 deDataInode=0 installed=false hidden=false suspended=false distractionFlags=0 stopped=false notLaunched=false enabled=0 instant=false virtual=false quarantined=false
+      installReason=0
+      dataDir=null
+      firstInstallTime=1969-12-31 21:00:00
+      uninstallReason=0
+      runtime permissions:
+
+Queries:
+  system apps queryable: false
+  queries via forceQueryable:
+  queries via package name:
+  queries via component:
+    com.sun.ai.app.tube.videodownloader:
+      br.com.wanotifkeeper
+    com.android.settings.intelligence:
+      br.com.wanotifkeeper
+    br.com.serasaexperian.consumidor:
+      br.com.wanotifkeeper
+    com.google.android.apps.accessibility.voiceaccess:
+      br.com.wanotifkeeper
+    com.google.android.as:
+      br.com.wanotifkeeper
+    com.google.android.as.oss:
+      br.com.wanotifkeeper
+    com.microsoft.office.outlook:
+      br.com.wanotifkeeper
+    com.samsung.android.spay:
+      br.com.wanotifkeeper
+    com.whatsapp.w4b:
+      br.com.wanotifkeeper
+    com.whatsapp:
+      br.com.wanotifkeeper
+    com.mercadopago.wallet:
+      br.com.wanotifkeeper
+    com.raizen.acelera:
+      br.com.wanotifkeeper
+    org.torproject.android:
+      br.com.wanotifkeeper
+    com.zhiliaoapp.musically:
+      br.com.wanotifkeeper
+    com.nu.production:
+      br.com.wanotifkeeper
+    com.c6bank.app:
+      br.com.wanotifkeeper
+    com.mercadolibre:
+      br.com.wanotifkeeper
+    com.wireguard.android:
+      br.com.wanotifkeeper
+    com.utorrent.client:
+      br.com.wanotifkeeper
+    com.xm.csee:
+      br.com.wanotifkeeper
+    us.zoom.videomeetings:
+      br.com.wanotifkeeper
+    com.ichano.athome.camera:
+      br.com.wanotifkeeper
+    com.vitastudio.mahjong:
+      br.com.wanotifkeeper
+    com.calculator.hideu:
+      br.com.wanotifkeeper
+    com.amazon.mShop.android.shopping:
+      br.com.wanotifkeeper
+    com.amazon.kindle:
+      br.com.wanotifkeeper
+    com.camerasideas.trimmer:
+      br.com.wanotifkeeper
+    com.macrovideo.v380pro:
+      br.com.wanotifkeeper
+    com.ysxlite.cam:
+      br.com.wanotifkeeper
+    com.musion.offline:
+      br.com.wanotifkeeper
+    com.jetpack.android:
+      br.com.wanotifkeeper
+    radios.de.uruguay.gratis:
+      br.com.wanotifkeeper
+    ai.perplexity.app.android:
+      br.com.wanotifkeeper
+    com.xcthings.fchan:
+      br.com.wanotifkeeper
+    chromecast.tv.setup:
+      br.com.wanotifkeeper
+    uni.UNI9EB4CF0:
+      br.com.wanotifkeeper
+    com.truecaller:
+      br.com.wanotifkeeper
+    com.nomadfintech.bank.app.android:
+      br.com.wanotifkeeper
+    com.Mix.Reels:
+      br.com.wanotifkeeper
+    com.bdroid.audiomediaconverter:
+      br.com.wanotifkeeper
+    br.com.meliuz:
+      br.com.wanotifkeeper
+  queryable via interaction:
+    User 0:
+      [com.sec.android.app.servicemodeapp,com.samsung.android.brightnessbackupservice,com.samsung.android.dqagent,com.sec.imslogger,com.sec.android.CcInfo,com.android.keychain,com.samsung.android.app.dressroom,com.android.providers.settings,com.android.settings,com.samsung.android.mdecservice,com.android.dynsystem,com.sec.facatfunction,com.samsung.android.knox.attestation,com.samsung.SMT,com.samsung.android.da.daagent,com.sec.modem.settings,com.samsung.android.stickercenter,com.samsung.oda.service,com.samsung.aasaservice,com.samsung.android.aircommandmanager,com.samsung.android.svcagent,com.sec.imsservice,com.wssyncmldm,com.samsung.android.lool,com.samsung.android.messageguardsync,com.samsung.android.knox.zt.framework,com.sec.bcservice,com.skms.android.agent,com.samsung.gpuwatchapp,com.sec.android.soagent,com.sec.android.app.quicktool,com.android.localtransport,com.sec.factory.camera,com.sec.android.diagmonagent,com.samsung.android.fmm,com.sec.android.app.factorykeystring,com.sec.automation,com.samsung.accessibility,com.samsung.android.wifi.ai,com.samsung.android.bbc.bbcagent,com.samsung.android.smartswitchassistant,com.sec.mhs.smarttethering,com.sec.android.emergencylauncher,com.sec.android.app.wlantest,com.sec.android.sdhms,com.sec.sve,com.sec.usbsettings,com.samsung.android.smartface,com.samsung.android.providers.factory,com.android.server.telecom,com.sec.android.smartfpsadjuster,com.samsung.android.emergency,com.samsung.android.app.omcagent,android,com.samsung.android.provider.filterprovider,com.samsung.android.knox.mpos,com.samsung.android.knox.pushmanager,com.sec.android.app.hwmoduletest,com.samsung.sec.android.teegris.tui_service,com.sec.android.app.SecSetupWizard,com.samsung.android.hdmapp,com.sec.epdg,com.samsung.android.forest,com.sec.android.app.personalization,com.sec.android.app.RilPhoneNumberService,com.samsung.android.themecenter,com.sec.app.RilErrorNotifier,com.android.inputdevices,com.android.location.fused,com.samsung.android.biometrics.app.setting,com.sec.android.iaft,com.samsung.sait.sohservice,com.sec.android.app.parser]:
+        br.com.wanotifkeeper
+      [com.google.android.gms,com.google.android.gsf]:
+        br.com.wanotifkeeper
+      com.google.android.inputmethod.latin:
+        br.com.wanotifkeeper
+      br.com.wanotifkeeper:
+        [com.sec.android.app.servicemodeapp,com.samsung.android.brightnessbackupservice,com.samsung.android.dqagent,com.sec.imslogger,com.sec.android.CcInfo,com.android.keychain,com.samsung.android.app.dressroom,com.android.providers.settings,com.android.settings,com.samsung.android.mdecservice,com.android.dynsystem,com.sec.facatfunction,com.samsung.android.knox.attestation,com.samsung.SMT,com.samsung.android.da.daagent,com.sec.modem.settings,com.samsung.android.stickercenter,com.samsung.oda.service,com.samsung.aasaservice,com.samsung.android.aircommandmanager,com.samsung.android.svcagent,com.sec.imsservice,com.wssyncmldm,com.samsung.android.lool,com.samsung.android.messageguardsync,com.samsung.android.knox.zt.framework,com.sec.bcservice,com.skms.android.agent,com.samsung.gpuwatchapp,com.sec.android.soagent,com.sec.android.app.quicktool,com.android.localtransport,com.sec.factory.camera,com.sec.android.diagmonagent,com.samsung.android.fmm,com.sec.android.app.factorykeystring,com.sec.automation,com.samsung.accessibility,com.samsung.android.wifi.ai,com.samsung.android.bbc.bbcagent,com.samsung.android.smartswitchassistant,com.sec.mhs.smarttethering,com.sec.android.emergencylauncher,com.sec.android.app.wlantest,com.sec.android.sdhms,com.sec.sve,com.sec.usbsettings,com.samsung.android.smartface,com.samsung.android.providers.factory,com.android.server.telecom,com.sec.android.smartfpsadjuster,com.samsung.android.emergency,com.samsung.android.app.omcagent,android,com.samsung.android.provider.filterprovider,com.samsung.android.knox.mpos,com.samsung.android.knox.pushmanager,com.sec.android.app.hwmoduletest,com.samsung.sec.android.teegris.tui_service,com.sec.android.app.SecSetupWizard,com.samsung.android.hdmapp,com.sec.epdg,com.samsung.android.forest,com.sec.android.app.personalization,com.sec.android.app.RilPhoneNumberService,com.samsung.android.themecenter,com.sec.app.RilErrorNotifier,com.android.inputdevices,com.android.location.fused,com.samsung.android.biometrics.app.setting,com.sec.android.iaft,com.samsung.sait.sohservice,com.sec.android.app.parser]
+        org.torproject.android
+      br.com.wanotifkeeper:
+        [com.android.providers.media,com.samsung.android.mtp,com.android.providers.downloads,com.android.providers.downloads.ui,com.samsung.android.providers.media,com.samsung.android.providers.trash,com.android.mtp]
+    User 150:
+  queryable via uses-library:
+
+Dexopt state:
+  [br.com.wanotifkeeper]
+    path: /data/app/~~OFkxLKpeR1nQUpcF5VRxtw==/br.com.wanotifkeeper-XZoy8K3UW_CmAVLv2qNMnQ==/base.apk
+      arm64: [status=run-from-apk] [reason=unknown] [primary-abi]
+        [location is error]
+
+SPEG state:
+  Event #5: 07-09-2026 13:40:17.820 Success org.chromium.webapk.a0eb1242edf1b060c_v2 took 2345 ms
+  Event #4: 06-09-2026 20:45:05.238 Success org.chromium.webapk.abc188cf2951d10fe_v2 took 2357 ms
+  Event #3: 28-08-2026 16:57:06.791 Success com.zeecred.zeeapp.redesign took 2457 ms
+  Event #2: 30-07-2026 16:38:13.959 Success br.com.engessa.engessa_mobile took 2336 ms
+  Event #1: 24-02-2026 13:07:35.054 Success com.anonymous.jkservicesmonitor took 2427 ms
+  Event #0: 23-02-2026 17:53:53.172 Success com.jkmonitorcontroller took 2444 ms
+
+Profile utilization state:
+  Current state:
+    Version: 2.1.2
+    Start reason: boot-no-update
+    Start time: not started
+    Finish time: not finished
+    PU_StatusWatcher:
+      Initial thermal status: 0
+      Thermal status: 0
+      Screen off: false
+      Low battery: true
+    PU_DexoptTrigger:
+      Dexopt concurrency: 4
+      Dexopting: false
+    PU_Storage:
+      Stored apps:
+        com.whatsapp.w4b 12
+        com.whatsapp 31
+        com.openai.chatgpt 44
+        com.zhiliaoapp.musically 59
+        com.picpay 64
+        com.google.android.gm 101
+        com.twitter.android 108
+        com.discord 118
+        com.truecaller 121
+        com.sec.android.gallery3d 123
+        com.android.settings 125
+        com.google.android.googlequicksearchbox 127
+        com.sec.android.app.myfiles 136
+        com.samsung.android.app.routines 141
+        com.samsung.android.app.notes 144
+        com.samsung.android.dialer 147
+        com.android.chrome 148
+        com.samsung.android.app.contacts 148
+        com.mercadopago.wallet 151
+        com.samsung.android.app.watchmanager 151
+        br.com.sicredimobi.smart 160
+        com.google.android.apps.photos 161
+        com.google.android.apps.tachyon 164
+        com.android.vending 175
+        com.google.android.calendar 175
+        com.google.android.youtube 178
+        br.com.brainweb.ifood 179
+        com.artech.eaplic.havan 180
+        com.sec.android.app.camera 180
+        org.torproject.android 185
+        com.google.android.apps.chromecast.app 187
+        com.sec.android.easyMover 192
+        br.com.amt.v2 196
+        com.samsung.android.game.gamehome 196
+        com.google.android.apps.bard 210
+        br.kmm.sinergia 212
+        com.google.android.apps.messaging 215
+        br.com.tecnofit.mobileapp 228
+        com.samsung.android.app.find 228
+    Stored PU state:
+      Service:
+        Version: 2.1.2
+        Start reason: boot-after-ota
+        Start time: Sat Aug 15 08:18:55 GMT-03:00 2026 ts=1786792735199
+        Finish time: Sat Aug 15 11:30:50 GMT-03:00 2026 ts=1786804250746
+        Took time 11515sec
+      Watcher:
+        Initial thermal status: 0
+        Thermal status: 0
+        Screen off: true
+        Low battery: false
+      Metrics:
+        Predicted and launched apps: 9
+        Predicted apps: 23
+        Launched apps: 11
+        Best f1Score: 0.7058824, prefixCount: 6, precision: 1.0, recall: 0.54545456
+      Trigger:
+        Dexopt concurrency: 4
+        Dexopting: false
+        Hot apps list:
+          com.whatsapp.w4b, w=12, s=OPTIMIZED, optTimeMs=1786793290610, cancelCount=1, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=150083, filter=speed-profile]
+          com.whatsapp, w=31, s=OPTIMIZED, optTimeMs=1786793248166, cancelCount=1, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=107670, filter=speed-profile]
+          com.openai.chatgpt, w=44, s=OPTIMIZED, optTimeMs=1786793246050, cancelCount=1, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=105520, filter=speed-profile]
+          com.zhiliaoapp.musically, w=59, s=OPTIMIZED, optTimeMs=1786804250744, cancelCount=6, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=76728, filter=speed-profile]
+          com.picpay, w=64, s=OPTIMIZED, optTimeMs=1786794725127, cancelCount=2, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=66817, filter=speed-profile]
+          com.google.android.gm, w=101, s=OPTIMIZED, optTimeMs=1786794733453, cancelCount=2, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=75592, filter=speed-profile]
+          com.twitter.android, w=108, s=OPTIMIZED, optTimeMs=1786794757616, cancelCount=2, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=99813, filter=speed-profile]
+          com.discord, w=118, s=OPTIMIZED, optTimeMs=1786794748029, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=22458, filter=speed-profile]
+          com.truecaller, w=121, s=OPTIMIZED, optTimeMs=1786796411755, cancelCount=1, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=64412, filter=speed-profile], [primaryDex=true, reason=vdex-dm, dex2oatTimeMs=0, filter=verify]
+          com.sec.android.gallery3d, w=123, s=OPTIMIZED, optTimeMs=1786794748178, cancelCount=0, dexopt=SKIPPED, [primaryDex=true, reason=boot-after-ota, dex2oatTimeMs=0, filter=speed-profile]
+          com.android.settings, w=125, s=OPTIMIZED, optTimeMs=1786794754741, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=6163, filter=speed-profile]
+          com.google.android.googlequicksearchbox, w=127, s=OPTIMIZED, optTimeMs=1786796405757, cancelCount=1, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=58606, filter=speed-profile]
+          com.sec.android.app.myfiles, w=136, s=OPTIMIZED, optTimeMs=1786794757818, cancelCount=0, dexopt=SKIPPED, [primaryDex=true, reason=boot-after-ota, dex2oatTimeMs=0, filter=speed-profile]
+          com.samsung.android.app.routines, w=141, s=OPTIMIZED, optTimeMs=1786794768506, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=10169, filter=speed-profile], [primaryDex=false, reason=vdex, dex2oatTimeMs=0, filter=verify]
+          com.samsung.android.app.notes, w=144, s=OPTIMIZED, optTimeMs=1786796350457, cancelCount=1, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=26221, filter=speed-profile]
+          com.samsung.android.dialer, w=147, s=OPTIMIZED, optTimeMs=1786796350915, cancelCount=0, dexopt=SKIPPED, [primaryDex=true, reason=boot-after-ota, dex2oatTimeMs=0, filter=speed-profile]
+          com.android.chrome, w=148, s=OPTIMIZED, optTimeMs=1786796393589, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=7445, filter=speed-profile], [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=7101, filter=speed-profile], [primaryDex=true, reason=vdex-dm, dex2oatTimeMs=0, filter=verify], [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=3198, filter=speed-profile], [primaryDex=true, reason=vdex-dm, dex2oatTimeMs=0, filter=verify]
+          com.samsung.android.app.contacts, w=148, s=OPTIMIZED, optTimeMs=1786796403282, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=9166, filter=speed-profile]
+          com.mercadopago.wallet, w=151, s=OPTIMIZED, optTimeMs=1786799048494, cancelCount=1, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=51795, filter=speed-profile]
+          com.samsung.android.app.watchmanager, w=151, s=OPTIMIZED, optTimeMs=1786796410927, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=4884, filter=speed-profile]
+          br.com.sicredimobi.smart, w=160, s=OPTIMIZED, optTimeMs=1786796424371, cancelCount=0, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=12915, filter=speed-profile]
+          com.google.android.apps.photos, w=161, s=OPTIMIZED, optTimeMs=1786798860771, cancelCount=1, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=44240, filter=speed-profile]
+          com.google.android.apps.tachyon, w=164, s=OPTIMIZED, optTimeMs=1786798801681, cancelCount=1, dexopt=PERFORMED, [primaryDex=true, reason=profile-utilization, dex2oatTimeMs=31861, filter=speed-profile]
+    Stored SCPM state:
+      packages-9a07:
+        [                                            ]
+      disable-2bb4:
+        [                                            ]
+
+HeimdAllFS state:
+  [br.com.wanotifkeeper]
+    path: /data/app/~~OFkxLKpeR1nQUpcF5VRxtw==/br.com.wanotifkeeper-XZoy8K3UW_CmAVLv2qNMnQ==/base.apk
+    Compressed? False
+  [ Summary ]
+    # of packages: 1 / # of packages in DATA: 1 (1)
+    Compressed apks info - sum of orig size: 1502 / sum of compr size : 1502
+  [Lfo status]

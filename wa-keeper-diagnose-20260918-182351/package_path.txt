@@ -1,0 +1,2 @@
+$ adb shell pm path br.com.wanotifkeeper
+package:/data/app/~~OFkxLKpeR1nQUpcF5VRxtw==/br.com.wanotifkeeper-XZoy8K3UW_CmAVLv2qNMnQ==/base.apk

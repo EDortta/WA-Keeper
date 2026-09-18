@@ -1,0 +1,207 @@
+    15010287:com.google.android.permissioncontroller=false
+    15010279:com.google.android.ext.services=false
+    15010255:com.google.android.apps.maps=false
+    15010245:com.android.chrome=false
+    15010243:com.google.android.syncadapters.calendar=false
+    15010240:com.google.android.googlequicksearchbox=false
+    15010236:com.google.android.apps.turbo=false
+    15010235:com.google.android.as.oss=false
+    15010233:com.google.android.as=false
+    15010118:com.sec.android.app.myfiles=false
+    15010114:com.sec.android.gallery3d=false
+    15010104:com.sec.android.app.camera=false
+    15005026:com.samsung.android.app.sharelive=false
+    15001000:com.samsung.aasaservice=false
+    10567:br.com.devmaker.muffato=false
+    10566:com.luizalabs.mlapp=false
+    10565:com.microsoft.teams=false
+    10564:br.com.engessa.engessa_mobile=false
+    10561:com.google.android.verifier=false
+    10559:com.blogspot.byterevapps.lollipopscreenrecorder=false
+    10558:com.pixsterstudio.captions=false
+    10557:br.com.meliuz=false
+    10555:br.com.igrejapequena.ip_editorial=false
+    10551:com.bdroid.audiomediaconverter=false
+    10546:com.larus.wolf=false
+    10545:br.com.wanotifkeeper=false
+    10544:br.kmm.sinergia=false
+    10539:com.luma.mobile=false
+    10537:br.coop.unimed.app=false
+    10536:io.cloudwalk.infinitepaydash=false
+    10531:com.edortta.techwhisper=false
+    10530:com.anthropic.claude=false
+    10529:com.github.android=false
+    10528:com.esteban.mixreelsauto=false
+    10527:br.com.tecnofit.mobileapp=false
+    10526:audioeditor.musiceditor.soundeditor.songeditor=false
+    10524:com.Mix.Reels=false
+    10523:org.chromium.webapk.a0eb1242edf1b060c_v2=false
+    10522:org.chromium.webapk.abc188cf2951d10fe_v2=false
+    10521:com.usemovi.app=false
+    10519:com.assai.app=false
+    10518:br.gov.caixa.habitacao=false
+    10517:com.anonymous.jkservicesmonitor=false
+    10516:com.jkmonitorcontroller=false
+    10513:com.google.android.rkpdapp=false
+    10505:com.zeecred.zeeapp.redesign=false
+    10503:com.nomadfintech.bank.app.android=false
+    10500:com.artech.eaplic.havan=false
+    10496:com.truecaller=false
+    10494:com.samsung.accessory.budsunitemgr=false
+    10493:br.com.kabum.webviewapp=false
+--
+    TopAppTimer{<0>com.google.android.gms} NOT active
+    TopAppTimer{<0>br.gov.caixa.habitacao} NOT active
+    TopAppTimer{<0>com.android.chrome} NOT active
+    TopAppTimer{<0>com.sec.android.app.clockpackage} NOT active
+    TopAppTimer{<0>com.nu.production} NOT active
+    TopAppTimer{<0>br.com.bb.android} NOT active
+    TopAppTimer{<0>com.wbd.stream} NOT active
+    TopAppTimer{<0>org.mozilla.focus} NOT active
+    TopAppTimer{<0>org.torproject.android} NOT active
+    TopAppTimer{<0>com.taxis99} NOT active
+    TopAppTimer{<0>com.sec.android.gallery3d} NOT active
+    TopAppTimer{<0>org.readera} NOT active
+    TopAppTimer{<0>com.google.android.permissioncontroller} NOT active
+    TopAppTimer{<0>com.android.settings.intelligence} NOT active
+    TopAppTimer{<0>com.google.android.gm} NOT active
+    TopAppTimer{<0>com.supercell.clashroyale} NOT active
+    TopAppTimer{<0>com.yahoo.mobile.client.android.mail} NOT active
+    TopAppTimer{<0>air.Prex} NOT active
+    TopAppTimer{<0>android} NOT active
+    TopAppTimer{<0>br.com.frizeiro.bibliaalmeidaatualizada} NOT active
+    TopAppTimer{<0>com.sidia.suframa.notification} NOT active
+    TopAppTimer{<0>com.android.vending} NOT active
+    TopAppTimer{<0>com.sec.android.daemonapp} NOT active
+    TopAppTimer{<0>com.github.android} NOT active
+    TopAppTimer{<0>com.google.android.providers.media.module} NOT active
+    TopAppTimer{<0>br.com.wanotifkeeper} NOT active
+    TopAppTimer{<0>com.openai.chatgpt} NOT active
+    TopAppTimer{<0>com.google.android.apps.messaging} NOT active
+    TopAppTimer{<0>com.google.android.apps.authenticator2} NOT active
+    TopAppTimer{<0>com.transcribe.audio.to.text} NOT active
+    TopAppTimer{<0>com.alphainventor.filemanager} NOT active
+    TopAppTimer{<0>com.whatsapp} NOT active
+    TopAppTimer{<0>org.telegram.messenger} NOT active
+    TopAppTimer{<0>com.samsung.android.calendar} NOT active
+    TopAppTimer{<0>com.google.android.googlequicksearchbox} NOT active
+    TopAppTimer{<0>com.truecaller} NOT active
+    TopAppTimer{<0>com.google.android.youtube} NOT active
+    TopAppTimer{<0>com.whatsapp.w4b} NOT active
+    
+    Cached execution stats:
+      <0>com.whatsapp.w4b
+        ACTIVE: expirationTime=514345629, allowedTimePerPeriodMs=1200000, windowSizeMs=3600000, jobCountLimit=75, sessionCountLimit=75, executionTimeInWindow=0, bgJobCountInWindow=0, executionTimeInMaxPeriod=324912, bgJobCountInMaxPeriod=153, sessionCountInWindow=0, inQuotaTime=0, rateLimitJobCountExpirationTime=504929131, rateLimitJobCountWindow=4, rateLimitSessionCountExpirationTime=504933522, rateLimitSessionCountWindow=3
+        WORKING_SET: expirationTime=504876519, allowedTimePerPeriodMs=0, windowSizeMs=0, jobCountLimit=0, sessionCountLimit=0, executionTimeInWindow=0, bgJobCountInWindow=911, executionTimeInMaxPeriod=0, bgJobCountInMaxPeriod=0, sessionCountInWindow=0, inQuotaTime=0, rateLimitJobCountExpirationTime=504929131, rateLimitJobCountWindow=4, rateLimitSessionCountExpirationTime=504933522, rateLimitSessionCountWindow=3
+        FREQUENT: expirationTime=504876519, allowedTimePerPeriodMs=0, windowSizeMs=0, jobCountLimit=0, sessionCountLimit=0, executionTimeInWindow=0, bgJobCountInWindow=911, executionTimeInMaxPeriod=0, bgJobCountInMaxPeriod=0, sessionCountInWindow=0, inQuotaTime=0, rateLimitJobCountExpirationTime=504929131, rateLimitJobCountWindow=4, rateLimitSessionCountExpirationTime=504933522, rateLimitSessionCountWindow=3
+        RARE: expirationTime=504876519, allowedTimePerPeriodMs=0, windowSizeMs=0, jobCountLimit=0, sessionCountLimit=0, executionTimeInWindow=0, bgJobCountInWindow=911, executionTimeInMaxPeriod=0, bgJobCountInMaxPeriod=0, sessionCountInWindow=0, inQuotaTime=0, rateLimitJobCountExpirationTime=504929131, rateLimitJobCountWindow=4, rateLimitSessionCountExpirationTime=504933522, rateLimitSessionCountWindow=3
+        NEVER: expirationTime=504876519, allowedTimePerPeriodMs=0, windowSizeMs=0, jobCountLimit=0, sessionCountLimit=0, executionTimeInWindow=0, bgJobCountInWindow=911, executionTimeInMaxPeriod=0, bgJobCountInMaxPeriod=0, sessionCountInWindow=0, inQuotaTime=0, rateLimitJobCountExpirationTime=504929131, rateLimitJobCountWindow=4, rateLimitSessionCountExpirationTime=504933522, rateLimitSessionCountWindow=3
+        RESTRICTED: expirationTime=504876519, allowedTimePerPeriodMs=0, windowSizeMs=0, jobCountLimit=0, sessionCountLimit=0, executionTimeInWindow=0, bgJobCountInWindow=911, executionTimeInMaxPeriod=0, bgJobCountInMaxPeriod=0, sessionCountInWindow=0, inQuotaTime=0, rateLimitJobCountExpirationTime=504929131, rateLimitJobCountWindow=4, rateLimitSessionCountExpirationTime=504933522, rateLimitSessionCountWindow=3
+        EXEMPTED: expirationTime=514345629, allowedTimePerPeriodMs=1200000, windowSizeMs=2400000, jobCountLimit=75, sessionCountLimit=75, executionTimeInWindow=0, bgJobCountInWindow=0, executionTimeInMaxPeriod=324912, bgJobCountInMaxPeriod=153, sessionCountInWindow=0, inQuotaTime=0, rateLimitJobCountExpirationTime=504929131, rateLimitJobCountWindow=4, rateLimitSessionCountExpirationTime=504933522, rateLimitSessionCountWindow=3
+      <0>com.google.android.youtube
+        ACTIVE: expirationTime=504201089, allowedTimePerPeriodMs=1200000, windowSizeMs=3600000, jobCountLimit=75, sessionCountLimit=75, executionTimeInWindow=6308, bgJobCountInWindow=4, executionTimeInMaxPeriod=220185, bgJobCountInMaxPeriod=47, sessionCountInWindow=1, inQuotaTime=0, rateLimitJobCountExpirationTime=500661089, rateLimitJobCountWindow=4, rateLimitSessionCountExpirationTime=500665083, rateLimitSessionCountWindow=3
+        WORKING_SET: expirationTime=500608305, allowedTimePerPeriodMs=600000, windowSizeMs=14400000, jobCountLimit=120, sessionCountLimit=10, executionTimeInWindow=13990, bgJobCountInWindow=65, executionTimeInMaxPeriod=96014, bgJobCountInMaxPeriod=75, sessionCountInWindow=10, inQuotaTime=396864752, rateLimitJobCountExpirationTime=500661089, rateLimitJobCountWindow=4, rateLimitSessionCountExpirationTime=500665083, rateLimitSessionCountWindow=3
+--
+    EJ debits:
+      <0>com.whatsapp.w4b: ShrinkableDebits { debit tally: 0, bucket: 0 }
+      <0>com.google.android.youtube: ShrinkableDebits { debit tally: 0, bucket: 3 }
+      <0>com.google.android.apps.labs.language.tailwind: ShrinkableDebits { debit tally: 0, bucket: 5 }
+      <0>com.truecaller: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>com.google.android.googlequicksearchbox: ShrinkableDebits { debit tally: 0, bucket: 0 }
+      <0>com.samsung.android.calendar: ShrinkableDebits { debit tally: 0, bucket: 0 }
+      <0>com.osp.app.signin: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>org.telegram.messenger: ShrinkableDebits { debit tally: 0, bucket: 3 }
+      <0>com.mercadopago.wallet: ShrinkableDebits { debit tally: 0, bucket: 1 }
+      <0>com.samsung.android.mapsagent: ShrinkableDebits { debit tally: 0, bucket: 0 }
+      <0>com.quora.android: ShrinkableDebits { debit tally: 0, bucket: 5 }
+      <0>com.whatsapp: ShrinkableDebits { debit tally: 0, bucket: 0 }
+      <0>com.alphainventor.filemanager: ShrinkableDebits { debit tally: 0, bucket: 2 }
+      <0>com.samsung.android.rubin.app: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>br.com.amt.v2: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>com.artech.eaplic.havan: ShrinkableDebits { debit tally: 0, bucket: 0 }
+      <0>com.transcribe.audio.to.text: ShrinkableDebits { debit tally: 0, bucket: 3 }
+      <0>com.android.providers.downloads: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>com.google.android.apps.authenticator2: ShrinkableDebits { debit tally: 0, bucket: 3 }
+      <0>com.google.android.apps.messaging: ShrinkableDebits { debit tally: 0, bucket: 0 }
+      <0>com.discord: ShrinkableDebits { debit tally: 0, bucket: 1 }
+      <0>com.samsung.faceservice: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>com.openai.chatgpt: ShrinkableDebits { debit tally: 0, bucket: 0 }
+      <0>com.samsung.android.simagent: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>br.com.wanotifkeeper: ShrinkableDebits { debit tally: 0, bucket: 0 }
+      <0>com.google.android.verifier: ShrinkableDebits { debit tally: 0, bucket: 0 }
+      <0>com.sec.android.app.samsungapps: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>com.google.android.configupdater: ShrinkableDebits { debit tally: 0, bucket: 0 }
+      <0>com.jetpack.android: ShrinkableDebits { debit tally: 0, bucket: 5 }
+      <0>com.google.android.providers.media.module: ShrinkableDebits { debit tally: 0, bucket: 0 }
+      <0>com.raizen.acelera: ShrinkableDebits { debit tally: 0, bucket: 5 }
+      <0>com.github.android: ShrinkableDebits { debit tally: 0, bucket: 3 }
+      <0>com.samsung.android.game.gamehome: ShrinkableDebits { debit tally: 0, bucket: 4 }
+      <0>com.sec.android.daemonapp: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>com.android.vending: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>com.sidia.suframa.notification: ShrinkableDebits { debit tally: 0, bucket: 0 }
+      <0>com.video_converter.video_compressor: ShrinkableDebits { debit tally: 0, bucket: 1 }
+      <0>com.samsung.android.intellivoiceservice: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>com.samsung.android.kmxservice: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>br.com.frizeiro.bibliaalmeidaatualizada: ShrinkableDebits { debit tally: 0, bucket: 2 }
+      <0>com.samsung.cmh: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>android: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>com.samsung.android.sm.devicesecurity: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>com.musion.offline: ShrinkableDebits { debit tally: 0, bucket: 5 }
+      <0>air.Prex: ShrinkableDebits { debit tally: 0, bucket: 3 }
+      <0>com.yahoo.mobile.client.android.mail: ShrinkableDebits { debit tally: 0, bucket: 3 }
+      <0>radios.de.uruguay.gratis: ShrinkableDebits { debit tally: 0, bucket: 5 }
+      <0>com.supercell.clashroyale: ShrinkableDebits { debit tally: 0, bucket: 1 }
+      <0>com.samsung.android.app.telephonyui: ShrinkableDebits { debit tally: 0, bucket: 6 }
+      <0>com.google.android.as: ShrinkableDebits { debit tally: 0, bucket: 0 }
+--
+  10488: {com.audio.to.video.converter}
+  10492: {com.btxdev.musiccompressor}
+  10494: {com.samsung.accessory.budsunitemgr}
+  10495: {com.samsung.drmboost}
+  10496: {com.truecaller}
+  10499: {com.samsung.android.wallpaper.live}
+  10500: {com.artech.eaplic.havan}
+  10501: {com.samsung.android.nfc.resources.default}
+  10503: {com.nomadfintech.bank.app.android}
+  10504: {com.samsung.android.wifi.largetcpbuffer.resources}
+  10505: {com.zeecred.zeeapp.redesign}
+  10512: {com.dti.samsung}
+  10513: {com.google.android.rkpdapp}
+  10517: {com.anonymous.jkservicesmonitor}
+  10518: {br.gov.caixa.habitacao}
+  10522: {org.chromium.webapk.abc188cf2951d10fe_v2}
+  10523: {org.chromium.webapk.a0eb1242edf1b060c_v2}
+  10526: {audioeditor.musiceditor.soundeditor.songeditor}
+  10528: {com.esteban.mixreelsauto}
+  10529: {com.github.android}
+  10531: {com.edortta.techwhisper}
+  10536: {io.cloudwalk.infinitepaydash}
+  10537: {br.coop.unimed.app}
+  10539: {com.luma.mobile}
+  10544: {br.kmm.sinergia}
+  10545: {br.com.wanotifkeeper}
+  10546: {com.larus.wolf}
+  10558: {com.pixsterstudio.captions}
+  10559: {com.blogspot.byterevapps.lollipopscreenrecorder}
+  10561: {com.google.android.verifier}
+  10565: {com.microsoft.teams}
+  15001000: {com.samsung.android.provider.filterprovider, com.samsung.android.smartswitchassistant, com.samsung.android.knox.mpos, com.sec.android.app.parser, com.android.dynsystem, com.samsung.android.emergency, com.sec.automation, com.skms.android.agent, com.sec.factory.camera, com.sec.android.iaft, com.samsung.gpuwatchapp, com.samsung.android.knox.pushmanager, com.sec.android.app.wlantest, com.sec.android.smartfpsadjuster, com.samsung.android.knox.zt.framework, com.sec.sve, com.samsung.android.knox.attestation, com.samsung.SMT, android, com.samsung.android.smartface, com.sec.android.app.SecSetupWizard, com.sec.android.app.hwmoduletest, com.sec.android.app.servicemodeapp, com.android.providers.settings, com.samsung.accessibility, com.sec.android.app.RilPhoneNumberService, com.android.inputdevices, com.samsung.android.brightnessbackupservice, com.samsung.android.mdecservice, com.samsung.android.wifi.ai, com.android.server.telecom, com.sec.imslogger, com.android.keychain, com.sec.android.diagmonagent, com.android.localtransport, com.samsung.android.biometrics.app.setting, com.samsung.android.dqagent, com.samsung.android.forest, com.samsung.android.hdmapp, com.samsung.android.stickercenter, com.sec.android.CcInfo, com.sec.android.app.quicktool, com.android.settings, com.samsung.oda.service, com.sec.mhs.smarttethering, com.sec.facatfunction, com.android.location.fused, com.sec.epdg, com.samsung.sait.sohservice, com.samsung.aasaservice, com.samsung.android.providers.factory}
+
+Historical stats at 2026-09-18-16-52-54 (-1h31m1s357ms) over +31m6s421ms:
+  Max concurrency: 8 total, 2 foreground
+  
+  1000 / android:
+    2x pending 2x active 
+    2x successful_finish
+  1000 / com.samsung.sait.sohservice:
+    3x pending 3x active 
+    2x canceled, 1x successful_finish
+  5004 / com.samsung.faceservice:
+    2x pending 1x active 
+    1x canceled, 1x successful_finish
+  5004 / com.samsung.cmh:
+    4x pending 29% 3x active 
+    2x unknown:-1, 1x canceled, 1x successful_finish
+  5009 / com.samsung.android.scpm:
+    1x pending 1x active 
+    1x successful_finish
