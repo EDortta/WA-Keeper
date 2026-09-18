@@ -1,11 +1,14 @@
 package br.com.wanotifkeeper
 
+import android.app.AlarmManager
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.provider.OpenableColumns
+import android.provider.Settings
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -100,6 +103,10 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             return
         }
 
+        if (trigger == ScheduledTrigger.AT_TIME && !ensureExactAlarmAccess()) {
+            return
+        }
+
         val now = System.currentTimeMillis()
         lifecycleScope.launch {
             val id = editingId
@@ -156,6 +163,33 @@ class ScheduledMessagesActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         }
+    }
+
+    private fun ensureExactAlarmAccess(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
+
+        val alarm = getSystemService(AlarmManager::class.java)
+        if (alarm.canScheduleExactAlarms()) return true
+
+        val intent = Intent(
+            Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+            android.net.Uri.parse("package:$packageName")
+        )
+        runCatching { startActivity(intent) }
+            .onFailure {
+                Toast.makeText(
+                    this,
+                    "Não foi possível abrir a permissão de alarmes exatos.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+        Toast.makeText(
+            this,
+            "Autorize alarmes e lembretes e depois toque em Programar novamente.",
+            Toast.LENGTH_LONG
+        ).show()
+        return false
     }
 
     private fun chooseDateTime() {
