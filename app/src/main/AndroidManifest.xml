@@ -4,6 +4,11 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Mensagens agendadas devem disparar no horário pedido. Em Android 12+ esse
+         acesso é especial e pode ser revogado pelo usuário; o código verifica
+         canScheduleExactAlarms() e degrada para alarme inexato sem perder a fila. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
     <!-- Beep durante ligação (ver CallDetector/Beeper): toca no stream de voz da
          chamada em andamento, permissão "normal" concedida na instalação, sem
          diálogo de runtime. -->
