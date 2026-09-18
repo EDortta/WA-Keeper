@@ -59,7 +59,7 @@ fi
 
 run adb_devices adb devices -l
 run android_props adb shell getprop
-run date_time adb shell sh -c 'echo "date=$(date)"; echo "epoch=$(date +%s)"; getprop persist.sys.timezone; settings get global auto_time; settings get global auto_time_zone'
+run date_time adb shell 'echo "date=$(date)"; echo "epoch=$(date +%s)"; getprop persist.sys.timezone; settings get global auto_time; settings get global auto_time_zone'
 run battery adb shell dumpsys battery
 run power adb shell dumpsys power
 run deviceidle adb shell dumpsys deviceidle
@@ -103,9 +103,9 @@ log "Logs desde: $SINCE"
 
 run package_info adb shell dumpsys package "$PACKAGE"
 run package_path adb shell pm path "$PACKAGE"
-run package_uid adb shell sh -c "dumpsys package '$PACKAGE' | grep -E 'userId=|appId=|versionName=|versionCode='"
+run package_uid adb shell "dumpsys package '$PACKAGE' | grep -E 'userId=|appId=|versionName=|versionCode='"
 run processes adb shell ps -A
-run app_process adb shell sh -c "ps -A | grep -F '$PACKAGE' || true"
+run app_process adb shell "ps -A | grep -F '$PACKAGE' || true"
 run activity adb shell dumpsys activity processes
 run activity_services adb shell dumpsys activity services "$PACKAGE"
 run activity_broadcasts adb shell dumpsys activity broadcasts
@@ -113,7 +113,7 @@ run notifications adb shell dumpsys notification
 run appops adb shell appops get "$PACKAGE"
 run permissions adb shell dumpsys package "$PACKAGE"
 
-run battery_optimization adb shell sh -c "
+run battery_optimization adb shell "
   echo '--- whitelist ---'
   dumpsys deviceidle whitelist
   echo
@@ -123,23 +123,27 @@ run battery_optimization adb shell sh -c "
   echo '--- background restrictions ---'
   cmd appops get '$PACKAGE' RUN_IN_BACKGROUND 2>/dev/null || true
   cmd appops get '$PACKAGE' RUN_ANY_IN_BACKGROUND 2>/dev/null || true
+  echo
+  echo '--- exact alarm capability ---'
+  cmd appops get '$PACKAGE' SCHEDULE_EXACT_ALARM 2>/dev/null || true
 "
 
 run alarms_all adb shell dumpsys alarm
-run alarms_app adb shell sh -c "dumpsys alarm | grep -i -C 12 '$PACKAGE' || true"
+grep -i -C 15 "$PACKAGE" "$OUT/alarms_all.txt" >"$OUT/alarms_app.txt" || true
+
 run jobs_all adb shell dumpsys jobscheduler
-run jobs_app adb shell sh -c "dumpsys jobscheduler | grep -i -C 20 '$PACKAGE' || true"
+grep -i -C 25 "$PACKAGE" "$OUT/jobs_all.txt" >"$OUT/jobs_app.txt" || true
 
 run dumpsys_scheduler grep -Eis "$PACKAGE|workmanager|workspec|alarm|job|schedule" "$OUT/alarms_all.txt" "$OUT/jobs_all.txt"
 
 run whatsapp_packages adb shell pm list packages
-run whatsapp_process adb shell sh -c "ps -A | grep -Ei 'whatsapp|com\\.wa' || true"
-run whatsapp_package_info adb shell sh -c "
-  for p in $(pm list packages | sed 's/package://' | grep -Ei 'whatsapp|com\\.wa' | head -10); do
-    echo \"===== $p =====\"
-    dumpsys package \"$p\" | grep -E 'versionName=|versionCode=|enabled=|stopped=' | head -30
+run whatsapp_process adb shell "ps -A | grep -Ei 'whatsapp|com\\.wa' || true"
+run whatsapp_package_info adb shell '
+  for p in $(pm list packages | sed "s/package://" | grep -Ei "whatsapp|com\\.wa" | head -10); do
+    echo "===== $p ====="
+    dumpsys package "$p" | grep -E "versionName=|versionCode=|enabled=|stopped=" | head -30
   done
-"
+'
 
 log "Coletando logcat..."
 if adb logcat -d -v threadtime -T "$SINCE" >"$OUT/logcat-full.txt" 2>"$OUT/logcat-error.txt"; then
@@ -153,8 +157,13 @@ grep -Eis \
   "$OUT/logcat-full.txt" >"$OUT/logcat-relevant.txt" || true
 
 if [[ -n "$CONTACT_HINT" ]]; then
-  grep -Fis -C 8 "$CONTACT_HINT" "$OUT/logcat-full.txt" >"$OUT/logcat-contact.txt" || true
+  # Evidência específica do contato, separada de ruído sistêmico.
+  grep -Fi -C 8 "$CONTACT_HINT" "$OUT/logcat-full.txt" >"$OUT/logcat-contact.txt" || true
+  grep -Ei "WAK-Scheduled(Msg|Alarm).*$CONTACT_HINT|$CONTACT_HINT.*WAK-Scheduled(Msg|Alarm)"     "$OUT/logcat-full.txt" >"$OUT/logcat-scheduled-contact.txt" || true
 fi
+
+# Logs emitidos pelo mecanismo de agendamento, independentemente do contato.
+grep -E "WAK-ScheduledMsg|WAK-ScheduledAlarm"   "$OUT/logcat-full.txt" >"$OUT/logcat-scheduled.txt" || true
 
 run crashes adb shell dumpsys dropbox --print
 grep -Eis -C 8 "$PACKAGE|FATAL EXCEPTION|ANR|SecurityException|IllegalStateException|ForegroundServiceStartNotAllowedException|BackgroundServiceStartNotAllowedException" \
@@ -267,8 +276,8 @@ fi
     "$OUT/logcat-relevant.txt" "$OUT/battery_optimization.txt"
 
   check "Problema com alarme exato" \
-    'SCHEDULE_EXACT_ALARM|USE_EXACT_ALARM|exact alarm.*denied|exact.*alarm.*permission' \
-    "$OUT/logcat-relevant.txt" "$OUT/package_info.txt" "$OUT/appops.txt"
+    'SCHEDULE_EXACT_ALARM|USE_EXACT_ALARM|exact alarm.*denied|exact.*alarm.*permission|fallback inexato' \
+    "$OUT/logcat-relevant.txt" "$OUT/logcat-scheduled.txt" "$OUT/package_info.txt" "$OUT/appops.txt" "$OUT/battery_optimization.txt"
 
   check "WorkManager/Worker falhou ou foi cancelado" \
     'Worker.*FAIL|Worker.*failed|Work.*FAILED|CANCELLED|cancelled|retry|Result.failure|ExecutionException' \
@@ -282,8 +291,11 @@ fi
     'mState=IDLE|mState=IDLE_MAINTENANCE|standby|restricted|doze' \
     "$OUT/deviceidle.txt" "$OUT/battery_optimization.txt"
 
-  if [[ -s "$OUT/logcat-contact.txt" ]]; then
-    echo "[ACHADO] Nome/identificador '$CONTACT_HINT' apareceu no logcat."
+  if [[ -s "$OUT/logcat-scheduled-contact.txt" ]]; then
+    echo "[ACHADO] '$CONTACT_HINT' apareceu em log específico do agendador."
+    head -20 "$OUT/logcat-scheduled-contact.txt" | sed 's/^/    /'
+  elif [[ -s "$OUT/logcat-contact.txt" ]]; then
+    echo "[ACHADO PARCIAL] '$CONTACT_HINT' apareceu no logcat, mas não em log específico do agendador."
   else
     echo "[não visto] '$CONTACT_HINT' não apareceu no logcat."
   fi
@@ -294,11 +306,13 @@ fi
   echo "Arquivos prioritários para revisar:"
   echo "  1. diagnosis.txt"
   echo "  2. logcat-contact.txt"
-  echo "  3. logcat-relevant.txt"
-  echo "  4. alarms_app.txt"
-  echo "  5. jobs_app.txt"
-  echo "  6. battery_optimization.txt"
-  echo "  7. sqlite-data.txt (se existir)"
+  echo "  3. logcat-scheduled-contact.txt"
+  echo "  4. logcat-scheduled.txt"
+  echo "  5. logcat-relevant.txt"
+  echo "  6. alarms_app.txt"
+  echo "  7. jobs_app.txt"
+  echo "  8. battery_optimization.txt"
+  echo "  9. sqlite-data.txt (se existir)"
 } >"$OUT/diagnosis.txt"
 
 log "Diagnóstico concluído."
