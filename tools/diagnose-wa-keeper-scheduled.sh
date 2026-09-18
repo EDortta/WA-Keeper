@@ -17,7 +17,10 @@ APP_HINT="${1:-}"
 CONTACT_HINT="${2:-Nanda}"
 SINCE="${SINCE:-$(date '+%Y-%m-%d 00:00:00')}"
 STAMP="$(date '+%Y%m%d-%H%M%S')"
-OUT="wa-keeper-diagnose-${STAMP}"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || cd "$SCRIPT_DIR/.." && pwd)"
+OUT="$REPO_ROOT/wa-keeper-diagnose-${STAMP}"
 
 mkdir -p "$OUT"
 
