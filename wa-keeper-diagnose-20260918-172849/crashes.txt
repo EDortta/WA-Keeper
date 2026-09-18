@@ -1,0 +1,4006 @@
+$ adb shell dumpsys dropbox --print
+Drop box contents: 1000 entries
+Max entries: 1000
+Low priority rate limit period: 2000 ms
+Low priority tags: {data_app_wtf, keymaster, system_server_wtf, system_app_strictmode, system_app_wtf, system_server_strictmode, data_app_strictmode, netstats}
+
+========================================
+2026-09-17 06:30:03 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|1|CG-AJ-BH AH##BF##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|0|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 06:30:04 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 06:30:04 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 06:30:04 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 23
+
+========================================
+2026-09-17 06:30:04 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 06:45:01 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-17 07:15:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 07:15:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 07:15:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 07:15:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 07:15:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 07:15:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BH AH##DA##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|1|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 07:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 07:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 07:15:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 07:15:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 07:15:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 07:15:03 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 07:15:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 07:15:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 07:30:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 07:30:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 07:30:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:1:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 07:30:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 07:30:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 07:30:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BH AH##EF##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|2|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 07:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 07:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 07:30:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 07:30:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 07:30:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 07:30:04 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 07:30:04 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 07:30:04 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 07:45:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 07:45:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 07:45:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:1:0:0:0:0:0:0:
+
+========================================
+2026-09-17 07:45:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 07:45:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 07:45:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BH AI##AA##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|3|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 07:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 07:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 07:45:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 07:45:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 07:45:01 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 07:45:05 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 07:45:06 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 07:45:06 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 08:00:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 08:00:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 08:00:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:1:0:0:0:
+
+========================================
+2026-09-17 08:00:01 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:00:01 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 08:00:01 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BH AI##BF##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|4|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:00:01 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:00:01 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:00:01 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:00:01 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 08:00:01 clockpackage (text, 53 bytes)
+AlarmService call FULL M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 08:00:01 clockpackage (text, 29 bytes)
+AlarmAlertActivity onCreate()
+
+========================================
+2026-09-17 08:00:09 clockpackage (text, 54 bytes)
+AlarmPlayerBase setPlayMode :mode = 4, mPlayMode = 272
+
+========================================
+2026-09-17 08:00:09 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 08:00:59 clockpackage (text, 44 bytes)
+AlarmAlertActivity finishAlarm BySnooze:true
+
+========================================
+2026-09-17 08:00:59 clockpackage (text, 100 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{595433: android.os.BinderProxy@2293f0}
+
+========================================
+2026-09-17 08:00:59 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 08:00:59 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BH AI##BF##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|4|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:00:59 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:00:59 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:00:59 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 17
+
+========================================
+2026-09-17 08:00:59 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 08:10:01 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-17 08:15:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 08:15:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 08:15:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 08:15:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:15:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 08:15:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BH AI##DA##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|5|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:15:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:15:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 08:15:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 08:15:02 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 08:15:02 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 08:15:02 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 08:30:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 08:30:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 08:30:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 08:30:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:30:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 08:30:00 clockpackage (text, 126 bytes)
+AlarmManager next alarm : 17|1|CG-AJ-BH AI##EA##AA|CG-AE-AC AI##CG##DB|IEA|-B|101005|1|3|10|0|100000|2|22|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:30:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:30:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 08:30:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 08:30:05 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-17 08:30:06 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 08:30:06 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 08:30:06 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 08:40:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 08:40:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 08:40:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 08:40:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 17, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:40:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 08:40:00 clockpackage (text, 101 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{680f3e1: android.os.BinderProxy@3c9506}
+
+========================================
+2026-09-17 08:40:00 clockpackage (text, 126 bytes)
+AlarmManager next alarm : 17|2|CG-AJ-BH AI##ED##AA|CG-AE-AC AI##CG##DB|IEA|-B|101005|1|3|10|1|100000|2|22|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:40:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:40:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:40:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 17, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:40:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 08:40:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100000
+
+========================================
+2026-09-17 08:40:03 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 08:40:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 08:40:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 08:43:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 08:43:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 08:43:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:1:0:0:0:
+
+========================================
+2026-09-17 08:43:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 17, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:43:01 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{c1172bc: android.os.BinderProxy@dcb5245}
+
+========================================
+2026-09-17 08:43:01 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 08:43:01 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BH AI##EF##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|6|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:43:01 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:43:01 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:43:01 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 17, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:43:01 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 08:43:01 clockpackage (text, 53 bytes)
+AlarmService call FULL M_Sound = 1 vib 1 Brief:100000
+
+========================================
+2026-09-17 08:43:02 clockpackage (text, 29 bytes)
+AlarmAlertActivity onCreate()
+
+========================================
+2026-09-17 08:43:09 clockpackage (text, 50 bytes)
+AlarmAlertSnoozeView DISMISS_HANDLE is pressed : 1
+
+========================================
+2026-09-17 08:43:09 clockpackage (text, 54 bytes)
+AlarmPlayerBase setPlayMode :mode = 4, mPlayMode = 272
+
+========================================
+2026-09-17 08:43:09 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 08:43:09 clockpackage (text, 45 bytes)
+AlarmAlertActivity finishAlarm BySnooze:false
+
+========================================
+2026-09-17 08:43:09 clockpackage (text, 41 bytes)
+AlarmAlertActivity DISMISS_HANDLE is over
+
+========================================
+2026-09-17 08:43:09 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 17, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:43:09 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 08:43:09 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{c49dcda: android.os.BinderProxy@759a50b}
+
+========================================
+2026-09-17 08:43:09 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BH AI##EF##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|6|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:43:09 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:43:09 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:43:09 clockpackage (text, 50 bytes)
+AlarmAlertSnoozeView DISMISS_HANDLE is pressed : 0
+
+========================================
+2026-09-17 08:43:10 clockpackage (text, 56 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 0
+
+========================================
+2026-09-17 08:43:10 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 08:45:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 08:45:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 08:45:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 08:45:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:45:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 08:45:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BH AJ##AA##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|7|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:45:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:45:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 08:45:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 08:45:03 clockpackage (text, 49 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:false
+
+========================================
+2026-09-17 08:45:03 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-17 08:45:03 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 08:45:03 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{4841b00: android.os.BinderProxy@e79af39}
+
+========================================
+2026-09-17 08:45:03 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 12|1|CG-AJ-BH BC##AF##AA|CF-BA-CI AG##BF##AD|BCAF|-B|1111105|1|15|3|0|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:45:03 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:45:03 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 08:45:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 23
+
+========================================
+2026-09-17 08:45:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 11:35:01 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-17 12:05:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 12:05:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 12:05:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 12:05:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 12, bRemoved = false isDBM true
+
+========================================
+2026-09-17 12:05:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 12:05:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 12|2|CG-AJ-BH BC##CA##AA|CF-BA-CI AG##BF##AD|BCAF|-B|1111105|1|15|3|1|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 12:05:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 12:05:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 12:05:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 12, bRemoved = false isDBM true
+
+========================================
+2026-09-17 12:05:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 12:05:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 12:05:07 clockpackage (text, 49 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:false
+
+========================================
+2026-09-17 12:05:07 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 12, bRemoved = false isDBM true
+
+========================================
+2026-09-17 12:05:07 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 12:05:07 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{c81bf3a: android.os.BinderProxy@c5e47eb}
+
+========================================
+2026-09-17 12:05:07 clockpackage (text, 122 bytes)
+AlarmManager next alarm : 7|1|CG-AJ-BH BD##FA##AA|CG-AB-BD BD##CG##DF|BDFA|-B|1111105|1|5|10|0|0|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 12:05:07 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 12:05:07 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 12:05:07 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 23
+
+========================================
+2026-09-17 12:05:08 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 13:20:01 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-17 13:50:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 13:50:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:1:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 13:50:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 13:50:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 7, bRemoved = false isDBM true
+
+========================================
+2026-09-17 13:50:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 13:50:00 clockpackage (text, 122 bytes)
+AlarmManager next alarm : 7|2|CG-AJ-BH BD##FF##AA|CG-AB-BD BD##CG##DF|BDFA|-B|1111105|1|5|10|1|0|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 13:50:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 13:50:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 13:50:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 7, bRemoved = false isDBM true
+
+========================================
+2026-09-17 13:50:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 13:50:00 clockpackage (text, 47 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:0
+
+========================================
+2026-09-17 13:50:05 clockpackage (text, 49 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:false
+
+========================================
+2026-09-17 13:50:06 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 7, bRemoved = false isDBM true
+
+========================================
+2026-09-17 13:50:06 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 13:50:06 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{4841b00: android.os.BinderProxy@e79af39}
+
+========================================
+2026-09-17 13:50:06 clockpackage (text, 119 bytes)
+AlarmManager next alarm : 14|1|CG-AJ-BH BE##DA##AA|CF-AC-CA BG##DA##DC|BEDA|-B|1005|1|5|3|0|0|2|16|11|in|50034|5|1|1|0|
+
+========================================
+2026-09-17 13:50:06 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 13:50:06 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 13:50:06 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 23
+
+========================================
+2026-09-17 13:50:06 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 14:00:01 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-17 14:30:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 14:30:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:1:0:0:0:
+
+========================================
+2026-09-17 14:30:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:1:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 14:30:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 14, bRemoved = true isDBM true
+
+========================================
+2026-09-17 14:30:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 14:30:00 clockpackage (text, 119 bytes)
+AlarmManager next alarm : 14|2|CG-AJ-BH BE##DF##AA|CF-AC-CA BG##DA##DC|BEDA|-B|1005|1|5|3|1|0|2|16|11|in|50034|5|1|1|0|
+
+========================================
+2026-09-17 14:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 14:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 14:30:01 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 14, bRemoved = false isDBM true
+
+========================================
+2026-09-17 14:30:01 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 14:30:01 clockpackage (text, 48 bytes)
+AlarmService call FULL M_Sound = 1 vib 1 Brief:0
+
+========================================
+2026-09-17 14:30:01 clockpackage (text, 29 bytes)
+AlarmAlertActivity onCreate()
+
+========================================
+2026-09-17 14:30:07 clockpackage (text, 50 bytes)
+AlarmAlertSnoozeView DISMISS_HANDLE is pressed : 1
+
+========================================
+2026-09-17 14:30:08 clockpackage (text, 45 bytes)
+AlarmAlertActivity finishAlarm BySnooze:false
+
+========================================
+2026-09-17 14:30:08 clockpackage (text, 41 bytes)
+AlarmAlertActivity DISMISS_HANDLE is over
+
+========================================
+2026-09-17 14:30:08 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 14, bRemoved = false isDBM true
+
+========================================
+2026-09-17 14:30:08 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 14:30:08 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{251b136: android.os.BinderProxy@68b1837}
+
+========================================
+2026-09-17 14:30:08 clockpackage (text, 130 bytes)
+AlarmManager next alarm : 21|1|CG-AJ-BH BJ##BF##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|0|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 14:30:08 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 14:30:08 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 14:30:08 clockpackage (text, 50 bytes)
+AlarmAlertSnoozeView DISMISS_HANDLE is pressed : 0
+
+========================================
+2026-09-17 14:30:08 clockpackage (text, 56 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 0
+
+========================================
+2026-09-17 14:30:08 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 18:45:01 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-17 19:15:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 19:15:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 19:15:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 19:15:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 19:15:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 19:15:00 clockpackage (text, 130 bytes)
+AlarmManager next alarm : 21|2|CG-AJ-BH BJ##DA##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|1|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 19:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 19:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 19:15:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 19:15:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 19:15:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 19:15:03 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 19:15:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 19:15:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 19:30:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 19:30:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:1:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 19:30:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 19:30:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 19:30:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 19:30:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{31c5665: android.os.BinderProxy@c81bf3a}
+
+========================================
+2026-09-17 19:30:00 clockpackage (text, 130 bytes)
+AlarmManager next alarm : 21|2|CG-AJ-BH BJ##EF##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|2|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 19:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 19:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 19:30:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 19:30:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 19:30:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 19:30:03 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 19:30:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 19:30:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 19:45:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 19:45:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 19:45:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 19:45:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 19:45:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 19:45:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{1e53053: android.os.BinderProxy@6810d90}
+
+========================================
+2026-09-17 19:45:00 clockpackage (text, 130 bytes)
+AlarmManager next alarm : 21|2|CG-AJ-BH CA##AA##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|3|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 19:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 19:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 19:45:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 19:45:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 19:45:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 19:45:03 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 19:45:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 19:45:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 20:00:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 20:00:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 20:00:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 20:00:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 20:00:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 20:00:00 clockpackage (text, 130 bytes)
+AlarmManager next alarm : 21|2|CG-AJ-BH CA##BF##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|4|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 20:00:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 20:00:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 20:00:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 20:00:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 20:00:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 20:00:03 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 20:00:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 20:00:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 20:15:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 20:15:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 20:15:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 20:15:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 20:15:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 20:15:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{98c213c: android.os.BinderProxy@3329ec5}
+
+========================================
+2026-09-17 20:15:00 clockpackage (text, 130 bytes)
+AlarmManager next alarm : 21|2|CG-AJ-BH CA##DA##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|5|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 20:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 20:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 20:15:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 20:15:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 20:15:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 20:15:03 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 20:15:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 20:15:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 20:30:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 20:30:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 20:30:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 20:30:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 20:30:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 20:30:00 clockpackage (text, 130 bytes)
+AlarmManager next alarm : 21|2|CG-AJ-BH CA##EF##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|6|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 20:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 20:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 20:30:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 20:30:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 20:30:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 20:30:04 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 20:30:04 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 20:30:04 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 20:45:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 20:45:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 20:45:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 20:45:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 20:45:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{31c5665: android.os.BinderProxy@c81bf3a}
+
+========================================
+2026-09-17 20:45:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 20:45:00 clockpackage (text, 130 bytes)
+AlarmManager next alarm : 21|2|CG-AJ-BH CB##AA##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|7|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 20:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 20:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 20:45:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 20:45:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 20:45:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 20:45:03 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 20:45:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 20:45:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 21:00:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 21:00:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 21:00:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 21:00:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 21:00:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 21:00:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{6810d90: android.os.BinderProxy@474d689}
+
+========================================
+2026-09-17 21:00:00 clockpackage (text, 130 bytes)
+AlarmManager next alarm : 21|2|CG-AJ-BH CB##BF##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|8|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 21:00:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 21:00:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 21:00:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 21:00:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 21:00:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 21:00:02 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 21:00:02 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 21:00:02 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 21:15:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 21:15:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 21:15:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 21:15:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 21:15:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 21:15:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{c7a442e: android.os.BinderProxy@a693bcf}
+
+========================================
+2026-09-17 21:15:00 clockpackage (text, 130 bytes)
+AlarmManager next alarm : 21|2|CG-AJ-BH CB##DA##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|9|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 21:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 21:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 21:15:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 21:15:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 21:15:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 21:15:03 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 21:15:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 21:15:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 21:20:00 clockpackage (text, 55 bytes)
+AlarmSR onReceive() : action = .SCHEDULE_BEDTIME_NOTIFY
+
+========================================
+2026-09-17 21:20:00 clockpackage (text, 48 bytes)
+RoutineUtil notifyRoutineOnAlert event: 1 id: 23
+
+========================================
+2026-09-17 21:20:00 clockpackage (text, 84 bytes)
+AlarmManager 1789690800000 1789723800000 1789690802307 Bedtime AlertTime CurrentTime
+
+========================================
+2026-09-17 21:20:00 clockpackage (text, 84 bytes)
+AlarmManager 1789690800000 1789723800000 1789690802316 Bedtime AlertTime CurrentTime
+
+========================================
+2026-09-17 21:20:00 clockpackage (text, 54 bytes)
+ProviderCallHandler checkScheduleStatus-> id: 23 :true
+
+========================================
+2026-09-17 21:30:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 21:30:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 21:30:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 21:30:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 21:30:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 21:30:00 clockpackage (text, 131 bytes)
+AlarmManager next alarm : 21|2|CG-AJ-BH CB##EF##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|10|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 21:30:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 21:30:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 21:30:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 21:30:04 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 21:30:04 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 21:30:04 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 21:45:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 21:45:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-17 21:45:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 21:45:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 21:45:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 21:45:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{c81bf3a: android.os.BinderProxy@c5e47eb}
+
+========================================
+2026-09-17 21:45:00 clockpackage (text, 131 bytes)
+AlarmManager next alarm : 21|2|CG-AJ-BH CC##AA##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|11|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 21:45:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 21:45:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 21:45:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 21:45:06 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-17 21:45:06 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-17 21:45:06 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 22:00:01 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-17 22:00:01 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:1:0:0:0:
+
+========================================
+2026-09-17 22:00:01 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-17 22:00:01 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 22:00:01 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{64a2aed: android.os.BinderProxy@6f6ad22}
+
+========================================
+2026-09-17 22:00:01 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 22:00:01 clockpackage (text, 131 bytes)
+AlarmManager next alarm : 21|2|CG-AJ-BH CC##BF##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|12|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 22:00:02 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 22:00:02 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-17 22:00:02 clockpackage (text, 53 bytes)
+AlarmService call FULL M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-17 22:00:02 clockpackage (text, 29 bytes)
+AlarmAlertActivity onCreate()
+
+========================================
+2026-09-17 22:00:06 clockpackage (text, 50 bytes)
+AlarmAlertSnoozeView DISMISS_HANDLE is pressed : 1
+
+========================================
+2026-09-17 22:00:06 clockpackage (text, 41 bytes)
+AlarmAlertActivity DISMISS_HANDLE is over
+
+========================================
+2026-09-17 22:00:06 clockpackage (text, 45 bytes)
+AlarmAlertActivity finishAlarm BySnooze:false
+
+========================================
+2026-09-17 22:00:06 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 21, bRemoved = false isDBM true
+
+========================================
+2026-09-17 22:00:06 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-17 22:00:06 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{e653226: android.os.BinderProxy@5c21e67}
+
+========================================
+2026-09-17 22:00:06 clockpackage (text, 144 bytes)
+AlarmManager next alarm : 23|1|CG-AJ-BI AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-17 22:00:06 clockpackage (text, 50 bytes)
+AlarmAlertSnoozeView DISMISS_HANDLE is pressed : 0
+
+========================================
+2026-09-17 22:00:07 clockpackage (text, 56 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 0
+
+========================================
+2026-09-17 22:00:07 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-17 23:30:08 clockpackage (text, 84 bytes)
+AlarmManager 1789690800000 1789723800000 1789698610645 Bedtime AlertTime CurrentTime
+
+========================================
+2026-09-17 23:30:08 clockpackage (text, 84 bytes)
+AlarmManager 1789690800000 1789723800000 1789698610650 Bedtime AlertTime CurrentTime
+
+========================================
+2026-09-17 23:30:08 clockpackage (text, 54 bytes)
+ProviderCallHandler checkScheduleStatus-> id: 23 :true
+
+========================================
+2026-09-18 06:00:01 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-18 06:29:59 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 23, bRemoved = false isDBM true
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 48 bytes)
+RoutineUtil notifyRoutineOnAlert event: 2 id: 23
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 144 bytes)
+AlarmManager next alarm : 23|2|CG-AJ-BI AG##DF##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|1|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 152 bytes)
+AlarmManager SCHEDULE bed= : false23|2|CG-AJ-BI AG##DF##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|1|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|2|CG-AJ-BI AG##DF##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|1|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 23, bRemoved = false isDBM true
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 84 bytes)
+AlarmManager 1789777200000 1789810200000 1789723802336 Bedtime AlertTime CurrentTime
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 84 bytes)
+AlarmManager 1789777200000 1789810200000 1789723802342 Bedtime AlertTime CurrentTime
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 55 bytes)
+ProviderCallHandler checkScheduleStatus-> id: 23 :false
+
+========================================
+2026-09-18 06:30:00 clockpackage (text, 67 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100100000000000000000
+
+========================================
+2026-09-18 06:30:11 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 06:30:11 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 06:30:11 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 23, bRemoved = false isDBM true
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 48 bytes)
+RoutineUtil notifyRoutineOnAlert event: 2 id: 23
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{5d1c335: android.os.BinderProxy@3c873ca}
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 144 bytes)
+AlarmManager next alarm : 23|2|CG-AJ-BI AG##EA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|2|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 84 bytes)
+AlarmManager 1789777200000 1789810200000 1789724102190 Bedtime AlertTime CurrentTime
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 84 bytes)
+AlarmManager 1789777200000 1789810200000 1789724102194 Bedtime AlertTime CurrentTime
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 152 bytes)
+AlarmManager SCHEDULE bed= : false23|2|CG-AJ-BI AG##EA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|2|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 55 bytes)
+ProviderCallHandler checkScheduleStatus-> id: 23 :false
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|2|CG-AJ-BI AG##EA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|2|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 23, bRemoved = false isDBM true
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 06:35:00 clockpackage (text, 67 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100100000000000000000
+
+========================================
+2026-09-18 06:35:09 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 06:35:09 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 06:35:09 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 23, bRemoved = false isDBM true
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 48 bytes)
+RoutineUtil notifyRoutineOnAlert event: 2 id: 23
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 101 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{d3d32a0: android.os.BinderProxy@3b7e59}
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 144 bytes)
+AlarmManager next alarm : 23|2|CG-AJ-BI AG##EF##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|3|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 84 bytes)
+AlarmManager 1789777200000 1789810200000 1789724402194 Bedtime AlertTime CurrentTime
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 84 bytes)
+AlarmManager 1789777200000 1789810200000 1789724402201 Bedtime AlertTime CurrentTime
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 55 bytes)
+ProviderCallHandler checkScheduleStatus-> id: 23 :false
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 152 bytes)
+AlarmManager SCHEDULE bed= : false23|2|CG-AJ-BI AG##EF##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|3|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|2|CG-AJ-BI AG##EF##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|3|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 23, bRemoved = false isDBM true
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 06:40:00 clockpackage (text, 67 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100100000000000000000
+
+========================================
+2026-09-18 06:40:57 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 06:40:57 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 06:40:57 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 23, bRemoved = false isDBM true
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 48 bytes)
+RoutineUtil notifyRoutineOnAlert event: 2 id: 23
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{8e1e685: android.os.BinderProxy@c49dcda}
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|1|CG-AJ-BI AH##BF##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|0|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 84 bytes)
+AlarmManager 1789777200000 1789810200000 1789724702251 Bedtime AlertTime CurrentTime
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 84 bytes)
+AlarmManager 1789777200000 1789810200000 1789724702254 Bedtime AlertTime CurrentTime
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 55 bytes)
+ProviderCallHandler checkScheduleStatus-> id: 23 :false
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 23, bRemoved = false isDBM true
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 06:45:00 clockpackage (text, 67 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100100000000000000000
+
+========================================
+2026-09-18 06:45:05 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-18 06:45:12 clockpackage (text, 49 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:false
+
+========================================
+2026-09-18 06:45:12 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 23, bRemoved = false isDBM true
+
+========================================
+2026-09-18 06:45:12 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{f01ff5c: android.os.BinderProxy@ccff265}
+
+========================================
+2026-09-18 06:45:12 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 06:45:12 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|1|CG-AJ-BI AH##BF##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|0|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:45:13 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:45:13 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 06:45:13 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 23
+
+========================================
+2026-09-18 06:45:13 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 06:45:18 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-18 07:15:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 07:15:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 07:15:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 07:15:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 07:15:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 07:15:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BI AH##DA##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|1|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 07:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 07:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 07:15:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 07:15:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 07:15:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-18 07:15:08 clockpackage (text, 54 bytes)
+AlarmPlayerBase setPlayMode :mode = 4, mPlayMode = 272
+
+========================================
+2026-09-18 07:15:08 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 07:15:22 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 07:15:22 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 07:15:22 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 07:30:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 07:30:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 07:30:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 07:30:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 07:30:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 07:30:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{337ed1d: android.os.BinderProxy@a7cfb92}
+
+========================================
+2026-09-18 07:30:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BI AH##EF##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|2|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 07:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 07:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 07:30:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 07:30:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 07:30:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-18 07:30:07 clockpackage (text, 54 bytes)
+AlarmPlayerBase setPlayMode :mode = 4, mPlayMode = 272
+
+========================================
+2026-09-18 07:30:07 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 07:30:59 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 19
+
+========================================
+2026-09-18 07:30:59 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 07:30:59 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 07:45:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 07:45:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 07:45:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:1:0:0:0:0:0:0:
+
+========================================
+2026-09-18 07:45:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 07:45:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 07:45:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BI AI##AA##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|3|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 07:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 07:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 07:45:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 07:45:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 07:45:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-18 07:45:02 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 07:45:02 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 07:45:02 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 08:00:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 08:00:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 08:00:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 08:00:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 08:00:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 08:00:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{92635fa: android.os.BinderProxy@31357ab}
+
+========================================
+2026-09-18 08:00:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BI AI##BF##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|4|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 08:00:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 08:00:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 08:00:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 08:00:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 08:00:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-18 08:00:03 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 08:00:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 08:00:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 08:15:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 08:15:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 08:15:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 08:15:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 08:15:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 08:15:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BI AI##DA##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|5|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 08:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 08:15:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 08:15:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 08:15:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 08:15:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-18 08:15:03 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 08:15:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 08:15:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 08:30:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 08:30:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 08:30:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 08:30:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 08:30:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 08:30:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BI AI##EF##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|6|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 08:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 08:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 08:30:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 08:30:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 08:30:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-18 08:30:06 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 08:30:06 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 08:30:06 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 08:45:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 08:45:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 08:45:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 08:45:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 08:45:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 08:45:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BI AJ##AA##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|7|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 08:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 08:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 08:45:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 08:45:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 08:45:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-18 08:45:03 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 08:45:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 08:45:04 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 09:00:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 09:00:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 09:00:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 09:00:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 09:00:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 09:00:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 9|2|CG-AJ-BI AJ##BF##AA|CF-AE-BG AI##CE##DC|HBF|-B|11111115|1|15|10|8|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 09:00:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 09:00:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 09:00:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 09:00:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 09:00:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-18 09:00:05 clockpackage (text, 49 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:false
+
+========================================
+2026-09-18 09:00:05 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 9, bRemoved = false isDBM true
+
+========================================
+2026-09-18 09:00:05 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 09:00:05 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{b3f3edf: android.os.BinderProxy@e8fe72c}
+
+========================================
+2026-09-18 09:00:05 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 12|1|CG-AJ-BI BC##AF##AA|CF-BA-CI AG##BF##AD|BCAF|-B|1111105|1|15|3|0|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 09:00:05 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 09:00:05 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 09:00:05 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 23
+
+========================================
+2026-09-18 09:00:05 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 11:35:01 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-18 12:05:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 12:05:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 12:05:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:1:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 12:05:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 12, bRemoved = false isDBM true
+
+========================================
+2026-09-18 12:05:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 12:05:00 clockpackage (text, 128 bytes)
+AlarmManager next alarm : 12|2|CG-AJ-BI BC##CA##AA|CF-BA-CI AG##BF##AD|BCAF|-B|1111105|1|15|3|1|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 12:05:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 12:05:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 12:05:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 12, bRemoved = false isDBM true
+
+========================================
+2026-09-18 12:05:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 12:05:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100010
+
+========================================
+2026-09-18 12:05:03 clockpackage (text, 49 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:false
+
+========================================
+2026-09-18 12:05:03 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 12, bRemoved = false isDBM true
+
+========================================
+2026-09-18 12:05:03 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 12:05:03 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{7e37c32: android.os.BinderProxy@c5f4d83}
+
+========================================
+2026-09-18 12:05:03 clockpackage (text, 122 bytes)
+AlarmManager next alarm : 7|1|CG-AJ-BI BD##FA##AA|CG-AB-BD BD##CG##DF|BDFA|-B|1111105|1|5|10|0|0|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 12:05:03 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 12:05:03 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 12:05:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 23
+
+========================================
+2026-09-18 12:05:04 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 13:20:01 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-18 13:50:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 13:50:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 13:50:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 13:50:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 7, bRemoved = false isDBM true
+
+========================================
+2026-09-18 13:50:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 13:50:00 clockpackage (text, 122 bytes)
+AlarmManager next alarm : 7|2|CG-AJ-BI BD##FF##AA|CG-AB-BD BD##CG##DF|BDFA|-B|1111105|1|5|10|1|0|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 13:50:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 13:50:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 13:50:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 7, bRemoved = false isDBM true
+
+========================================
+2026-09-18 13:50:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 13:50:00 clockpackage (text, 47 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:0
+
+========================================
+2026-09-18 13:50:33 clockpackage (text, 29 bytes)
+AlarmAlertActivity onCreate()
+
+========================================
+2026-09-18 13:50:38 clockpackage (text, 44 bytes)
+AlarmAlertActivity finishAlarm BySnooze:true
+
+========================================
+2026-09-18 13:50:38 clockpackage (text, 101 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{5352af9: android.os.BinderProxy@515a3e}
+
+========================================
+2026-09-18 13:50:38 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 13:50:38 clockpackage (text, 122 bytes)
+AlarmManager next alarm : 7|2|CG-AJ-BI BE##FA##AA|CG-AB-BD BD##CG##DF|BDFA|-B|1111105|1|5|10|1|0|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 13:50:38 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 13:50:38 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 13:50:39 clockpackage (text, 56 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 1
+
+========================================
+2026-09-18 13:50:39 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 13:57:23 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 13:57:23 clockpackage (text, 122 bytes)
+AlarmManager next alarm : 7|2|CG-AJ-BI BE##FA##AA|CG-AB-BD BD##CG##DF|BDFA|-B|1111105|1|5|10|1|0|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 13:57:23 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 13:57:23 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 13:58:02 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{c745328: android.os.BinderProxy@7cdc841}
+
+========================================
+2026-09-18 13:58:02 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 13:58:02 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 13:58:02 clockpackage (text, 122 bytes)
+AlarmManager next alarm : 7|2|CG-AJ-BI BE##FA##AA|CG-AB-BD BD##CG##DF|BDFA|-B|1111105|1|5|10|1|0|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 13:58:02 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 13:58:02 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 13:58:03 clockpackage (text, 50 bytes)
+AlarmSR onReceive() : action = .ALARM_EDIT_MESSAGE
+
+========================================
+2026-09-18 14:50:01 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 14:50:01 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 14:50:01 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 14:50:01 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 7, bRemoved = false isDBM true
+
+========================================
+2026-09-18 14:50:01 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 14:50:01 clockpackage (text, 122 bytes)
+AlarmManager next alarm : 7|2|CG-AJ-BI BE##FF##AA|CG-AB-BD BD##CG##DF|BDFA|-B|1111105|1|5|10|2|0|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 14:50:01 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 14:50:01 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 14:50:01 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 7, bRemoved = false isDBM true
+
+========================================
+2026-09-18 14:50:01 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 14:50:01 clockpackage (text, 47 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:0
+
+========================================
+2026-09-18 14:50:05 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 14:50:05 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 14:50:05 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 14:55:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 14:55:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 14:55:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 14:55:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 7, bRemoved = false isDBM true
+
+========================================
+2026-09-18 14:55:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 14:55:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{31c5665: android.os.BinderProxy@c81bf3a}
+
+========================================
+2026-09-18 14:55:00 clockpackage (text, 122 bytes)
+AlarmManager next alarm : 7|2|CG-AJ-BI BF##AA##AA|CG-AB-BD BD##CG##DF|BDFA|-B|1111105|1|5|10|3|0|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 14:55:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 14:55:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 14:55:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 7, bRemoved = false isDBM true
+
+========================================
+2026-09-18 14:55:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 14:55:00 clockpackage (text, 47 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:0
+
+========================================
+2026-09-18 14:55:02 clockpackage (text, 49 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:false
+
+========================================
+2026-09-18 14:55:02 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 7, bRemoved = false isDBM true
+
+========================================
+2026-09-18 14:55:02 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 14:55:02 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{4e349d5: android.os.BinderProxy@50385ea}
+
+========================================
+2026-09-18 14:55:02 clockpackage (text, 123 bytes)
+AlarmManager next alarm : 16|1|CG-AJ-BI BF##DA##AA|CG-AB-CJ BC##AH##AH|BFDA|-B|101|1|5|10|0|100000|2|16|8|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 14:55:02 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 14:55:02 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 14:55:02 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 23
+
+========================================
+2026-09-18 14:55:02 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 15:00:01 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-18 15:30:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 15:30:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 15:30:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 15:30:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 15:30:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 15:30:00 clockpackage (text, 123 bytes)
+AlarmManager next alarm : 16|2|CG-AJ-BI BF##DF##AA|CG-AB-CJ BC##AH##AH|BFDA|-B|101|1|5|10|1|100000|2|16|8|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:30:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 15:30:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 15:30:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100000
+
+========================================
+2026-09-18 15:30:05 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 15:30:05 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 15:30:05 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 15:35:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 15:35:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 15:35:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 15:35:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 15:35:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 15:35:00 clockpackage (text, 123 bytes)
+AlarmManager next alarm : 16|2|CG-AJ-BI BF##EA##AA|CG-AB-CJ BC##AH##AH|BFDA|-B|101|1|5|10|2|100000|2|16|8|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:35:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:35:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:35:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 15:35:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 15:35:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100000
+
+========================================
+2026-09-18 15:35:08 clockpackage (text, 54 bytes)
+AlarmPlayerBase setPlayMode :mode = 4, mPlayMode = 272
+
+========================================
+2026-09-18 15:35:08 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 15:35:08 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 15:35:08 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 15:35:08 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 15:40:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 15:40:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 15:40:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 15:40:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 15:40:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 15:40:00 clockpackage (text, 123 bytes)
+AlarmManager next alarm : 16|2|CG-AJ-BI BF##EF##AA|CG-AB-CJ BC##AH##AH|BFDA|-B|101|1|5|10|3|100000|2|16|8|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:40:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:40:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:40:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 15:40:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 15:40:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100000
+
+========================================
+2026-09-18 15:40:03 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 15:40:03 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 15:40:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 15:45:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 15:45:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 15:45:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 15:45:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 15:45:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{8e85b09: android.os.BinderProxy@8a1b10e}
+
+========================================
+2026-09-18 15:45:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 15:45:00 clockpackage (text, 123 bytes)
+AlarmManager next alarm : 16|2|CG-AJ-BI BF##FA##AA|CG-AB-CJ BC##AH##AH|BFDA|-B|101|1|5|10|4|100000|2|16|8|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:45:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:45:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 15:45:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 15:45:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100000
+
+========================================
+2026-09-18 15:45:07 clockpackage (text, 54 bytes)
+AlarmPlayerBase setPlayMode :mode = 4, mPlayMode = 272
+
+========================================
+2026-09-18 15:45:07 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 15:45:08 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 15:45:08 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 15:45:09 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 15:50:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 15:50:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 15:50:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 15:50:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 15:50:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 15:50:00 clockpackage (text, 123 bytes)
+AlarmManager next alarm : 16|2|CG-AJ-BI BF##FF##AA|CG-AB-CJ BC##AH##AH|BFDA|-B|101|1|5|10|5|100000|2|16|8|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:50:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:50:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:50:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 15:50:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 15:50:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100000
+
+========================================
+2026-09-18 15:50:07 clockpackage (text, 54 bytes)
+AlarmPlayerBase setPlayMode :mode = 4, mPlayMode = 272
+
+========================================
+2026-09-18 15:50:08 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 15:50:30 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 15:50:31 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 15:50:31 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 15:55:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 15:55:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 15:55:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 15:55:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 15:55:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 15:55:00 clockpackage (text, 123 bytes)
+AlarmManager next alarm : 16|2|CG-AJ-BI BG##AA##AA|CG-AB-CJ BC##AH##AH|BFDA|-B|101|1|5|10|6|100000|2|16|8|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:55:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:55:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 15:55:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 15:55:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 15:55:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100000
+
+========================================
+2026-09-18 15:55:02 clockpackage (text, 48 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:true
+
+========================================
+2026-09-18 15:55:02 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 24
+
+========================================
+2026-09-18 15:55:03 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 16:00:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 16:00:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 16:00:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 16:00:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 16:00:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 16:00:00 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{31c5665: android.os.BinderProxy@c81bf3a}
+
+========================================
+2026-09-18 16:00:00 clockpackage (text, 123 bytes)
+AlarmManager next alarm : 16|2|CG-AJ-BI BG##AF##AA|CG-AB-CJ BC##AH##AH|BFDA|-B|101|1|5|10|7|100000|2|16|8|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 16:00:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 16:00:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 16:00:00 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 16:00:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 16:00:00 clockpackage (text, 52 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:100000
+
+========================================
+2026-09-18 16:00:02 clockpackage (text, 49 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:false
+
+========================================
+2026-09-18 16:00:02 clockpackage (text, 85 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 16, bRemoved = false isDBM true
+
+========================================
+2026-09-18 16:00:02 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 16:00:02 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{c463264: android.os.BinderProxy@a961ccd}
+
+========================================
+2026-09-18 16:00:02 clockpackage (text, 121 bytes)
+AlarmManager next alarm : 8|1|CG-AJ-BI BH##DA##AA|CF-BA-CD AH##DB##CE|BHDA|-B|1010105|1|5|5|0|0|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 16:00:02 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 16:00:02 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 16:00:02 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 23
+
+========================================
+2026-09-18 16:00:02 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+
+========================================
+2026-09-18 16:01:40 com.samsung.android.samsungpass (text, 148 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.easysignin/easysignin,cidCount=1}
+
+========================================
+2026-09-18 16:01:40 com.samsung.android.samsungpass (text, 148 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.easysignin/easysignin,cidCount=1}
+
+========================================
+2026-09-18 16:02:19 com.samsung.android.samsungpass (text, 38 bytes)
+1. Pass Server Error /stats/v1/actions
+
+========================================
+2026-09-18 16:02:19 com.samsung.android.samsungpass (text, 45 bytes)
+2. reqId 54807bf0-a8b2-4dd1-ad3a-092d8afbe916
+
+========================================
+2026-09-18 16:02:19 com.samsung.android.samsungpass (text, 42 bytes)
+3. response : 19008, TEST_SA_BAD_ACCESSTKN
+
+========================================
+2026-09-18 16:02:19 com.samsung.android.samsungpass (text, 34 bytes)
+Pass Server Response error [19008]
+
+========================================
+2026-09-18 16:03:17 com.samsung.android.samsungpass (text, 148 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.easysignin/easysignin,cidCount=1}
+
+========================================
+2026-09-18 16:03:17 com.samsung.android.samsungpass (text, 148 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.easysignin/easysignin,cidCount=1}
+
+========================================
+2026-09-18 16:04:53 com.samsung.android.samsungpass (text, 151 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.scloud/passkey/100000002,cidCount=1}
+
+========================================
+2026-09-18 16:04:55 com.samsung.android.samsungpass (text, 142 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.passkey/passkey,cidCount=1}
+
+========================================
+2026-09-18 16:04:56 com.samsung.android.samsungpass (text, 117 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=address_sync,type=Sync,lastSyncTime=1787664652068}
+
+========================================
+2026-09-18 16:04:56 com.samsung.android.samsungpass (text, 142 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.passkey/passkey,cidCount=1}
+
+========================================
+2026-09-18 16:04:56 com.samsung.android.samsungpass (text, 141 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.scloud/passkey,cidCount=1}
+
+========================================
+2026-09-18 16:04:57 com.samsung.android.samsungpass (text, 108 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=address_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:04:57 com.samsung.android.samsungpass (text, 131 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=address_sync,type=sync,isSuccess=true,lastSyncTime=1789758297361}
+
+========================================
+2026-09-18 16:04:57 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=notes_sync,type=Sync,lastSyncTime=1787664653111}
+
+========================================
+2026-09-18 16:04:58 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=notes_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:04:58 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=notes_sync,type=sync,isSuccess=true,lastSyncTime=1789758298641}
+
+========================================
+2026-09-18 16:04:58 com.samsung.android.samsungpass (text, 112 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=passkey,type=Sync,lastSyncTime=1787664654149}
+
+========================================
+2026-09-18 16:05:00 com.samsung.android.samsungpass (text, 103 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=passkey,isColdStart=false,count=1}
+
+========================================
+2026-09-18 16:05:01 com.samsung.android.samsungpass (text, 88 bytes)
+SCloudSync SCloudDiagnostic_SetDataStart reason=diagnostic extra={table=passkey,count=1}
+
+========================================
+2026-09-18 16:05:01 com.samsung.android.samsungpass (text, 141 bytes)
+SCloudSync SCloudDiagnostic_SetDataBatch reason=diagnostic extra={table=passkey,inputCount=1,validCount=1,matchedLocalIdCount=1,batchCount=1}
+
+========================================
+2026-09-18 16:05:01 com.samsung.android.samsungpass (text, 164 bytes)
+SCloudSync SCloudDiagnostic_ClassifySetData reason=diagnostic extra={inputCount=1,insertCount=0,updateCount=0,deleteCount=0,completeCount=1,completeRecordIdCount=1}
+
+========================================
+2026-09-18 16:05:01 com.samsung.android.samsungpass (text, 126 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=passkey,type=sync,isSuccess=true,lastSyncTime=1789758300363}
+
+========================================
+2026-09-18 16:05:01 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=sclouddata,type=Sync,lastSyncTime=1787950757218}
+
+========================================
+2026-09-18 16:05:03 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=sclouddata,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:05:03 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=sclouddata,type=sync,isSuccess=true,lastSyncTime=1789758302894}
+
+========================================
+2026-09-18 16:05:03 com.samsung.android.samsungpass (text, 117 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=address_sync,type=Sync,lastSyncTime=1789758297361}
+
+========================================
+2026-09-18 16:05:05 com.samsung.android.samsungpass (text, 108 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=address_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:05:05 com.samsung.android.samsungpass (text, 131 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=address_sync,type=sync,isSuccess=true,lastSyncTime=1789758305100}
+
+========================================
+2026-09-18 16:05:05 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=notes_sync,type=Sync,lastSyncTime=1789758298641}
+
+========================================
+2026-09-18 16:05:06 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=notes_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:05:06 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=notes_sync,type=sync,isSuccess=true,lastSyncTime=1789758306419}
+
+========================================
+2026-09-18 16:05:06 com.samsung.android.samsungpass (text, 112 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=passkey,type=Sync,lastSyncTime=1789758300363}
+
+========================================
+2026-09-18 16:05:08 com.samsung.android.samsungpass (text, 103 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=passkey,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:05:08 com.samsung.android.samsungpass (text, 126 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=passkey,type=sync,isSuccess=true,lastSyncTime=1789758307902}
+
+========================================
+2026-09-18 16:05:08 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=sclouddata,type=Sync,lastSyncTime=1789758302894}
+
+========================================
+2026-09-18 16:05:09 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=sclouddata,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:05:09 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=sclouddata,type=sync,isSuccess=true,lastSyncTime=1789758309601}
+
+========================================
+2026-09-18 16:05:12 com.samsung.android.samsungpass (text, 148 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.easysignin/easysignin,cidCount=1}
+
+========================================
+2026-09-18 16:05:12 com.samsung.android.samsungpass (text, 144 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.scloud/sclouddata,cidCount=1}
+
+========================================
+2026-09-18 16:05:12 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=sclouddata,type=Sync,lastSyncTime=1789758309601}
+
+========================================
+2026-09-18 16:05:14 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=sclouddata,isColdStart=false,count=1}
+
+========================================
+2026-09-18 16:05:15 com.samsung.android.samsungpass (text, 91 bytes)
+SCloudSync SCloudDiagnostic_SetDataStart reason=diagnostic extra={table=sclouddata,count=1}
+
+========================================
+2026-09-18 16:05:15 com.samsung.android.samsungpass (text, 144 bytes)
+SCloudSync SCloudDiagnostic_SetDataBatch reason=diagnostic extra={table=sclouddata,inputCount=1,validCount=1,matchedLocalIdCount=1,batchCount=1}
+
+========================================
+2026-09-18 16:05:15 com.samsung.android.samsungpass (text, 164 bytes)
+SCloudSync SCloudDiagnostic_ClassifySetData reason=diagnostic extra={inputCount=1,insertCount=0,updateCount=0,deleteCount=0,completeCount=1,completeRecordIdCount=1}
+
+========================================
+2026-09-18 16:05:15 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=sclouddata,type=sync,isSuccess=true,lastSyncTime=1789758313724}
+
+========================================
+2026-09-18 16:05:16 com.samsung.android.samsungpass (text, 148 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.easysignin/easysignin,cidCount=1}
+
+========================================
+2026-09-18 16:05:16 com.samsung.android.samsungpass (text, 144 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.scloud/sclouddata,cidCount=1}
+
+========================================
+2026-09-18 16:05:16 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=sclouddata,type=Sync,lastSyncTime=1789758313724}
+
+========================================
+2026-09-18 16:05:17 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=sclouddata,isColdStart=false,count=1}
+
+========================================
+2026-09-18 16:05:18 com.samsung.android.samsungpass (text, 91 bytes)
+SCloudSync SCloudDiagnostic_SetDataStart reason=diagnostic extra={table=sclouddata,count=1}
+
+========================================
+2026-09-18 16:05:18 com.samsung.android.samsungpass (text, 144 bytes)
+SCloudSync SCloudDiagnostic_SetDataBatch reason=diagnostic extra={table=sclouddata,inputCount=1,validCount=1,matchedLocalIdCount=1,batchCount=1}
+
+========================================
+2026-09-18 16:05:18 com.samsung.android.samsungpass (text, 164 bytes)
+SCloudSync SCloudDiagnostic_ClassifySetData reason=diagnostic extra={inputCount=1,insertCount=0,updateCount=0,deleteCount=0,completeCount=1,completeRecordIdCount=1}
+
+========================================
+2026-09-18 16:05:18 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=sclouddata,type=sync,isSuccess=true,lastSyncTime=1789758317376}
+
+========================================
+2026-09-18 16:05:50 com.samsung.android.samsungpass (text, 148 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.easysignin/easysignin,cidCount=1}
+
+========================================
+2026-09-18 16:05:50 com.samsung.android.samsungpass (text, 144 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.scloud/sclouddata,cidCount=1}
+
+========================================
+2026-09-18 16:05:51 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=sclouddata,type=Sync,lastSyncTime=1789758317376}
+
+========================================
+2026-09-18 16:05:52 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=sclouddata,isColdStart=false,count=1}
+
+========================================
+2026-09-18 16:05:53 com.samsung.android.samsungpass (text, 91 bytes)
+SCloudSync SCloudDiagnostic_SetDataStart reason=diagnostic extra={table=sclouddata,count=1}
+
+========================================
+2026-09-18 16:05:53 com.samsung.android.samsungpass (text, 144 bytes)
+SCloudSync SCloudDiagnostic_SetDataBatch reason=diagnostic extra={table=sclouddata,inputCount=1,validCount=1,matchedLocalIdCount=1,batchCount=1}
+
+========================================
+2026-09-18 16:05:53 com.samsung.android.samsungpass (text, 164 bytes)
+SCloudSync SCloudDiagnostic_ClassifySetData reason=diagnostic extra={inputCount=1,insertCount=0,updateCount=0,deleteCount=0,completeCount=1,completeRecordIdCount=1}
+
+========================================
+2026-09-18 16:05:53 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=sclouddata,type=sync,isSuccess=true,lastSyncTime=1789758352551}
+
+========================================
+2026-09-18 16:08:37 com.samsung.android.samsungpass (text, 151 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.scloud/passkey/100000003,cidCount=1}
+
+========================================
+2026-09-18 16:08:38 com.samsung.android.samsungpass (text, 142 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.passkey/passkey,cidCount=1}
+
+========================================
+2026-09-18 16:08:38 com.samsung.android.samsungpass (text, 117 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=address_sync,type=Sync,lastSyncTime=1789758305100}
+
+========================================
+2026-09-18 16:08:39 com.samsung.android.samsungpass (text, 142 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.passkey/passkey,cidCount=1}
+
+========================================
+2026-09-18 16:08:39 com.samsung.android.samsungpass (text, 141 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.scloud/passkey,cidCount=1}
+
+========================================
+2026-09-18 16:08:40 com.samsung.android.samsungpass (text, 108 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=address_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:08:40 com.samsung.android.samsungpass (text, 131 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=address_sync,type=sync,isSuccess=true,lastSyncTime=1789758520322}
+
+========================================
+2026-09-18 16:08:40 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=notes_sync,type=Sync,lastSyncTime=1789758306419}
+
+========================================
+2026-09-18 16:08:42 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=notes_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:08:42 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=notes_sync,type=sync,isSuccess=true,lastSyncTime=1789758521946}
+
+========================================
+2026-09-18 16:08:42 com.samsung.android.samsungpass (text, 112 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=passkey,type=Sync,lastSyncTime=1789758307902}
+
+========================================
+2026-09-18 16:08:45 com.samsung.android.samsungpass (text, 103 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=passkey,isColdStart=false,count=1}
+
+========================================
+2026-09-18 16:08:46 com.samsung.android.samsungpass (text, 88 bytes)
+SCloudSync SCloudDiagnostic_SetDataStart reason=diagnostic extra={table=passkey,count=1}
+
+========================================
+2026-09-18 16:08:46 com.samsung.android.samsungpass (text, 141 bytes)
+SCloudSync SCloudDiagnostic_SetDataBatch reason=diagnostic extra={table=passkey,inputCount=1,validCount=1,matchedLocalIdCount=1,batchCount=1}
+
+========================================
+2026-09-18 16:08:46 com.samsung.android.samsungpass (text, 164 bytes)
+SCloudSync SCloudDiagnostic_ClassifySetData reason=diagnostic extra={inputCount=1,insertCount=0,updateCount=0,deleteCount=0,completeCount=1,completeRecordIdCount=1}
+
+========================================
+2026-09-18 16:08:46 com.samsung.android.samsungpass (text, 126 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=passkey,type=sync,isSuccess=true,lastSyncTime=1789758524985}
+
+========================================
+2026-09-18 16:08:46 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=sclouddata,type=Sync,lastSyncTime=1789758352551}
+
+========================================
+2026-09-18 16:08:47 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=sclouddata,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:08:47 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=sclouddata,type=sync,isSuccess=true,lastSyncTime=1789758527699}
+
+========================================
+2026-09-18 16:08:48 com.samsung.android.samsungpass (text, 117 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=address_sync,type=Sync,lastSyncTime=1789758520322}
+
+========================================
+2026-09-18 16:08:49 com.samsung.android.samsungpass (text, 108 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=address_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:08:49 com.samsung.android.samsungpass (text, 131 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=address_sync,type=sync,isSuccess=true,lastSyncTime=1789758529516}
+
+========================================
+2026-09-18 16:08:49 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=notes_sync,type=Sync,lastSyncTime=1789758521946}
+
+========================================
+2026-09-18 16:08:51 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=notes_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:08:51 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=notes_sync,type=sync,isSuccess=true,lastSyncTime=1789758530906}
+
+========================================
+2026-09-18 16:08:51 com.samsung.android.samsungpass (text, 112 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=passkey,type=Sync,lastSyncTime=1789758524985}
+
+========================================
+2026-09-18 16:08:52 com.samsung.android.samsungpass (text, 103 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=passkey,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:08:52 com.samsung.android.samsungpass (text, 126 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=passkey,type=sync,isSuccess=true,lastSyncTime=1789758532574}
+
+========================================
+2026-09-18 16:08:52 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=sclouddata,type=Sync,lastSyncTime=1789758527699}
+
+========================================
+2026-09-18 16:08:54 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=sclouddata,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:08:54 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=sclouddata,type=sync,isSuccess=true,lastSyncTime=1789758534045}
+
+========================================
+2026-09-18 16:09:04 com.samsung.android.samsungpass (text, 148 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.easysignin/easysignin,cidCount=1}
+
+========================================
+2026-09-18 16:09:04 com.samsung.android.samsungpass (text, 148 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.easysignin/easysignin,cidCount=1}
+
+========================================
+2026-09-18 16:09:29 com.samsung.android.samsungpass (text, 142 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.passkey/passkey,cidCount=1}
+
+========================================
+2026-09-18 16:09:29 com.samsung.android.samsungpass (text, 141 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.scloud/passkey,cidCount=1}
+
+========================================
+2026-09-18 16:09:29 com.samsung.android.samsungpass (text, 117 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=address_sync,type=Sync,lastSyncTime=1789758529516}
+
+========================================
+2026-09-18 16:09:32 com.samsung.android.samsungpass (text, 108 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=address_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:09:32 com.samsung.android.samsungpass (text, 131 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=address_sync,type=sync,isSuccess=true,lastSyncTime=1789758571781}
+
+========================================
+2026-09-18 16:09:32 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=notes_sync,type=Sync,lastSyncTime=1789758530906}
+
+========================================
+2026-09-18 16:09:33 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=notes_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:09:34 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=notes_sync,type=sync,isSuccess=true,lastSyncTime=1789758573704}
+
+========================================
+2026-09-18 16:09:34 com.samsung.android.samsungpass (text, 112 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=passkey,type=Sync,lastSyncTime=1789758532574}
+
+========================================
+2026-09-18 16:09:35 com.samsung.android.samsungpass (text, 103 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=passkey,isColdStart=false,count=1}
+
+========================================
+2026-09-18 16:09:36 com.samsung.android.samsungpass (text, 88 bytes)
+SCloudSync SCloudDiagnostic_SetDataStart reason=diagnostic extra={table=passkey,count=1}
+
+========================================
+2026-09-18 16:09:36 com.samsung.android.samsungpass (text, 141 bytes)
+SCloudSync SCloudDiagnostic_SetDataBatch reason=diagnostic extra={table=passkey,inputCount=1,validCount=1,matchedLocalIdCount=1,batchCount=1}
+
+========================================
+2026-09-18 16:09:36 com.samsung.android.samsungpass (text, 164 bytes)
+SCloudSync SCloudDiagnostic_ClassifySetData reason=diagnostic extra={inputCount=1,insertCount=0,updateCount=0,deleteCount=0,completeCount=1,completeRecordIdCount=1}
+
+========================================
+2026-09-18 16:09:36 com.samsung.android.samsungpass (text, 126 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=passkey,type=sync,isSuccess=true,lastSyncTime=1789758575500}
+
+========================================
+2026-09-18 16:09:36 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=sclouddata,type=Sync,lastSyncTime=1789758534045}
+
+========================================
+2026-09-18 16:09:37 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=sclouddata,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:09:37 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=sclouddata,type=sync,isSuccess=true,lastSyncTime=1789758577655}
+
+========================================
+2026-09-18 16:09:37 com.samsung.android.samsungpass (text, 117 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=address_sync,type=Sync,lastSyncTime=1789758571781}
+
+========================================
+2026-09-18 16:09:41 com.samsung.android.samsungpass (text, 108 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=address_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:09:41 com.samsung.android.samsungpass (text, 131 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=address_sync,type=sync,isSuccess=true,lastSyncTime=1789758580928}
+
+========================================
+2026-09-18 16:09:41 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=notes_sync,type=Sync,lastSyncTime=1789758573704}
+
+========================================
+2026-09-18 16:09:42 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=notes_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:09:42 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=notes_sync,type=sync,isSuccess=true,lastSyncTime=1789758582515}
+
+========================================
+2026-09-18 16:09:42 com.samsung.android.samsungpass (text, 112 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=passkey,type=Sync,lastSyncTime=1789758575500}
+
+========================================
+2026-09-18 16:09:44 com.samsung.android.samsungpass (text, 103 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=passkey,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:09:44 com.samsung.android.samsungpass (text, 126 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=passkey,type=sync,isSuccess=true,lastSyncTime=1789758583998}
+
+========================================
+2026-09-18 16:09:44 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=sclouddata,type=Sync,lastSyncTime=1789758577655}
+
+========================================
+2026-09-18 16:09:45 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=sclouddata,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:09:45 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=sclouddata,type=sync,isSuccess=true,lastSyncTime=1789758585619}
+
+========================================
+2026-09-18 16:09:55 com.samsung.android.samsungpass (text, 142 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.passkey/passkey,cidCount=1}
+
+========================================
+2026-09-18 16:09:55 com.samsung.android.samsungpass (text, 141 bytes)
+SCloudSync SCloudDiagnostic_NotifyLocalSync reason=diagnostic extra={uri=content://com.samsung.android.samsungpass.scloud/passkey,cidCount=1}
+
+========================================
+2026-09-18 16:09:55 com.samsung.android.samsungpass (text, 117 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=address_sync,type=Sync,lastSyncTime=1789758580928}
+
+========================================
+2026-09-18 16:09:57 com.samsung.android.samsungpass (text, 108 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=address_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:09:57 com.samsung.android.samsungpass (text, 131 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=address_sync,type=sync,isSuccess=true,lastSyncTime=1789758596933}
+
+========================================
+2026-09-18 16:09:57 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=notes_sync,type=Sync,lastSyncTime=1789758582515}
+
+========================================
+2026-09-18 16:09:58 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=notes_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:09:58 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=notes_sync,type=sync,isSuccess=true,lastSyncTime=1789758598472}
+
+========================================
+2026-09-18 16:09:58 com.samsung.android.samsungpass (text, 112 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=passkey,type=Sync,lastSyncTime=1789758583998}
+
+========================================
+2026-09-18 16:10:00 com.samsung.android.samsungpass (text, 103 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=passkey,isColdStart=false,count=1}
+
+========================================
+2026-09-18 16:10:01 com.samsung.android.samsungpass (text, 88 bytes)
+SCloudSync SCloudDiagnostic_SetDataStart reason=diagnostic extra={table=passkey,count=1}
+
+========================================
+2026-09-18 16:10:01 com.samsung.android.samsungpass (text, 141 bytes)
+SCloudSync SCloudDiagnostic_SetDataBatch reason=diagnostic extra={table=passkey,inputCount=1,validCount=1,matchedLocalIdCount=1,batchCount=1}
+
+========================================
+2026-09-18 16:10:01 com.samsung.android.samsungpass (text, 164 bytes)
+SCloudSync SCloudDiagnostic_ClassifySetData reason=diagnostic extra={inputCount=1,insertCount=0,updateCount=0,deleteCount=0,completeCount=1,completeRecordIdCount=1}
+
+========================================
+2026-09-18 16:10:01 com.samsung.android.samsungpass (text, 126 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=passkey,type=sync,isSuccess=true,lastSyncTime=1789758600085}
+
+========================================
+2026-09-18 16:10:01 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=sclouddata,type=Sync,lastSyncTime=1789758585619}
+
+========================================
+2026-09-18 16:10:02 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=sclouddata,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:10:02 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=sclouddata,type=sync,isSuccess=true,lastSyncTime=1789758602444}
+
+========================================
+2026-09-18 16:10:02 com.samsung.android.samsungpass (text, 117 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=address_sync,type=Sync,lastSyncTime=1789758596933}
+
+========================================
+2026-09-18 16:10:04 com.samsung.android.samsungpass (text, 108 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=address_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:10:04 com.samsung.android.samsungpass (text, 131 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=address_sync,type=sync,isSuccess=true,lastSyncTime=1789758603945}
+
+========================================
+2026-09-18 16:10:04 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=notes_sync,type=Sync,lastSyncTime=1789758598472}
+
+========================================
+2026-09-18 16:10:05 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=notes_sync,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:10:05 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=notes_sync,type=sync,isSuccess=true,lastSyncTime=1789758605445}
+
+========================================
+2026-09-18 16:10:05 com.samsung.android.samsungpass (text, 112 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=passkey,type=Sync,lastSyncTime=1789758600085}
+
+========================================
+2026-09-18 16:10:07 com.samsung.android.samsungpass (text, 103 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=passkey,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:10:07 com.samsung.android.samsungpass (text, 126 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=passkey,type=sync,isSuccess=true,lastSyncTime=1789758606985}
+
+========================================
+2026-09-18 16:10:07 com.samsung.android.samsungpass (text, 115 bytes)
+SCloudSync SCloudDiagnostic_Prepare reason=diagnostic extra={table=sclouddata,type=Sync,lastSyncTime=1789758602444}
+
+========================================
+2026-09-18 16:10:08 com.samsung.android.samsungpass (text, 106 bytes)
+SCloudSync SCloudDiagnostic_GetHeader reason=diagnostic extra={table=sclouddata,isColdStart=false,count=0}
+
+========================================
+2026-09-18 16:10:08 com.samsung.android.samsungpass (text, 129 bytes)
+SCloudSync SCloudDiagnostic_Finish reason=diagnostic extra={table=sclouddata,type=sync,isSuccess=true,lastSyncTime=1789758608638}
+
+========================================
+2026-09-18 17:00:01 clockpackage (text, 46 bytes)
+AlarmSR onReceive() : action = .UPCOMING_ALERT
+
+========================================
+2026-09-18 17:30:00 clockpackage (text, 52 bytes)
+AlarmSR onReceive() : action = .EXPLICIT_ALARM_ALERT
+
+========================================
+2026-09-18 17:30:00 clockpackage (text, 59 bytes)
+AlarmSR Dev_State_1 :0:0:0:0:0:0:0:0:1:0:0:0:0:0:0:0:0:0:0:
+
+========================================
+2026-09-18 17:30:00 clockpackage (text, 50 bytes)
+AlarmSR Dev_State_2 :0:0:0:0:0:0:0:0:0:0:0:1:1:0:1
+
+========================================
+2026-09-18 17:30:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 8, bRemoved = false isDBM true
+
+========================================
+2026-09-18 17:30:00 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 17:30:00 clockpackage (text, 121 bytes)
+AlarmManager next alarm : 8|2|CG-AJ-BI BH##DF##AA|CF-BA-CD AH##DB##CE|BHDA|-B|1010105|1|5|5|1|0|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 17:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 17:30:00 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 17:30:00 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 8, bRemoved = false isDBM true
+
+========================================
+2026-09-18 17:30:00 clockpackage (text, 53 bytes)
+AlarmPlayerBase setPlayMode :mode = 2, mPlayMode = 17
+
+========================================
+2026-09-18 17:30:00 clockpackage (text, 47 bytes)
+AlarmService call HUN M_Sound = 1 vib 1 Brief:0
+
+========================================
+2026-09-18 17:30:07 clockpackage (text, 49 bytes)
+AlarmAlertPopupService finishAlarm BySnooze:false
+
+========================================
+2026-09-18 17:30:07 clockpackage (text, 84 bytes)
+MissedAlarmPreferenceManager removeMissedAlarmId id = 8, bRemoved = false isDBM true
+
+========================================
+2026-09-18 17:30:07 clockpackage (text, 34 bytes)
+AlarmManager cancelPendingIntent()
+
+========================================
+2026-09-18 17:30:07 clockpackage (text, 102 bytes)
+AlarmManager cancelPendingIntent sPendingIntent PendingIntent{4aa4a18: android.os.BinderProxy@5a50c71}
+
+========================================
+2026-09-18 17:30:07 clockpackage (text, 130 bytes)
+AlarmManager next alarm : 21|1|CG-AJ-BI BJ##BF##AA|CF-AE-BG AI##CF##DI|BJBF|-B|11111115|1|15|10|0|100010|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 17:30:07 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 17:30:07 clockpackage (text, 151 bytes)
+AlarmManager SCHEDULE bed= : true23|1|CG-AJ-BJ AG##DA##AA|CG-AE-CC AF##FF##BC|GDA|CBCA|11111115|1|5|3|0|100100000000000000000|2|16|11|in|50035|5|1|1|0|
+
+========================================
+2026-09-18 17:30:07 clockpackage (text, 57 bytes)
+AlarmService ALERT_STOP Vol= 10 Mode= 17 Real= 10 Fin= 23
+
+========================================
+2026-09-18 17:30:07 clockpackage (text, 61 bytes)
+AlarmSR onReceive() : action = .ACTION_LOCAL_ALARM_ALERT_STOP
+

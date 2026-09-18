@@ -1,0 +1,68 @@
+WA KEEPER - RESUMO AUTOMÁTICO
+Gerado: Fri Sep 18 05:32:36 PM -03 2026
+Package: br.com.wanotifkeeper
+Filtro contato: Nanda
+
+=== SINAIS IMPORTANTES ===
+[ACHADO] Exceções/crashes
+    wa-keeper-diagnose-20260918-172849/logcat-relevant.txt:09-16 15:00:00.293 23970 23970 E AndroidRuntime: FATAL EXCEPTION: main
+    wa-keeper-diagnose-20260918-172849/logcat-relevant.txt:09-16 15:00:00.293 23970 23970 E AndroidRuntime: java.lang.IllegalStateException: A migration from 6 to 5 was required but not found. Please provide the necessary Migration path via RoomDatabase.Builder.addMigration(Migration ...) or allow for destructive migrations via one of the RoomDatabase.Builder.fallbackToDestructiveMigration* methods.
+    wa-keeper-diagnose-20260918-172849/logcat-relevant.txt:09-16 15:00:00.293 23970 23970 E AndroidRuntime: 	Suppressed: kotlinx.coroutines.internal.DiagnosticCoroutineContextException: [StandaloneCoroutine{Cancelling}@f587e05, Dispatchers.Main.immediate]
+    wa-keeper-diagnose-20260918-172849/logcat-relevant.txt:09-18 16:16:07.610  6059  4973 E LoadedApk: Exception : java.lang.NullPointerException: Attempt to invoke virtual method 'boolean android.os.Looper.isPerfLogEnable()' on a null object reference
+    wa-keeper-diagnose-20260918-172849/logcat-relevant.txt:09-18 16:16:07.612  6059  4973 E LoadedApk: Exception : java.lang.NullPointerException: Attempt to invoke virtual method 'boolean android.os.Looper.isPerfLogEnable()' on a null object reference
+    wa-keeper-diagnose-20260918-172849/logcat-relevant.txt:09-18 16:16:34.364  1810  4629 I PackageArchiverService: Failed to get com.mercadopago.wallet metadata fd: java.lang.SecurityException: Access denied, requires: android.permission.GET_APP_METADATA
+    wa-keeper-diagnose-20260918-172849/logcat-relevant.txt:09-18 16:22:10.298  1810  4617 E AppOps  : java.lang.SecurityException: Specified package "com.android.phone" under uid 10239 but it is not
+    wa-keeper-diagnose-20260918-172849/logcat-relevant.txt:09-18 16:22:10.300  1810  4617 E AppOps  : java.lang.SecurityException: Specified package "com.android.phone" under uid 10239 but it is not
+
+[ACHADO] Bloqueio por execução em background
+    wa-keeper-diagnose-20260918-172849/logcat-relevant.txt:09-18 17:28:45.332  7033  7095 E SHEALTH#StartForegroundServicePolicy: android.app.ForegroundServiceStartNotAllowedException: startForegroundService() not allowed due to mAllowStartForeground false: service com.sec.android.app.shealth/com.samsung.android.app.shealth.ForegroundPromoterServiceNo
+
+[não visto] Problema com alarme exato
+
+[ACHADO] WorkManager/Worker falhou ou foi cancelado
+    09-18 16:52:32.874  1810  2840 D ImeInsetsSourceProvider: showImePostLayout cancelled, serverVisible: false, frozen: false, mWin is: non-null, isDrawn: false, mGivenInsetsPending: false, imeLayeringTarget: Window{c7232f3 u0 SnapshotStartingWindow for taskId=21515}, controlTarget: Window{3100a7d u0 com.whatsapp.w4b/com.whatsapp.Conversation}
+    09-18 17:07:00.939  6059 30705 I AlarmManager: setExactAndAllowWhileIdle [name: FcmRetry type: 2 triggerAtMillis: 509421952]
+    09-18 17:07:01.061 30018 30094 W YMAnalytics: Unknown error, keeping batch for retry: 1789761725360 (ymreqid=895a89c1-fadf-8790-a561-5268b353edbd)
+    09-18 17:09:00.773 31068 31188 I WM-WorkerWrapper: Work [ id=42ca9619-0d65-4947-8cc1-50da798c06b7, tags={ com.duckduckgo.mobile.android.vpn.heartbeat.VpnServiceHeartbeatMonitorWorker,VpnServiceHeartbeatMonitorWorker } ] was cancelled
+    09-18 17:09:00.773 31068 31188 D WM-WorkerWrapper: Status for 42ca9619-0d65-4947-8cc1-50da798c06b7 is CANCELLED ; not doing any work
+    09-18 17:09:23.497  6059 31047 I AlarmManager: setExactAndAllowWhileIdle [name: FcmRetry type: 2 triggerAtMillis: 509564510]
+    09-18 17:10:22.053  6059 30901 I AlarmManager: setExactAndAllowWhileIdle [name: FcmRetry type: 2 triggerAtMillis: 509623068]
+    09-18 17:10:23.383  6059 31738 I AlarmManager: setExactAndAllowWhileIdle [name: FcmRetry type: 2 triggerAtMillis: 509624397]
+
+[ACHADO] Job/alarme do WA Keeper existe
+    wa-keeper-diagnose-20260918-172849/alarms_app.txt:$ adb shell sh -c dumpsys alarm | grep -i -C 12 'br.com.wanotifkeeper' || true
+    wa-keeper-diagnose-20260918-172849/alarms_app.txt:auf prediction:5 apps at time:2026/09/17 08:53:17.010 list:[{com.openai.chatgpt|0}, {com.whatsapp.w4b|0}, {com.zhiliaoapp.musically|0}, {com.sonelli.juicessh|0}, {br.com.wanotifkeeper|0}]
+    wa-keeper-diagnose-20260918-172849/alarms_app.txt:  Layer [98294] f2bcd15 ActivityRecordInputSink br.com.wanotifkeeper/.MainActivity#98294
+    wa-keeper-diagnose-20260918-172849/alarms_app.txt: │  │  │        │  │  └─ ActivityRecord{125556251 u0 br.com.wanotifkeeper/.MainActivity t21483}#98292 09-18-15:12:42 flags:1 a:1 pid=712 uid=3e8  [flags(0x1)]
+    wa-keeper-diagnose-20260918-172849/alarms_app.txt: │  │  │        │  │     ├─ f2bcd15 ActivityRecordInputSink br.com.wanotifkeeper/.MainActivity#98294 09-18-15:12:42 flags:0 a:1 pid=712 uid=3e8  [flags(0x0)]
+    wa-keeper-diagnose-20260918-172849/alarms_app.txt: │  │  │        │  │     └─ f481cbb br.com.wanotifkeeper/br.com.wanotifkeeper.MainActivity#98302 09-18-15:12:42 flags:1000 a:1 pid=712 uid=3e8  [flags(0x1000)]
+    wa-keeper-diagnose-20260918-172849/alarms_app.txt:+ LayerFE (f2bcd15 ActivityRecordInputSink br.com.wanotifkeeper/.MainActivity#98294)
+    wa-keeper-diagnose-20260918-172849/alarms_app.txt:+ LayerFE (f481cbb br.com.wanotifkeeper/br.com.wanotifkeeper.MainActivity#98302)
+    wa-keeper-diagnose-20260918-172849/jobs_app.txt:$ adb shell sh -c dumpsys jobscheduler | grep -i -C 20 'br.com.wanotifkeeper' || true
+    wa-keeper-diagnose-20260918-172849/jobs_app.txt:auf prediction:5 apps at time:2026/09/17 08:53:17.010 list:[{com.openai.chatgpt|0}, {com.whatsapp.w4b|0}, {com.zhiliaoapp.musically|0}, {com.sonelli.juicessh|0}, {br.com.wanotifkeeper|0}]
+    wa-keeper-diagnose-20260918-172849/jobs_app.txt:  Layer [98294] f2bcd15 ActivityRecordInputSink br.com.wanotifkeeper/.MainActivity#98294
+    wa-keeper-diagnose-20260918-172849/jobs_app.txt: │  │  │        │  │  └─ ActivityRecord{125556251 u0 br.com.wanotifkeeper/.MainActivity t21483}#98292 09-18-15:12:42 flags:1 a:1 pid=712 uid=3e8  [flags(0x1)]
+    wa-keeper-diagnose-20260918-172849/jobs_app.txt: │  │  │        │  │     ├─ f2bcd15 ActivityRecordInputSink br.com.wanotifkeeper/.MainActivity#98294 09-18-15:12:42 flags:0 a:1 pid=712 uid=3e8  [flags(0x0)]
+    wa-keeper-diagnose-20260918-172849/jobs_app.txt: │  │  │        │  │     └─ f481cbb br.com.wanotifkeeper/br.com.wanotifkeeper.MainActivity#98302 09-18-15:12:42 flags:1000 a:1 pid=712 uid=3e8  [flags(0x1000)]
+    wa-keeper-diagnose-20260918-172849/jobs_app.txt:+ LayerFE (f2bcd15 ActivityRecordInputSink br.com.wanotifkeeper/.MainActivity#98294)
+    wa-keeper-diagnose-20260918-172849/jobs_app.txt:+ LayerFE (f481cbb br.com.wanotifkeeper/br.com.wanotifkeeper.MainActivity#98302)
+
+[ACHADO] Doze/App Standby pode ter interferido
+    wa-keeper-diagnose-20260918-172849/deviceidle.txt:    quick_doze_delay_to=+1m0s0ms
+    wa-keeper-diagnose-20260918-172849/deviceidle.txt:  Doze Allowlist Gatekeeper: false
+    wa-keeper-diagnose-20260918-172849/battery_optimization.txt:  echo '--- app standby bucket ---'
+    wa-keeper-diagnose-20260918-172849/battery_optimization.txt:  am get-standby-bucket 'br.com.wanotifkeeper'
+    wa-keeper-diagnose-20260918-172849/battery_optimization.txt:--- app standby bucket ---
+
+[ACHADO] Nome/identificador 'Nanda' apareceu no logcat.
+
+run-as disponível: 0
+
+Arquivos prioritários para revisar:
+  1. diagnosis.txt
+  2. logcat-contact.txt
+  3. logcat-relevant.txt
+  4. alarms_app.txt
+  5. jobs_app.txt
+  6. battery_optimization.txt
+  7. sqlite-data.txt (se existir)

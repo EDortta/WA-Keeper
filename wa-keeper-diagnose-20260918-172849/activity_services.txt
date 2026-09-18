@@ -1,0 +1,56 @@
+$ adb shell dumpsys activity services br.com.wanotifkeeper
+ACTIVITY MANAGER SERVICES (dumpsys activity services)
+  User 0 active services:
+  * ServiceRecord{2df3695 u0 br.com.wanotifkeeper/.NotifListenerService c:android}
+    intent={act=android.service.notification.NotificationListenerService cmp=br.com.wanotifkeeper/.NotifListenerService}
+    packageName=br.com.wanotifkeeper
+    processName=br.com.wanotifkeeper
+    targetSdkVersion=34
+    permission=android.permission.BIND_NOTIFICATION_LISTENER_SERVICE
+    baseDir=/data/app/~~V15FvNtjcWD4HOQZw-GbkQ==/br.com.wanotifkeeper-2xqZ9T9snfcfM5xs78ZBQg==/base.apk
+    dataDir=/data/user/0/br.com.wanotifkeeper
+    app=ProcessRecord{a18b769 17990:br.com.wanotifkeeper/u0a545}
+    allowlistManager=true
+    useNewWiuLogic_forCapabilities()=false
+    useNewWiuLogic_forStart()=false
+    useNewBfslLogic()=false
+    mAllowWiu_noBinding=DENIED
+    mAllowWiu_inBindService=DENIED
+    mAllowWiu_byBindings=DENIED
+    getFgsAllowWiu_legacy=DENIED
+    getFgsAllowWiu_new=DENIED
+    getFgsAllowWiu_forStart=DENIED
+    getFgsAllowWiu_forCapabilities=DENIED
+    allowUiJobScheduling=false
+    recentCallingPackage=android
+    recentCallingUid=1000
+    mAllowStart_noBinding=PROC_STATE_BFGS
+    mAllowStart_inBindService=DENIED
+    mAllowStart_byBindings=DENIED
+    getFgsAllowStart_legacy=PROC_STATE_BFGS
+    getFgsAllowStart_new=PROC_STATE_BFGS
+    getFgsAllowStart=PROC_STATE_BFGS
+    startForegroundCount=0
+    infoAllowStartForeground=[callingPackage: br.com.wanotifkeeper; callingUid: 10545; uidState: BFGS; uidBFSL: [BFSL]; intent: Intent { act=android.service.notification.NotificationListenerService cmp=br.com.wanotifkeeper/.NotifListenerService }; code:PROC_STATE_BFGS; tempAllowListReason:<null>; allowWiu:-1; targetSdkVersion:34; callerTargetSdkVersion:34; startForegroundCount:0; bindFromPackage:null: isBindService:false]; startForegroundDelayMs:1513675
+    createTime=-2d0h25m47s798ms startingBgTimeout=--
+    lastActivity=-1d16h39m46s888ms restartTime=-1d16h39m46s888ms createdFromFg=true
+    Bindings:
+    * IntentBindRecord{5221bf6 CREATE}:
+      intent={act=android.service.notification.NotificationListenerService cmp=br.com.wanotifkeeper/.NotifListenerService}
+      binder=android.os.BinderProxy@a4f0bf7
+      requested=true received=true hasBound=true doRebind=false
+      * Client AppBindRecord{1578a64 ProcessRecord{52b0f7 1810:system/1000}}
+        Per-process Connections:
+          ConnectionRecord{e26c8dd u0 CR FGS !PRCP S!CPU br.com.wanotifkeeper/.NotifListenerService:@9dcc4b4 flags=0x805000101}
+    All Connections:
+      ConnectionRecord{e26c8dd u0 CR FGS !PRCP S!CPU br.com.wanotifkeeper/.NotifListenerService:@9dcc4b4 flags=0x805000101}
+
+  Connection bindings to services:
+  * ConnectionRecord{e26c8dd u0 CR FGS !PRCP S!CPU br.com.wanotifkeeper/.NotifListenerService:@9dcc4b4 flags=0x805000101}
+    binding=AppBindRecord{1578a64 br.com.wanotifkeeper/.NotifListenerService:system}
+    conn=android.app.LoadedApk$ServiceDispatcher$InnerConnection@9dcc4b4 flags=0x805000101
+    ongoingCalls=true
+    Bound service session: CR{e26c8dd 1810->br.com.wanotifkeeper/.NotifListenerService flags=0x805000101}
+      Connection present: Yes
+      Ongoing bound service calls: 10
+        onNotificationRankingUpdate=0 onNotificationRemovedFull=0 onNotificationPostedFull=10 onListenerConnected=0 onInterruptionFilterChanged=0 

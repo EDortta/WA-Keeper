@@ -1,0 +1,7 @@
+$ adb shell sh -c 
+  for p in ; do
+    echo "===== br.com.wanotifkeeper ====="
+    dumpsys package "br.com.wanotifkeeper" | grep -E 'versionName=|versionCode=|enabled=|stopped=' | head -30
+  done
+
+sh: -c: requires an argument
