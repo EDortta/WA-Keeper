@@ -5,6 +5,8 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,6 +16,7 @@ import kotlin.math.max
 object ScheduledMessageAlarmScheduler {
     private const val ACTION = "br.com.wanotifkeeper.SEND_SCHEDULED_MESSAGES"
     private const val REQUEST_CODE = 9042
+    private const val TAG = "WAK-ScheduledAlarm"
 
     suspend fun reschedule(context: Context) {
         val app = context.applicationContext
@@ -24,7 +27,31 @@ object ScheduledMessageAlarmScheduler {
         val nextAt = NotifDatabase.get(app).scheduled()
             .nextTimedAt(NotificationReplySender.NO_ACTION) ?: return
         val target = max(nextAt, System.currentTimeMillis() + 1_000L)
-        alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, target, pendingIntent)
+
+        val exactAllowed =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarm.canScheduleExactAlarms()
+
+        if (exactAllowed) {
+            alarm.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                target,
+                pendingIntent
+            )
+            Log.d(TAG, "alarme exato agendado para $target")
+        } else {
+            // O usuário ainda não concedeu o acesso especial de alarmes exatos.
+            // Não perdemos a mensagem: mantemos um fallback inexato e registramos
+            // claramente a degradação para diagnóstico.
+            alarm.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                target,
+                pendingIntent
+            )
+            Log.w(
+                TAG,
+                "SCHEDULE_EXACT_ALARM não autorizado; usando fallback inexato para $target"
+            )
+        }
     }
 
     private fun pendingIntent(context: Context): PendingIntent =
