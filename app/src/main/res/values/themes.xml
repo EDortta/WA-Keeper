@@ -1,13 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.WaNotifKeeper" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">#25D366</item>
-        <item name="colorPrimaryVariant">#128C7E</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorSecondary">#34B7F1</item>
-        <item name="android:statusBarColor">#25D366</item>
-        <item name="android:navigationBarColor">#F0F2F5</item>
+        <item name="colorPrimary">@color/wa_primary</item>
+        <item name="colorPrimaryVariant">@color/wa_primary_dark</item>
+        <item name="colorOnPrimary">@color/wa_on_primary</item>
+        <item name="colorSecondary">@color/wa_automation</item>
+        <item name="colorOnSecondary">@color/wa_on_primary</item>
+        <item name="colorSurface">@color/wa_surface</item>
+        <item name="colorOnSurface">@color/wa_text_primary</item>
+        <item name="colorError">@color/wa_error</item>
+        <item name="android:colorAccent">@color/wa_primary</item>
+        <item name="colorControlActivated">@color/wa_primary</item>
+        <item name="android:windowBackground">@color/wa_background</item>
+        <item name="android:statusBarColor">@color/wa_primary_dark</item>
+        <item name="android:navigationBarColor">@color/wa_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:fontFamily">sans-serif</item>
         <item name="android:windowSoftInputMode">adjustResize</item>
+        <item name="materialButtonStyle">@style/WaKeeperButton</item>
+    </style>
+
+    <style name="WaKeeperButton" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">14dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
     <style name="TabTextAppearance" parent="TextAppearance.Design.Tab">
