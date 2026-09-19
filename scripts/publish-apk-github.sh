@@ -42,5 +42,5 @@ git push "$HTTPS_REMOTE" development
 echo
 echo "OK: releases/WA-Keeper-latest.apk"
 echo "OK: releases/WA-Keeper-latest.zip"
-echo "GitHub APK: https://github.com/EDortta/WA-Keeper/blob/development/releases/WA-Keeper-latest.apk"
-echo "GitHub ZIP: https://github.com/EDortta/WA-Keeper/blob/development/releases/WA-Keeper-latest.zip"
+echo "Download APK: https://raw.githubusercontent.com/EDortta/WA-Keeper/development/releases/WA-Keeper-latest.apk"
+echo "Download ZIP: https://raw.githubusercontent.com/EDortta/WA-Keeper/development/releases/WA-Keeper-latest.zip"
