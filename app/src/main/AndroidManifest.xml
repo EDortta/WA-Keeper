@@ -53,9 +53,14 @@
         </activity>
 
         <activity
-            android:name=".DetailActivity"
+            android:name=".ConversationActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".DetailActivity"
+            android:exported="false"
+            android:parentActivityName=".ConversationActivity" />
 
         <activity
             android:name=".RetentionActivity"
