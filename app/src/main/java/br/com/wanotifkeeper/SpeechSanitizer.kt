@@ -6,7 +6,9 @@ package br.com.wanotifkeeper
  */
 object SpeechSanitizer {
 
-    private val url = Regex("""(?i)\b(?:https?://|www\.)\S+""")
+    private val url = Regex(
+        """(?i)\b(?:https?://|www\.)\S+|\b(?:[a-z0-9-]+\.)+[a-z]{2,}(?:/[^\s]*)?"""
+    )
     private val email = Regex("""(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b""")
 
     // Pix Copia e Cola (EMV): normalmente começa em 000201 e contém BR.GOV.BCB.PIX.
