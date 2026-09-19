@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- WA Keeper v2 brand -->
+    <color name="wa_primary">#0D6EFD</color>
+    <color name="wa_primary_dark">#0A4FB3</color>
+    <color name="wa_secondary">#3882F6</color>
+    <color name="wa_automation">#06B6D4</color>
+    <color name="wa_success">#10B981</color>
+    <color name="wa_error">#DC2626</color>
+    <color name="wa_warning">#F59E0B</color>
+
+    <!-- Surfaces -->
+    <color name="wa_background">#F8FAFC</color>
+    <color name="wa_surface">#FFFFFF</color>
+    <color name="wa_surface_soft">#F1F5F9</color>
+    <color name="wa_surface_elevated">#FFFFFF</color>
+    <color name="wa_text_primary">#0F172A</color>
+    <color name="wa_text_secondary">#64748B</color>
+    <color name="wa_border">#DCE3EC</color>
+
+    <!-- State/support -->
+    <color name="wa_on_primary">#FFFFFF</color>
+    <color name="wa_on_error">#FFFFFF</color>
+    <color name="wa_primary_soft">#1A0D6EFD</color>
+    <color name="wa_automation_soft">#1A06B6D4</color>
+</resources>
