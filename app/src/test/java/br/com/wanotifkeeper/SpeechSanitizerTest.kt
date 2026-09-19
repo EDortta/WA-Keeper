@@ -24,6 +24,12 @@ class SpeechSanitizerTest {
     }
 
     @Test
+    fun `url sem protocolo tambem vira aviso curto`() {
+        val spoken = SpeechSanitizer.forAutomaticSpeech("Abra exemplo.com/pagamento")
+        assertEquals("Abra. URL disponível para visita.", spoken)
+    }
+
+    @Test
     fun `email nao e soletrado`() {
         val spoken = SpeechSanitizer.forAutomaticSpeech("Mande para fulano@example.com")
         assertEquals("Mande para. Endereço de e-mail disponível.", spoken)
