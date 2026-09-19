@@ -107,6 +107,10 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             return
         }
 
+        if (selectedMediaUri != null && !ensureMediaAutomationAccess()) {
+            return
+        }
+
         val now = System.currentTimeMillis()
         lifecycleScope.launch {
             val id = editingId
@@ -163,6 +167,24 @@ class ScheduledMessagesActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         }
+    }
+
+    private fun ensureMediaAutomationAccess(): Boolean {
+        if (MediaShareAutomation.isEnabled(this)) return true
+
+        AlertDialog.Builder(this)
+            .setTitle("Ativar envio automático de anexos")
+            .setMessage(
+                "Para enviar PDF, áudio, vídeo, Word, Excel e outros arquivos, " +
+                    "o WA Keeper precisa da automação de mídia em Acessibilidade. " +
+                    "Ela só atua enquanto há um anexo programado sendo despachado."
+            )
+            .setPositiveButton("Abrir Acessibilidade") { _, _ ->
+                runCatching { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
+            }
+            .setNegativeButton("Agora não", null)
+            .show()
+        return false
     }
 
     private fun ensureExactAlarmAccess(): Boolean {
