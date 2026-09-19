@@ -100,7 +100,21 @@ class NotificationReplySender(private val context: Context) : ReplySender {
 
         val dataInput = cached.remoteInputs.firstOrNull { remote ->
             remote.allowedDataTypes.any { allowed -> mimeMatches(allowed, mimeType) }
-        } ?: return ReplyResult.Rejected(ReplySender.MEDIA_NOT_SUPPORTED, consumesAttempt = true)
+        }
+
+        // O WhatsApp normalmente não oferece RemoteInput de dados na notificação.
+        // Nesse caso usamos o canal de compartilhamento + Acessibilidade, em vez de
+        // consumir três tentativas numa capacidade que sabemos não existir.
+        if (dataInput == null) {
+            return MediaShareAutomation.send(
+                context = context,
+                packageName = packageName,
+                sender = sender,
+                text = text,
+                uriText = uri,
+                mimeType = mimeType
+            )
+        }
 
         return runCatching {
             val parsedUri = Uri.parse(uri)
