@@ -91,12 +91,14 @@ APK_SHA="$(sha256sum "$APK" | awk '{print $1}')"
 VERSIONED_NAME="WA-Keeper-${VERSION}.apk"
 LATEST_NAME="WA-Keeper-latest.apk"
 
-SSH_OPTS=(-p "$SSH_PORT" -o BatchMode=yes -o ConnectTimeout=6 -o ServerAliveInterval=5)
-SCP_OPTS=(-P "$SSH_PORT" -o BatchMode=yes -o ConnectTimeout=6 -o ServerAliveInterval=5)
+SSH_OPTS=(-p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=6 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1)
+SCP_OPTS=(-P "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=6 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1)
 
 choose_ssh_target() {
-  ssh "${SSH_OPTS[@]}" "$SSH_TARGET" true >/dev/null 2>&1 ||
-    fail "não consegui conectar por SSH em $SSH_TARGET:$SSH_PORT"
+  log "Testando SSH em $SSH_TARGET:$SSH_PORT"
+  if ! timeout 10 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" true >/dev/null 2>&1; then
+    fail "SSH para $SSH_TARGET:$SSH_PORT não respondeu em até 10s ou falhou na autenticação"
+  fi
 }
 
 collect_candidates() {
