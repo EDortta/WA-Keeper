@@ -57,10 +57,11 @@ class AudioArbiter private constructor(context: Context) {
         .build()
 
     fun announce(sender: String, text: String) {
+        val spokenText = SpeechSanitizer.forAutomaticSpeech(text)
         val parts = mutableListOf<SpeechPart>()
         val prefix = "$sender diz:"
         var first = true
-        for (segment in UrlHints.segments(text)) {
+        for (segment in UrlHints.segments(spokenText)) {
             when (segment) {
                 is UrlHints.Segment.Text -> {
                     val phrase = if (first) "$prefix ${segment.text}" else segment.text
