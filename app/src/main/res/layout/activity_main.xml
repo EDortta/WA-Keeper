@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F0F2F5">
+    android:background="@color/wa_background">
 
 <LinearLayout
     android:layout_width="match_parent"
@@ -14,7 +14,7 @@
         android:id="@+id/bannerPermission"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#E53935"
+        android:background="@color/wa_error"
         android:foreground="?attr/selectableItemBackground"
         android:padding="14dp"
         android:text="⚠️  Toque aqui para ativar o acesso a notificações"
@@ -46,8 +46,8 @@
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:textSize="14sp"
-            android:textColor="#1C1C1E"
-            android:textColorHint="#8A8A8E"
+            android:textColor="@color/wa_text_primary"
+            android:textColorHint="@color/wa_text_secondary"
             android:focusable="true"
             android:focusableInTouchMode="true" />
 
@@ -62,7 +62,7 @@
             android:contentDescription="Ativar leitura automática mesmo parado"
             android:focusable="true"
             android:clickable="true"
-            app:tint="#48484A" />
+            app:tint="@color/wa_text_secondary" />
 
         <ImageView
             android:id="@+id/btnSettings"
@@ -81,13 +81,13 @@
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:background="#FFFFFF"
-        app:tabIndicatorColor="#25D366"
+        android:background="@color/wa_surface"
+        app:tabIndicatorColor="@color/wa_primary"
         app:tabIndicatorHeight="3dp"
-        app:tabSelectedTextColor="#25D366"
+        app:tabSelectedTextColor="@color/wa_primary"
         app:tabTextColor="#636366"
         app:tabTextAppearance="@style/TabTextAppearance"
-        app:tabRippleColor="#1A25D366">
+        app:tabRippleColor="@color/wa_primary_soft">
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
@@ -109,7 +109,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#E5E5EA" />
+        android:background="@color/wa_border" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"
@@ -140,7 +140,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:text="Nenhuma mensagem salva ainda"
-            android:textColor="#636366"
+            android:textColor="@color/wa_text_secondary"
             android:textSize="16sp" />
 
         <TextView
@@ -149,7 +149,7 @@
             android:layout_marginTop="6dp"
             android:text="As notificações do WhatsApp\naparecerão aqui automaticamente"
             android:gravity="center"
-            android:textColor="#8A8A8E"
+            android:textColor="@color/wa_text_secondary"
             android:textSize="13sp" />
 
     </LinearLayout>
@@ -164,7 +164,7 @@
         android:layout_marginBottom="6dp"
         android:contentDescription="Falar um comando"
         android:src="@android:drawable/ic_btn_speak_now"
-        app:backgroundTint="#25D366"
+        app:backgroundTint="@color/wa_primary"
         app:tint="#FFFFFF"
         app:fabSize="normal"
         app:elevation="6dp" />
