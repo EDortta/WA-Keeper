@@ -4,13 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F2F2F7">
+    android:background="@color/wa_background">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="#FFFFFF"
+        android:background="@color/wa_surface"
         app:navigationIcon="@android:drawable/ic_menu_revert"
         app:title="Retenção"
         app:titleTextColor="#1C1C1E" />
@@ -32,7 +32,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:textColor="#1C1C1E"
+                android:textColor="@color/wa_text_primary"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -41,7 +41,7 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="#FFFFFF">
+                app:cardBackgroundColor="@color/wa_surface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -60,7 +60,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Guardar para sempre"
-                            android:textColor="#1C1C1E"
+                            android:textColor="@color/wa_text_primary"
                             android:textSize="16sp" />
 
                         <com.google.android.material.switchmaterial.SwitchMaterial
@@ -75,20 +75,20 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Nada desta conversa é apagado automaticamente."
-                        android:textColor="#636366"
+                        android:textColor="@color/wa_text_secondary"
                         android:textSize="12sp" />
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginVertical="16dp"
-                        android:background="#E5E5EA" />
+                        android:background="@color/wa_border" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Manter por"
-                        android:textColor="#1C1C1E"
+                        android:textColor="@color/wa_text_primary"
                         android:textSize="16sp" />
 
                     <RadioGroup
@@ -102,25 +102,25 @@
                             android:id="@+id/rbDefault"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:buttonTint="#25D366"
+                            android:buttonTint="@color/wa_primary"
                             android:text="Padrão (6 dias)"
-                            android:textColor="#1C1C1E" />
+                            android:textColor="@color/wa_text_primary" />
 
                         <RadioButton
                             android:id="@+id/rbNever"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:buttonTint="#25D366"
+                            android:buttonTint="@color/wa_primary"
                             android:text="Nunca guardar"
-                            android:textColor="#1C1C1E" />
+                            android:textColor="@color/wa_text_primary" />
 
                         <RadioButton
                             android:id="@+id/rbCustom"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:buttonTint="#25D366"
+                            android:buttonTint="@color/wa_primary"
                             android:text="Personalizado"
-                            android:textColor="#1C1C1E" />
+                            android:textColor="@color/wa_text_primary" />
                     </RadioGroup>
 
                     <LinearLayout
@@ -137,7 +137,7 @@
                             android:layout_height="wrap_content"
                             android:inputType="number"
                             android:maxLength="4"
-                            android:textColor="#1C1C1E"
+                            android:textColor="@color/wa_text_primary"
                             android:autofillHints=""
                             android:hint="1" />
 
@@ -154,7 +154,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:textColor="#636366"
+                        android:textColor="@color/wa_text_secondary"
                         android:textSize="12sp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -165,7 +165,7 @@
                 android:layout_marginTop="16dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="#FFFFFF">
+                app:cardBackgroundColor="@color/wa_surface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -184,7 +184,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Não guardar áudios deste contato"
-                            android:textColor="#1C1C1E"
+                            android:textColor="@color/wa_text_primary"
                             android:textSize="16sp" />
 
                         <com.google.android.material.switchmaterial.SwitchMaterial
@@ -198,7 +198,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Mesmo com a guarda de áudios ligada, os áudios deste contato não são copiados. Ligar aqui também apaga os áudios já guardados dele."
-                        android:textColor="#636366"
+                        android:textColor="@color/wa_text_secondary"
                         android:textSize="12sp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -219,10 +219,10 @@
                 android:layout_marginTop="24dp"
                 android:text="Apagar histórico"
                 android:textAllCaps="false"
-                android:textColor="#D70015"
+                android:textColor="@color/wa_error"
                 app:icon="@drawable/ic_delete"
                 app:iconTint="#D70015"
-                app:strokeColor="#D70015" />
+                app:strokeColor="@color/wa_error" />
 
         </LinearLayout>
     </ScrollView>
