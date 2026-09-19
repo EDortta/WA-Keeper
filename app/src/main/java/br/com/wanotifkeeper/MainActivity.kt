@@ -66,8 +66,11 @@ class MainActivity : AppCompatActivity() {
             fmt,
             onClick = { item ->
                 startActivity(
-                    Intent(this, DetailActivity::class.java)
-                        .putExtra(DetailActivity.EXTRA_ID, item.id)
+                    ConversationActivity.intent(
+                        context = this,
+                        packageName = item.packageName,
+                        sender = item.sender
+                    )
                 )
             },
             onSettings = { item ->
