@@ -125,6 +125,7 @@ class NotifListenerService : NotificationListenerService() {
     }
 
     private val repostGuard = RepostGuard()
+    private val announcementGuard = AnnouncementGuard()
 
     private suspend fun imagePathFromNotification(
         picture: Bitmap?,
@@ -238,11 +239,20 @@ class NotifListenerService : NotificationListenerService() {
         // por conta continua sendo respeitada. O botão PLAY individual não passa por esta regra.
         val playbackAllowed = motion.isInMotion() || ManualReadMode.isEnabled()
         if (!isVoice && Prefs.isTtsEnabled(applicationContext, sbn.packageName) && playbackAllowed) {
-            if (callDetector.isInCall()) {
-                synchronized(pendingDuringCall) { pendingDuringCall.add(PendingPlayback.Text(title, text.trim())) }
-                beeper().beep()
-            } else {
-                speak(title, text.trim())
+            val announce = announcementGuard.shouldAnnounce(
+                packageName = sbn.packageName,
+                notificationKey = sbn.key,
+                sender = title,
+                text = text.trim(),
+                now = System.currentTimeMillis()
+            )
+            if (announce) {
+                if (callDetector.isInCall()) {
+                    synchronized(pendingDuringCall) { pendingDuringCall.add(PendingPlayback.Text(title, text.trim())) }
+                    beeper().beep()
+                } else {
+                    speak(title, text.trim())
+                }
             }
         }
 
