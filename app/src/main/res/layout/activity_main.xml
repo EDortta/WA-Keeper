@@ -5,183 +5,205 @@
     android:layout_height="match_parent"
     android:background="@color/wa_background">
 
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <TextView
-        android:id="@+id/bannerPermission"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/wa_error"
-        android:foreground="?attr/selectableItemBackground"
-        android:padding="14dp"
-        android:text="⚠️  Toque aqui para ativar o acesso a notificações"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp"
-        android:visibility="gone" />
-
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="8dp"
-        android:focusable="true"
-        android:focusableInTouchMode="true">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/bannerPermission"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/wa_error"
+            android:foreground="?attr/selectableItemBackground"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            android:text="Acesso às notificações desativado — toque para ativar"
+            android:textColor="@color/wa_on_error"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingTop="20dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="WA Keeper"
+                    android:textColor="@color/wa_text_primary"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Conversas organizadas. Você no controle."
+                    android:textColor="@color/wa_text_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/btnReadMode"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="Ativar leitura automática mesmo parado"
+                android:focusable="true"
+                android:padding="10dp"
+                android:src="@android:drawable/ic_lock_silent_mode_off"
+                app:tint="@color/wa_automation" />
+
+            <ImageView
+                android:id="@+id/btnSettings"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="Ajustes"
+                android:focusable="true"
+                android:padding="10dp"
+                android:src="@drawable/ic_settings"
+                app:tint="@color/wa_text_secondary" />
+        </LinearLayout>
 
         <EditText
             android:id="@+id/searchField"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_width="match_parent"
             android:layout_height="48dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="12dp"
             android:background="@drawable/bg_search"
             android:drawableStart="@drawable/ic_search"
             android:drawablePadding="10dp"
-            android:hint="Buscar em todas as conversas..."
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:hint="Buscar em todas as conversas"
             android:inputType="text"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:textSize="14sp"
             android:textColor="@color/wa_text_primary"
             android:textColorHint="@color/wa_text_secondary"
-            android:focusable="true"
-            android:focusableInTouchMode="true" />
+            android:textSize="14sp" />
 
-        <ImageView
-            android:id="@+id/btnReadMode"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_marginStart="6dp"
-            android:padding="10dp"
-            android:src="@android:drawable/ic_lock_silent_mode_off"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Ativar leitura automática mesmo parado"
-            android:focusable="true"
-            android:clickable="true"
-            app:tint="@color/wa_text_secondary" />
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@color/wa_surface"
+            app:tabIndicatorColor="@color/wa_primary"
+            app:tabIndicatorHeight="3dp"
+            app:tabRippleColor="@color/wa_primary_soft"
+            app:tabSelectedTextColor="@color/wa_primary"
+            app:tabTextAppearance="@style/TabTextAppearance"
+            app:tabTextColor="@color/wa_text_secondary">
 
-        <ImageView
-            android:id="@+id/btnSettings"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_marginStart="2dp"
-            android:padding="10dp"
-            android:src="@drawable/ic_settings"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Ajustes"
-            android:focusable="true"
-            android:clickable="true" />
-    </LinearLayout>
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Todos" />
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabLayout"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@color/wa_surface"
-        app:tabIndicatorColor="@color/wa_primary"
-        app:tabIndicatorHeight="3dp"
-        app:tabSelectedTextColor="@color/wa_primary"
-        app:tabTextColor="#636366"
-        app:tabTextAppearance="@style/TabTextAppearance"
-        app:tabRippleColor="@color/wa_primary_soft">
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="WhatsApp" />
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Todos" />
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Business" />
+        </com.google.android.material.tabs.TabLayout>
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="WhatsApp" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/wa_border" />
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Business" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingTop="12dp"
+            android:paddingBottom="88dp" />
 
-    </com.google.android.material.tabs.TabLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/wa_border" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingTop="8dp"
-        android:paddingBottom="78dp" />
-
-    <LinearLayout
-        android:id="@+id/emptyState"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="💬"
-            android:textSize="48sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Nenhuma mensagem salva ainda"
-            android:textColor="@color/wa_text_secondary"
-            android:textSize="16sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="As notificações do WhatsApp\naparecerão aqui automaticamente"
+        <LinearLayout
+            android:id="@+id/emptyState"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:gravity="center"
-            android:textColor="@color/wa_text_secondary"
-            android:textSize="13sp" />
+            android:orientation="vertical"
+            android:paddingHorizontal="32dp"
+            android:visibility="gone">
 
+            <ImageView
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:contentDescription="Conversas"
+                android:padding="10dp"
+                android:src="@drawable/ic_chat_bubble_v2" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="Nenhuma mensagem salva ainda"
+                android:textColor="@color/wa_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:text="As notificações do WhatsApp aparecerão aqui automaticamente."
+                android:textColor="@color/wa_text_secondary"
+                android:textSize="13sp" />
+        </LinearLayout>
     </LinearLayout>
-
-</LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnMic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="6dp"
+        android:layout_marginBottom="12dp"
         android:contentDescription="Falar um comando"
         android:src="@android:drawable/ic_btn_speak_now"
         app:backgroundTint="@color/wa_primary"
-        app:tint="#FFFFFF"
+        app:elevation="6dp"
         app:fabSize="normal"
-        app:elevation="6dp" />
+        app:tint="@color/wa_on_primary" />
 
     <TextView
         android:id="@+id/tvMicHint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="76dp"
+        android:layout_marginBottom="82dp"
         android:background="@drawable/bg_hint"
         android:elevation="8dp"
         android:paddingHorizontal="18dp"
         android:paddingVertical="10dp"
         android:text="Pode falar o comando"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/wa_on_primary"
         android:textSize="14sp"
         android:visibility="gone" />
-
 </FrameLayout>
