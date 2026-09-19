@@ -96,16 +96,14 @@ class NotificationReplySender(private val context: Context) : ReplySender {
         mimeType: String
     ): ReplyResult {
         val cached = ReplyActionRegistry.get(packageName, sender)
-            ?: return ReplyResult.Rejected(NO_ACTION, consumesAttempt = false)
-
-        val dataInput = cached.remoteInputs.firstOrNull { remote ->
+        val dataInput = cached?.remoteInputs?.firstOrNull { remote ->
             remote.allowedDataTypes.any { allowed -> mimeMatches(allowed, mimeType) }
         }
 
-        // O WhatsApp normalmente não oferece RemoteInput de dados na notificação.
-        // Nesse caso usamos o canal de compartilhamento + Acessibilidade, em vez de
-        // consumir três tentativas numa capacidade que sabemos não existir.
-        if (dataInput == null) {
+        // O canal de mídia não depende de existir uma notificação aberta da conversa.
+        // Isso é essencial para mensagens AT_TIME: naquele instante pode não haver
+        // RemoteInput algum em cache.
+        if (cached == null || dataInput == null) {
             return MediaShareAutomation.send(
                 context = context,
                 packageName = packageName,
