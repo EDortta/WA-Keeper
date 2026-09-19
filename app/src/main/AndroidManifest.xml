@@ -78,6 +78,19 @@
             android:parentActivityName=".MainActivity" />
 
         <service
+            android:name=".MediaShareAccessibilityService"
+            android:exported="true"
+            android:label="WA Keeper — envio de mídia"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/media_share_accessibility_service" />
+        </service>
+
+        <service
             android:name=".NotifListenerService"
             android:exported="true"
             android:label="WA Keeper"
