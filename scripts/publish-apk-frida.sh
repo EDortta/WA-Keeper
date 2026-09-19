@@ -91,13 +91,13 @@ APK_SHA="$(sha256sum "$APK" | awk '{print $1}')"
 VERSIONED_NAME="WA-Keeper-${VERSION}.apk"
 LATEST_NAME="WA-Keeper-latest.apk"
 
-SSH_OPTS=(-p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=6 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1)
-SCP_OPTS=(-P "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=6 -o ConnectionAttempts=1 -o ServerAliveInterval=5 -o ServerAliveCountMax=1)
+SSH_OPTS=(-o StrictHostKeyChecking=no -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ConnectTimeout=10 -o TCPKeepAlive=yes -o BatchMode=yes -p "$SSH_PORT")
+SCP_OPTS=(-o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ConnectTimeout=10 -o TCPKeepAlive=yes -o BatchMode=yes -P "$SSH_PORT")
 
 choose_ssh_target() {
-  log "Testando SSH em $SSH_TARGET:$SSH_PORT"
-  if ! timeout 10 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" true >/dev/null 2>&1; then
-    fail "SSH para $SSH_TARGET:$SSH_PORT não respondeu em até 10s ou falhou na autenticação"
+  log "Testando SSH em $SSH_TARGET:$SSH_PORT com a mesma configuração do reverse-tunnel.sh"
+  if ! timeout 20 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" true >/dev/null 2>&1; then
+    fail "SSH para $SSH_TARGET:$SSH_PORT falhou apesar do túnel reverso ativo; rode ~/scripts/reverse-tunnel.sh em modo de diagnóstico"
   fi
 }
 
