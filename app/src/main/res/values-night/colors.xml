@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand remains stable in dark mode -->
+    <color name="wa_primary">#0D6EFD</color>
+    <color name="wa_primary_dark">#0A4FB3</color>
+    <color name="wa_secondary">#3882F6</color>
+    <color name="wa_automation">#06B6D4</color>
+    <color name="wa_success">#10B981</color>
+    <color name="wa_error">#EF4444</color>
+    <color name="wa_warning">#F59E0B</color>
+
+    <color name="wa_background">#081220</color>
+    <color name="wa_surface">#0F1E2E</color>
+    <color name="wa_surface_soft">#14263A</color>
+    <color name="wa_surface_elevated">#14263A</color>
+    <color name="wa_text_primary">#F8FAFC</color>
+    <color name="wa_text_secondary">#94A3B8</color>
+    <color name="wa_border">#22374D</color>
+
+    <color name="wa_on_primary">#FFFFFF</color>
+    <color name="wa_on_error">#FFFFFF</color>
+    <color name="wa_primary_soft">#330D6EFD</color>
+    <color name="wa_automation_soft">#3306B6D4</color>
+</resources>
