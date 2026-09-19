@@ -28,7 +28,8 @@ object MediaShareAutomation {
         val packageName: String,
         val sender: String,
         val result: CompletableDeferred<ReplyResult>,
-        @Volatile var phase: Phase = Phase.PICK_CONTACT
+        @Volatile var phase: Phase = Phase.PICK_CONTACT,
+        @Volatile var searchRequested: Boolean = false
     )
 
     @Volatile private var pending: Pending? = null
@@ -144,6 +145,7 @@ class MediaShareAccessibilityService : AccessibilityService() {
 
     private fun pickContact(root: AccessibilityNodeInfo, job: MediaShareAutomation.Pending) {
         val candidates = root.findAccessibilityNodeInfosByText(job.sender)
+            .filterNot { it.isEditable }
             .mapNotNull { exactClickableAncestor(it, job.sender) }
             .distinctBy { System.identityHashCode(it) }
 
@@ -152,11 +154,38 @@ class MediaShareAccessibilityService : AccessibilityService() {
                 if (candidates.single().performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
                     MediaShareAutomation.contactSelected(job)
                 }
+                return
             }
-            candidates.size > 1 -> MediaShareAutomation.fail(
-                job,
-                "há mais de um contato com esse nome; envio de mídia cancelado por segurança"
-            )
+            candidates.size > 1 -> {
+                MediaShareAutomation.fail(
+                    job,
+                    "há mais de um contato com esse nome; envio de mídia cancelado por segurança"
+                )
+                return
+            }
+        }
+
+        // O contato pode não estar visível na lista inicial. Abre a busca e digita o nome
+        // exato capturado da conversa, sem escolher por aproximação.
+        if (!job.searchRequested) {
+            val search = findByDescription(root, listOf("Pesquisar", "Search", "Buscar"))
+            if (search != null && search.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+                job.searchRequested = true
+                return
+            }
+        }
+
+        if (job.searchRequested) {
+            val field = findEditable(root)
+            if (field != null && field.text?.toString() != job.sender) {
+                val args = android.os.Bundle().apply {
+                    putCharSequence(
+                        AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,
+                        job.sender
+                    )
+                }
+                field.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+            }
         }
     }
 
@@ -194,6 +223,15 @@ class MediaShareAccessibilityService : AccessibilityService() {
         repeat(5) {
             if (current?.isClickable == true) return current
             current = current?.parent
+        }
+        return null
+    }
+
+    private fun findEditable(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        if (node.isEditable) return node
+        for (i in 0 until node.childCount) {
+            val found = node.getChild(i)?.let(::findEditable)
+            if (found != null) return found
         }
         return null
     }
