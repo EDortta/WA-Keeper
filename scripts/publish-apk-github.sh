@@ -7,9 +7,9 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
 }
 cd "$REPO_ROOT"
 
-APK="app/build/outputs/apk/release/app-release.apk"
 DEST_DIR="releases"
 DEST_APK="$DEST_DIR/WA-Keeper-latest.apk"
+DEST_ZIP="$DEST_DIR/WA-Keeper-latest.zip"
 DEST_SHA="$DEST_DIR/WA-Keeper-latest.sha256"
 HTTPS_REMOTE="https://github.com/EDortta/WA-Keeper.git"
 
@@ -18,16 +18,9 @@ HTTPS_REMOTE="https://github.com/EDortta/WA-Keeper.git"
   exit 1
 }
 
-[[ -f "$APK" ]] || {
-  echo "APK ainda não existe; compilando release..."
-  ./gradlew --console=plain assembleRelease
-}
+bash scripts/package-apk.sh
 
-mkdir -p "$DEST_DIR"
-cp -f "$APK" "$DEST_APK"
-sha256sum "$DEST_APK" | sed 's#  releases/#  #' > "$DEST_SHA"
-
-git add "$DEST_APK" "$DEST_SHA"
+git add "$DEST_APK" "$DEST_ZIP" "$DEST_SHA"
 
 if git diff --cached --quiet; then
   echo "APK do GitHub já está atualizado."
@@ -48,4 +41,6 @@ git push "$HTTPS_REMOTE" development
 
 echo
 echo "OK: releases/WA-Keeper-latest.apk"
-echo "GitHub: https://github.com/EDortta/WA-Keeper/blob/development/releases/WA-Keeper-latest.apk"
+echo "OK: releases/WA-Keeper-latest.zip"
+echo "GitHub APK: https://github.com/EDortta/WA-Keeper/blob/development/releases/WA-Keeper-latest.apk"
+echo "GitHub ZIP: https://github.com/EDortta/WA-Keeper/blob/development/releases/WA-Keeper-latest.zip"
