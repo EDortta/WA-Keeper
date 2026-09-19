@@ -2,7 +2,8 @@
 set -Eeuo pipefail
 
 PUBLIC_BASE="${WA_PUBLISH_URL:-https://frida.inovacaosistemas.com.br:8443}"
-SSH_TARGET="${WA_PUBLISH_SSH:-}"
+SSH_TARGET="${WA_PUBLISH_SSH:-esteban@frida.inovacaosistemas.com.br}"
+SSH_PORT="${WA_PUBLISH_SSH_PORT:-2200}"
 REMOTE_SUBDIR="${WA_PUBLISH_SUBDIR:-wa-keeper}"
 RUN_TESTS=1
 DRY_RUN=0
@@ -21,7 +22,8 @@ Opções:
 
 Variáveis opcionais:
   WA_PUBLISH_URL=https://frida.inovacaosistemas.com.br:8443
-  WA_PUBLISH_SSH=frida
+  WA_PUBLISH_SSH=esteban@frida.inovacaosistemas.com.br
+  WA_PUBLISH_SSH_PORT=2200
   WA_PUBLISH_SUBDIR=wa-keeper
 
 O script:
@@ -89,24 +91,12 @@ APK_SHA="$(sha256sum "$APK" | awk '{print $1}')"
 VERSIONED_NAME="WA-Keeper-${VERSION}.apk"
 LATEST_NAME="WA-Keeper-latest.apk"
 
-SSH_OPTS=(-o BatchMode=yes -o ConnectTimeout=6 -o ServerAliveInterval=5)
+SSH_OPTS=(-p "$SSH_PORT" -o BatchMode=yes -o ConnectTimeout=6 -o ServerAliveInterval=5)
+SCP_OPTS=(-P "$SSH_PORT" -o BatchMode=yes -o ConnectTimeout=6 -o ServerAliveInterval=5)
 
 choose_ssh_target() {
-  local candidate
-  if [[ -n "$SSH_TARGET" ]]; then
-    ssh "${SSH_OPTS[@]}" "$SSH_TARGET" true >/dev/null 2>&1 ||
-      fail "não consegui conectar por SSH em WA_PUBLISH_SSH=$SSH_TARGET"
-    return
-  fi
-
-  for candidate in frida frida.inovacaosistemas.com.br; do
-    if ssh "${SSH_OPTS[@]}" "$candidate" true >/dev/null 2>&1; then
-      SSH_TARGET="$candidate"
-      return
-    fi
-  done
-
-  fail "não consegui SSH em 'frida' nem 'frida.inovacaosistemas.com.br'. Defina WA_PUBLISH_SSH=<host-do-ssh>."
+  ssh "${SSH_OPTS[@]}" "$SSH_TARGET" true >/dev/null 2>&1 ||
+    fail "não consegui conectar por SSH em $SSH_TARGET:$SSH_PORT"
 }
 
 collect_candidates() {
@@ -259,10 +249,10 @@ publish_files() {
   local sha_file="${VERSIONED_NAME}.sha256"
 
   log "Enviando APK para $SSH_TARGET"
-  scp "${SSH_OPTS[@]}" "$APK" "$SSH_TARGET:$tmp_remote.apk" >/dev/null
+  scp "${SCP_OPTS[@]}" "$APK" "$SSH_TARGET:$tmp_remote.apk" >/dev/null
 
   printf '%s  %s\n' "$APK_SHA" "$VERSIONED_NAME" > "/tmp/$sha_file"
-  scp "${SSH_OPTS[@]}" "/tmp/$sha_file" "$SSH_TARGET:$tmp_remote.sha256" >/dev/null
+  scp "${SCP_OPTS[@]}" "/tmp/$sha_file" "$SSH_TARGET:$tmp_remote.sha256" >/dev/null
   rm -f "/tmp/$sha_file"
 
   ssh "${SSH_OPTS[@]}" "$SSH_TARGET" bash -s --     "$remote_dir" "$tmp_remote.apk" "$tmp_remote.sha256" "$VERSIONED_NAME" "$LATEST_NAME" "$sha_file" <<'REMOTE'
@@ -312,7 +302,7 @@ verify_publication() {
 }
 
 choose_ssh_target
-log "SSH: $SSH_TARGET"
+log "SSH: $SSH_TARGET:$SSH_PORT"
 log "URL pública: $PUBLIC_BASE"
 
 WEBROOT="$(discover_webroot)" || fail "não consegui provar qual pasta atende $PUBLIC_BASE"
