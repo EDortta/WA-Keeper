@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WA Keeper</string>
+    <string name="media_share_accessibility_description">Permite ao WA Keeper escolher a conversa e confirmar o envio de anexos programados no WhatsApp. Só atua durante um envio de mídia iniciado pelo próprio WA Keeper.</string>
 </resources>
