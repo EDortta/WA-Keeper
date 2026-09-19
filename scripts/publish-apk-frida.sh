@@ -230,10 +230,9 @@ discover_webroot() {
   (("${#CANDIDATES[@]}" > 0)) ||
     fail "não encontrei nenhum candidato a document root em $SSH_TARGET"
 
-  log "Testando ${#CANDIDATES[@]} candidato(s) de webroot com sonda HTTP"
+  log "Testando ${#CANDIDATES[@]} candidato(s) de webroot com sonda HTTP" >&2
 
   for root in "${CANDIDATES[@]}"; do
-    [[ -d "$root" ]] || true
 
     if ! remote_write_probe "$root" "$probe" "$token" >/dev/null 2>&1; then
       continue
