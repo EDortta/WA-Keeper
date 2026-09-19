@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dp"
-    app:cardBackgroundColor="#FFFFFF"
+    app:cardBackgroundColor="@color/wa_surface"
     app:cardCornerRadius="14dp"
     app:cardElevation="0dp">
 
@@ -18,7 +18,7 @@
             android:id="@+id/tvText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#1C1C1E"
+            android:textColor="@color/wa_text_primary"
             android:textSize="15sp" />
 
         <TextView
@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:textColor="#636366"
+            android:textColor="@color/wa_text_secondary"
             android:textSize="12sp" />
 
         <LinearLayout
@@ -43,7 +43,7 @@
                 android:layout_height="wrap_content"
                 android:text="Editar"
                 android:textAllCaps="false"
-                android:textColor="#1C1C1E" />
+                android:textColor="@color/wa_text_primary" />
 
             <Button
                 android:id="@+id/btnCancel"
@@ -52,7 +52,7 @@
                 android:layout_height="wrap_content"
                 android:text="Excluir"
                 android:textAllCaps="false"
-                android:textColor="#D70015" />
+                android:textColor="@color/wa_error" />
 
             <Button
                 android:id="@+id/btnReuse"
@@ -61,7 +61,7 @@
                 android:layout_height="wrap_content"
                 android:text="Reutilizar"
                 android:textAllCaps="false"
-                android:textColor="#1C1C1E" />
+                android:textColor="@color/wa_text_primary" />
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
