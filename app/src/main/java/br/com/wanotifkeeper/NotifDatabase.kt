@@ -64,6 +64,9 @@ interface NotifDao {
     @Query("SELECT * FROM notifications WHERE sender = :sender ORDER BY timestamp DESC")
     fun bySenderFlow(sender: String): Flow<List<NotifEntity>>
 
+    @Query("SELECT * FROM notifications WHERE sender = :sender AND packageName = :pkg ORDER BY timestamp ASC")
+    fun conversationFlow(sender: String, pkg: String): Flow<List<NotifEntity>>
+
     @Query("SELECT * FROM notifications WHERE sender = :sender AND packageName = :pkg ORDER BY timestamp DESC LIMIT :limit")
     suspend fun lastNForSender(sender: String, pkg: String, limit: Int): List<NotifEntity>
 
