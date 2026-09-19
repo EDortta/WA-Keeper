@@ -4,13 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F2F2F7">
+    android:background="@color/wa_background">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="#FFFFFF"
+        android:background="@color/wa_surface"
         app:navigationIcon="@android:drawable/ic_menu_revert"
         app:title="Mensagem"
         app:titleTextColor="#1C1C1E" />
@@ -32,7 +32,7 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="#FFFFFF">
+                app:cardBackgroundColor="@color/wa_surface">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -44,7 +44,7 @@
                         android:id="@+id/tvSender"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="#1C1C1E"
+                        android:textColor="@color/wa_text_primary"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -53,7 +53,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:textColor="#636366"
+                        android:textColor="@color/wa_text_secondary"
                         android:textSize="12sp" />
 
                     <ImageView
@@ -72,7 +72,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
                         android:text="Esta mensagem tinha uma imagem, mas o WhatsApp não a incluiu na notificação."
-                        android:textColor="#636366"
+                        android:textColor="@color/wa_text_secondary"
                         android:textSize="12sp"
                         android:visibility="gone" />
 
@@ -89,7 +89,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:textColor="#1C1C1E"
+                        android:textColor="@color/wa_text_primary"
                         android:textIsSelectable="true"
                         android:textSize="16sp" />
 
@@ -101,7 +101,7 @@
                         android:text="▶  Ouvir"
                         android:textAllCaps="false"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="#25D366" />
+                        app:backgroundTint="@color/wa_primary" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnPlayAudio"
@@ -111,7 +111,7 @@
                         android:text="▶  Tocar áudio"
                         android:textAllCaps="false"
                         android:textColor="#FFFFFF"
-                        app:backgroundTint="#25D366"
+                        app:backgroundTint="@color/wa_primary"
                         android:visibility="gone" />
 
                 </LinearLayout>
