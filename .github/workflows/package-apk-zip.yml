@@ -1,0 +1,39 @@
+name: Package APK ZIP
+
+on:
+  push:
+    branches:
+      - development
+    paths:
+      - 'releases/WA-Keeper-latest.apk'
+      - '.github/workflows/package-apk-zip.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+
+      - name: Create ZIP
+        run: |
+          test -f releases/WA-Keeper-latest.apk
+          rm -f releases/WA-Keeper-latest.zip
+          zip -j releases/WA-Keeper-latest.zip releases/WA-Keeper-latest.apk
+
+      - name: Commit ZIP
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add releases/WA-Keeper-latest.zip
+          if git diff --cached --quiet; then
+            echo "ZIP already current"
+            exit 0
+          fi
+          git commit -m "build: package WA-Keeper APK as zip"
+          git push origin development
