@@ -153,6 +153,9 @@ interface MemoryDao {
     @Query("SELECT * FROM entity_links WHERE entityId = :entityId ORDER BY createdAt")
     suspend fun linksForEntity(entityId: Long): List<EntityLinkEntity>
 
+    @Query("SELECT COUNT(*) FROM entity_links WHERE entityId = :entityId")
+    suspend fun linkCount(entityId: Long): Int
+
     @Query("SELECT * FROM entity_links WHERE packageName = :packageName AND sender = :sender LIMIT 1")
     suspend fun linkForConversation(packageName: String, sender: String): EntityLinkEntity?
 
