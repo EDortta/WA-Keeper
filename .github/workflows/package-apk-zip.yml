@@ -1,18 +1,23 @@
-name: Package APK ZIP
+name: Build and publish APK ZIP
 
 on:
   push:
     branches:
       - development
     paths:
-      - 'releases/WA-Keeper-latest.apk'
+      - 'app/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle/**'
+      - 'gradle.properties'
       - '.github/workflows/package-apk-zip.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  package:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,20 +25,30 @@ jobs:
           ref: development
           fetch-depth: 0
 
-      - name: Create ZIP
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build release APK
+        run: ./gradlew test assembleRelease
+
+      - name: Prepare downloadable files
         run: |
-          test -f releases/WA-Keeper-latest.apk
+          mkdir -p releases
+          cp app/build/outputs/apk/release/app-release.apk releases/WA-Keeper-latest.apk
+          sha256sum releases/WA-Keeper-latest.apk > releases/WA-Keeper-latest.sha256
           rm -f releases/WA-Keeper-latest.zip
           zip -j releases/WA-Keeper-latest.zip releases/WA-Keeper-latest.apk
 
-      - name: Commit ZIP
+      - name: Commit APK and ZIP to development
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add releases/WA-Keeper-latest.zip
+          git add releases/WA-Keeper-latest.apk releases/WA-Keeper-latest.sha256 releases/WA-Keeper-latest.zip
           if git diff --cached --quiet; then
-            echo "ZIP already current"
+            echo "APK/ZIP already current"
             exit 0
           fi
-          git commit -m "build: package WA-Keeper APK as zip"
+          git commit -m "build: publish WA-Keeper latest APK and ZIP"
           git push origin development
