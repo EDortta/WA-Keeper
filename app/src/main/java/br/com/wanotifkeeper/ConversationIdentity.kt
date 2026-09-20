@@ -39,8 +39,7 @@ object ConversationIdentity {
     }
 
     fun displayGroupKey(item: NotifEntity): String =
-        item.conversationKey?.takeIf { it.isNotBlank() }
-            ?: "legacy:${item.packageName}:${canonicalSender(item.sender, item.packageName).lowercase()}"
+        "conversation:${item.packageName}:${canonicalSender(item.sender, item.packageName).lowercase()}"
 
     fun isVisibleHomeConversation(item: NotifEntity): Boolean =
         item.packageName != ConversationImportActivity.PACKAGE_IMPORTED &&
@@ -54,11 +53,12 @@ object ConversationIdentity {
     ): Boolean {
         if (item.packageName != packageName) return false
 
-        if (!conversationKey.isNullOrBlank() && !item.conversationKey.isNullOrBlank()) {
-            return item.conversationKey == conversationKey
-        }
-
-        return canonicalSender(item.sender, item.packageName)
+        val sameTitle = canonicalSender(item.sender, item.packageName)
             .equals(canonicalSender(sender, packageName), ignoreCase = true)
+        if (sameTitle) return true
+
+        return !conversationKey.isNullOrBlank() &&
+            !item.conversationKey.isNullOrBlank() &&
+            item.conversationKey == conversationKey
     }
 }
