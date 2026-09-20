@@ -191,15 +191,19 @@ class NotifListenerService : NotificationListenerService() {
         val text = (extras.getCharSequence(Notification.EXTRA_BIG_TEXT)
             ?: extras.getCharSequence(Notification.EXTRA_TEXT))?.toString() ?: return
 
-        val conversationTitle = extras
-            .getCharSequence(Notification.EXTRA_CONVERSATION_TITLE)
-            ?.toString()
-            ?.trim()
-            ?.takeIf { it.isNotBlank() }
+        val conversationTitle =
+            ConversationIdentity.messagingConversationTitle(sbn.notification)
+                ?: extras
+                    .getCharSequence(Notification.EXTRA_CONVERSATION_TITLE)
+                    ?.toString()
+                    ?.trim()
+                    ?.takeIf { it.isNotBlank() }
 
         val title = ConversationIdentity.canonicalSender(
-            conversationTitle ?: rawTitle
+            conversationTitle ?: rawTitle,
+            sbn.packageName
         )
+        val conversationKey = ConversationIdentity.stableKey(sbn, title)
 
         if (NoiseFilter.isNoise(title, text)) return
 
@@ -274,7 +278,8 @@ class NotifListenerService : NotificationListenerService() {
                     text = text.trim(),
                     timestamp = sbn.postTime,
                     packageName = sbn.packageName,
-                    imagePath = imagePath
+                    imagePath = imagePath,
+                    conversationKey = conversationKey
                 )
             )
 
