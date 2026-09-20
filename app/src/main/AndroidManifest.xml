@@ -53,6 +53,26 @@
         </activity>
 
         <activity
+            android:name=".ConversationImportActivity"
+            android:exported="true"
+            android:theme="@style/Theme.WaNotifKeeper">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="application/zip" />
+                <data android:mimeType="application/octet-stream" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="application/zip" />
+                <data android:mimeType="application/octet-stream" />
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name=".ConversationActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
