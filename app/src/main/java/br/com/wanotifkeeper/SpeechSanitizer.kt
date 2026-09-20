@@ -34,13 +34,15 @@ object SpeechSanitizer {
             " "
         }
 
-        out = url.replace(out) {
-            hadUrl = true
+        // E-mail precisa ser removido antes de URL: o domínio de fulano@example.com
+        // também casa com a regex de URL sem protocolo.
+        out = email.replace(out) {
+            hadEmail = true
             " "
         }
 
-        out = email.replace(out) {
-            hadEmail = true
+        out = url.replace(out) {
+            hadUrl = true
             " "
         }
 
