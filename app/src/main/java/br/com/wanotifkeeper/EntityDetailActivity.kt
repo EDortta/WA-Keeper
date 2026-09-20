@@ -172,7 +172,7 @@ data class MemoryAnswer(
 )
 
 object MemoryQuestionEngine {
-    private val stopWords = setOf(
+    private val stopWords: Set<String> = setOf(
         "a","o","as","os","um","uma","de","da","do","das","dos","e","em","no","na",
         "nos","nas","para","por","com","que","qual","quais","quem","quando","onde","como",
         "foi","era","tem","tinha","me","eu","ele","ela","isso","isto","sobre"
@@ -190,31 +190,61 @@ object MemoryQuestionEngine {
             )
         }
 
-        val terms = question.lowercase()
-            .split(Regex("[^\\p{L}\\p{N}]+"))
-            .filter { it.length >= 3 && it !in stopWords }
-            .distinct()
+        val terms = mutableListOf<String>()
+        val rawTerms: List<String> = Regex("[^\\p{L}\\p{N}]+")
+            .split(question.lowercase())
 
-        val scored = messages.map { message ->
-            val hay = "${message.sender} ${message.author.orEmpty()} ${message.text}".lowercase()
-            val hits = terms.sumOf { term ->
-                when {
-                    hay.contains(term) -> 3
-                    hay.split(Regex("\\s+")).any { it.startsWith(term.take(4)) } -> 1
-                    else -> 0
-                }
+        for (raw in rawTerms) {
+            val term = raw.trim()
+            if (term.length >= 3 && !stopWords.contains(term) && !terms.contains(term)) {
+                terms.add(term)
             }
-            message to hits
         }
 
-        val relevant = scored
-            .filter { terms.isEmpty() || it.second > 0 }
-            .sortedWith(
-                compareByDescending<Pair<NotifEntity, Int>> { it.second }
-                    .thenByDescending { it.first.timestamp }
-            )
-            .take(8)
-            .map { it.first }
+        val scored = mutableListOf<Pair<NotifEntity, Int>>()
+        for (message in messages) {
+            val hay = (
+                message.sender + " " +
+                    (message.author ?: "") + " " +
+                    message.text
+                ).lowercase()
+
+            var hits = 0
+            for (term in terms) {
+                if (hay.contains(term)) {
+                    hits += 3
+                } else {
+                    val prefix = term.take(4)
+                    val words: List<String> = Regex("\\s+").split(hay)
+                    var prefixFound = false
+                    for (word in words) {
+                        if (word.startsWith(prefix)) {
+                            prefixFound = true
+                            break
+                        }
+                    }
+                    if (prefixFound) hits += 1
+                }
+            }
+
+            if (terms.isEmpty() || hits > 0) {
+                scored.add(Pair(message, hits))
+            }
+        }
+
+        scored.sortWith(
+            Comparator { a, b ->
+                val scoreCompare = b.second.compareTo(a.second)
+                if (scoreCompare != 0) scoreCompare
+                else b.first.timestamp.compareTo(a.first.timestamp)
+            }
+        )
+
+        val relevant = mutableListOf<NotifEntity>()
+        val maxItems = minOf(8, scored.size)
+        for (i in 0 until maxItems) {
+            relevant.add(scored[i].first)
+        }
 
         if (relevant.isEmpty()) {
             return MemoryAnswer(
@@ -223,9 +253,9 @@ object MemoryQuestionEngine {
             )
         }
 
-        val first = relevant.first()
+        val first: NotifEntity = relevant[0]
         val date = fmt.format(Date(first.timestamp))
-        val author = first.author?.takeIf { it.isNotBlank() } ?: first.sender
+        val author = if (!first.author.isNullOrBlank()) first.author!! else first.sender
 
         val answer = if (relevant.size == 1) {
             "Encontrei uma referência direta: em $date, $author: “${first.text.take(320)}”"
@@ -233,12 +263,20 @@ object MemoryQuestionEngine {
             "Encontrei ${relevant.size} referências relacionadas. A mais forte é de $date, $author: “${first.text.take(320)}”"
         }
 
-        val sources = relevant.joinToString("\n\n") { item ->
+        val sourceBuilder = StringBuilder()
+        for ((index, item) in relevant.withIndex()) {
+            if (index > 0) sourceBuilder.append("\n\n")
             val itemDate = fmt.format(Date(item.timestamp))
-            val itemAuthor = item.author?.takeIf { it.isNotBlank() } ?: item.sender
-            "• $itemDate — $itemAuthor\n${item.text.take(260)}"
+            val itemAuthor = if (!item.author.isNullOrBlank()) item.author!! else item.sender
+            sourceBuilder
+                .append("• ")
+                .append(itemDate)
+                .append(" — ")
+                .append(itemAuthor)
+                .append("\n")
+                .append(item.text.take(260))
         }
 
-        return MemoryAnswer(answer, sources)
+        return MemoryAnswer(answer, sourceBuilder.toString())
     }
 }
