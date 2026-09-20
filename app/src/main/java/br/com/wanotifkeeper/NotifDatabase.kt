@@ -156,6 +156,9 @@ interface MemoryDao {
     @Query("SELECT * FROM entity_links WHERE packageName = :packageName AND sender = :sender LIMIT 1")
     suspend fun linkForConversation(packageName: String, sender: String): EntityLinkEntity?
 
+    @Query("SELECT * FROM entity_links WHERE role = :role")
+    suspend fun linksByRole(role: String): List<EntityLinkEntity>
+
     @Query(
         """SELECT n.* FROM notifications n
            INNER JOIN entity_links l
