@@ -69,7 +69,8 @@ class MainActivity : AppCompatActivity() {
                     ConversationActivity.intent(
                         context = this,
                         packageName = item.packageName,
-                        sender = item.sender
+                        sender = item.sender,
+                        conversationKey = item.conversationKey
                     )
                 )
             },
@@ -237,9 +238,14 @@ class MainActivity : AppCompatActivity() {
                     .asSequence()
                     .filter(ConversationIdentity::isVisibleHomeConversation)
                     .map { item ->
-                        item.copy(sender = ConversationIdentity.canonicalSender(item.sender))
+                        item.copy(
+                            sender = ConversationIdentity.canonicalSender(
+                                item.sender,
+                                item.packageName
+                            )
+                        )
                     }
-                    .distinctBy { it.packageName to it.sender.lowercase() }
+                    .distinctBy { ConversationIdentity.displayGroupKey(it) }
                     .toList()
                 adapter.submitList(conversations)
                 binding.recycler.visibility = if (conversations.isEmpty()) View.GONE else View.VISIBLE
