@@ -6,7 +6,10 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
 
-@Entity(tableName = "notifications")
+@Entity(
+    tableName = "notifications",
+    indices = [Index(value = ["fingerprint"], unique = true)]
+)
 data class NotifEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val sender: String,
@@ -14,7 +17,36 @@ data class NotifEntity(
     val timestamp: Long,
     val packageName: String = "com.whatsapp",
     val imagePath: String? = null,
-    val audioPath: String? = null
+    val audioPath: String? = null,
+    val sourceType: String = "NOTIFICATION",
+    val sourceRef: String? = null,
+    val author: String? = null,
+    val fingerprint: String? = null
+)
+
+@Entity(tableName = "memory_entities")
+data class MemoryEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val kind: String = "PERSON",
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis()
+)
+
+@Entity(
+    tableName = "entity_links",
+    indices = [
+        Index(value = ["entityId"]),
+        Index(value = ["packageName", "sender"], unique = true)
+    ]
+)
+data class EntityLinkEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val entityId: Long,
+    val packageName: String,
+    val sender: String,
+    val role: String = "CONVERSATION",
+    val createdAt: Long = System.currentTimeMillis()
 )
 
 enum class RetentionMode { NEVER, CUSTOM, FOREVER }
@@ -33,6 +65,12 @@ data class ConversationSettings(
 interface NotifDao {
     @Insert
     suspend fun insert(notif: NotifEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertIgnore(notif: NotifEntity): Long
+
+    @Query("SELECT EXISTS(SELECT 1 FROM notifications WHERE fingerprint = :fingerprint)")
+    suspend fun hasFingerprint(fingerprint: String): Boolean
 
     @Query("UPDATE notifications SET imagePath = :path WHERE id = :id")
     suspend fun setImagePath(id: Long, path: String)
@@ -96,6 +134,44 @@ interface NotifDao {
 }
 
 @Dao
+interface MemoryDao {
+    @Insert
+    suspend fun insertEntity(entity: MemoryEntity): Long
+
+    @Update
+    suspend fun updateEntity(entity: MemoryEntity)
+
+    @Query("SELECT * FROM memory_entities WHERE id = :id")
+    suspend fun entityById(id: Long): MemoryEntity?
+
+    @Query("SELECT * FROM memory_entities ORDER BY name COLLATE NOCASE")
+    fun entitiesFlow(): Flow<List<MemoryEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertLink(link: EntityLinkEntity): Long
+
+    @Query("SELECT * FROM entity_links WHERE entityId = :entityId ORDER BY createdAt")
+    suspend fun linksForEntity(entityId: Long): List<EntityLinkEntity>
+
+    @Query("SELECT * FROM entity_links WHERE packageName = :packageName AND sender = :sender LIMIT 1")
+    suspend fun linkForConversation(packageName: String, sender: String): EntityLinkEntity?
+
+    @Query(
+        """SELECT n.* FROM notifications n
+           INNER JOIN entity_links l
+             ON l.packageName = n.packageName AND l.sender = n.sender
+           WHERE l.entityId = :entityId
+             AND (:query = '' OR n.text LIKE '%' || :query || '%' OR n.sender LIKE '%' || :query || '%')
+           ORDER BY n.timestamp DESC
+           LIMIT :limit"""
+    )
+    suspend fun contextForEntity(entityId: Long, query: String, limit: Int): List<NotifEntity>
+
+    @Query("DELETE FROM entity_links WHERE entityId = :entityId AND packageName = :packageName AND sender = :sender")
+    suspend fun unlink(entityId: Long, packageName: String, sender: String)
+}
+
+@Dao
 interface SettingsDao {
     @Query("SELECT * FROM conversation_settings WHERE sender = :sender")
     suspend fun get(sender: String): ConversationSettings?
@@ -114,12 +190,19 @@ interface SettingsDao {
 }
 
 @Database(
-    entities = [NotifEntity::class, ConversationSettings::class, ScheduledMessageEntity::class],
-    version = 6,
+    entities = [
+        NotifEntity::class,
+        ConversationSettings::class,
+        ScheduledMessageEntity::class,
+        MemoryEntity::class,
+        EntityLinkEntity::class
+    ],
+    version = 7,
     exportSchema = false
 )
 abstract class NotifDatabase : RoomDatabase() {
     abstract fun dao(): NotifDao
+    abstract fun memory(): MemoryDao
     abstract fun settings(): SettingsDao
     abstract fun scheduled(): ScheduledMessageDao
 
@@ -174,8 +257,6 @@ abstract class NotifDatabase : RoomDatabase() {
             }
         }
 
-        // v6 é o schema-base compartilhado por todas as branches funcionais.
-        // Isso evita downgrade acidental ao alternar entre audio/motion/schedule.
         val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
@@ -193,6 +274,41 @@ abstract class NotifDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE notifications ADD COLUMN sourceType TEXT NOT NULL DEFAULT 'NOTIFICATION'")
+                db.execSQL("ALTER TABLE notifications ADD COLUMN sourceRef TEXT")
+                db.execSQL("ALTER TABLE notifications ADD COLUMN author TEXT")
+                db.execSQL("ALTER TABLE notifications ADD COLUMN fingerprint TEXT")
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS index_notifications_fingerprint " +
+                        "ON notifications (fingerprint)"
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS memory_entities (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "name TEXT NOT NULL, " +
+                        "kind TEXT NOT NULL, " +
+                        "createdAt INTEGER NOT NULL, " +
+                        "updatedAt INTEGER NOT NULL)"
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS entity_links (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "entityId INTEGER NOT NULL, " +
+                        "packageName TEXT NOT NULL, " +
+                        "sender TEXT NOT NULL, " +
+                        "role TEXT NOT NULL, " +
+                        "createdAt INTEGER NOT NULL)"
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_entity_links_entityId ON entity_links (entityId)")
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS index_entity_links_packageName_sender " +
+                        "ON entity_links (packageName, sender)"
+                )
+            }
+        }
+
         fun get(ctx: Context): NotifDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(
                 ctx.applicationContext,
@@ -203,7 +319,8 @@ abstract class NotifDatabase : RoomDatabase() {
                 MIGRATION_2_3,
                 MIGRATION_3_4,
                 MIGRATION_4_5,
-                MIGRATION_5_6
+                MIGRATION_5_6,
+                MIGRATION_6_7
             ).build().also { INSTANCE = it }
         }
     }
