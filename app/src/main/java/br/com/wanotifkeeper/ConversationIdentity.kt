@@ -1,32 +1,76 @@
 package br.com.wanotifkeeper
 
+import android.app.Notification
+import android.service.notification.StatusBarNotification
+
 object ConversationIdentity {
-    fun canonicalSender(raw: String): String {
+    fun canonicalSender(raw: String, packageName: String? = null): String {
         var value = raw
             .removePrefix("WhatsApp: ")
             .trim()
 
-        // WhatsApp may decorate group titles when several messages are pending:
-        // "Open (3 mensagens): Luís Henrique" -> "Open"
         value = value.replace(
             Regex("""\s*\(\d+\s+mensage(?:m|ns)\)\s*:\s*.+$""", RegexOption.IGNORE_CASE),
             ""
         )
 
-        // Reply previews may leak into the notification title:
-        // "Open: ↪ Você..." -> "Open"
         value = value.replace(
             Regex("""\s*:\s*[↪↩↵].*$"""),
             ""
         )
 
+        if (packageName == "com.whatsapp.w4b" && value.contains(": ")) {
+            value = value.substringBefore(": ").trim()
+        }
+
         return value.trim().ifBlank { raw.trim() }
     }
+
+    fun stableKey(
+        sbn: StatusBarNotification,
+        canonicalTitle: String
+    ): String {
+        val shortcut = sbn.notification.shortcutId?.trim().orEmpty()
+        if (shortcut.isNotBlank()) return "shortcut:$shortcut"
+
+        val tag = sbn.tag?.trim().orEmpty()
+        if (tag.isNotBlank()) return "tag:$tag"
+
+        return "title:${sbn.packageName}:${canonicalTitle.lowercase()}"
+    }
+
+    fun messagingConversationTitle(notification: Notification): String? {
+        return runCatching {
+            Notification.MessagingStyle
+                .extractMessagingStyleFromNotification(notification)
+                ?.conversationTitle
+                ?.toString()
+                ?.trim()
+                ?.takeIf { it.isNotBlank() }
+        }.getOrNull()
+    }
+
+    fun displayGroupKey(item: NotifEntity): String =
+        item.conversationKey?.takeIf { it.isNotBlank() }
+            ?: "legacy:${item.packageName}:${canonicalSender(item.sender, item.packageName).lowercase()}"
 
     fun isVisibleHomeConversation(item: NotifEntity): Boolean =
         item.packageName != ConversationImportActivity.PACKAGE_IMPORTED &&
             item.sourceType != "WHATSAPP_EXPORT"
 
-    fun sameConversation(a: String, b: String): Boolean =
-        canonicalSender(a).equals(canonicalSender(b), ignoreCase = true)
+    fun sameConversation(
+        item: NotifEntity,
+        packageName: String,
+        sender: String,
+        conversationKey: String?
+    ): Boolean {
+        if (item.packageName != packageName) return false
+
+        if (!conversationKey.isNullOrBlank() && !item.conversationKey.isNullOrBlank()) {
+            return item.conversationKey == conversationKey
+        }
+
+        return canonicalSender(item.sender, item.packageName)
+            .equals(canonicalSender(sender, packageName), ignoreCase = true)
+    }
 }
