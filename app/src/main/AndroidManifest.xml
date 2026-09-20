@@ -28,6 +28,7 @@
          pra captura de áudio em segundo plano. Reconhecimento é só on-device
          (ver plano) — nenhum áudio sai do aparelho. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 
@@ -61,6 +62,11 @@
             android:name=".EntityDetailActivity"
             android:exported="false"
             android:parentActivityName=".EntitiesActivity" />
+
+        <activity
+            android:name=".EntityAssociationsActivity"
+            android:exported="false"
+            android:parentActivityName=".EntityDetailActivity" />
 
         <activity
             android:name=".ConversationImportActivity"
