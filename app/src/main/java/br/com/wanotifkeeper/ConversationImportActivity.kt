@@ -15,7 +15,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.zip.ZipInputStream
 
-class ConversationImportActivity : Activity() {
+class ConversationImportActivity : AppCompatActivity() {
     private val db by lazy { NotifDatabase.get(this) }
     private val memory by lazy { MemoryRepository(this) }
 
