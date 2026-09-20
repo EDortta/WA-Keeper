@@ -4,9 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.text.InputType
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import br.com.wanotifkeeper.databinding.ActivityEntityDetailBinding
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -32,6 +36,9 @@ class EntityDetailActivity : AppCompatActivity() {
 
         binding.btnBack.setOnClickListener { finish() }
         binding.btnLinkConversation.setOnClickListener { showLinkConversationDialog() }
+        binding.btnRenameEntity.setOnClickListener { renameEntity() }
+        binding.btnMergeEntity.setOnClickListener { mergeEntity() }
+        binding.btnDeleteEntity.setOnClickListener { deleteEntity() }
         binding.btnAsk.setOnClickListener { askMemory() }
         binding.questionField.setOnEditorActionListener { _, _, _ ->
             askMemory()
@@ -80,6 +87,85 @@ class EntityDetailActivity : AppCompatActivity() {
 
     private fun showLinkConversationDialog() {
         startActivity(EntityAssociationsActivity.intent(this, entityId))
+    }
+
+    private fun renameEntity() {
+        lifecycleScope.launch {
+            val entity = db.memory().entityById(entityId) ?: return@launch
+            val input = EditText(this@EntityDetailActivity).apply {
+                setText(entity.name)
+                selectAll()
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+                setPadding(48, 12, 48, 0)
+            }
+
+            AlertDialog.Builder(this@EntityDetailActivity)
+                .setTitle("Renomear entidade")
+                .setView(input)
+                .setNegativeButton("Cancelar", null)
+                .setPositiveButton("Salvar") { _, _ ->
+                    val name = input.text.toString().trim()
+                    if (name.isNotBlank()) {
+                        lifecycleScope.launch {
+                            memory.renameEntity(entityId, name)
+                            loadEntity()
+                        }
+                    }
+                }
+                .show()
+        }
+    }
+
+    private fun mergeEntity() {
+        lifecycleScope.launch {
+            val entities = db.memory().entitiesFlow().first()
+                .filter { it.id != entityId }
+
+            if (entities.isEmpty()) {
+                AlertDialog.Builder(this@EntityDetailActivity)
+                    .setTitle("Unir entidades")
+                    .setMessage("Não existe outra entidade para unir.")
+                    .setPositiveButton("OK", null)
+                    .show()
+                return@launch
+            }
+
+            val names = entities.map { it.name }.toTypedArray()
+            AlertDialog.Builder(this@EntityDetailActivity)
+                .setTitle("Unir esta entidade em…")
+                .setItems(names) { _, which ->
+                    val target = entities[which]
+                    AlertDialog.Builder(this@EntityDetailActivity)
+                        .setTitle("Confirmar união")
+                        .setMessage("Todos os membros desta entidade serão movidos para “${target.name}”. Esta entidade será removida.")
+                        .setNegativeButton("Cancelar", null)
+                        .setPositiveButton("Unir") { _, _ ->
+                            lifecycleScope.launch {
+                                memory.mergeEntities(entityId, target.id)
+                                finish()
+                            }
+                        }
+                        .show()
+                }
+                .show()
+        }
+    }
+
+    private fun deleteEntity() {
+        lifecycleScope.launch {
+            val entity = db.memory().entityById(entityId) ?: return@launch
+            AlertDialog.Builder(this@EntityDetailActivity)
+                .setTitle("Excluir entidade?")
+                .setMessage("A entidade “${entity.name}” será removida. As mensagens e conversas não serão apagadas; apenas deixarão de pertencer a este macrogrupo.")
+                .setNegativeButton("Cancelar", null)
+                .setPositiveButton("Excluir") { _, _ ->
+                    lifecycleScope.launch {
+                        memory.deleteEntity(entityId)
+                        finish()
+                    }
+                }
+                .show()
+        }
     }
 
     private fun askMemory() {

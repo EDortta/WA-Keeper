@@ -17,14 +17,29 @@ class MemoryRepository(context: Context) {
         packageName: String,
         sender: String,
         role: String = "CONVERSATION"
-    ): Long = db.memory().upsertLink(
-        EntityLinkEntity(
-            entityId = entityId,
-            packageName = packageName,
-            sender = sender.trim(),
-            role = role
+    ): Long {
+        val normalizedSender = sender.trim()
+        val previous = db.memory().linkForConversation(packageName, normalizedSender)
+
+        val linkId = db.memory().upsertLink(
+            EntityLinkEntity(
+                entityId = entityId,
+                packageName = packageName,
+                sender = normalizedSender,
+                role = role
+            )
         )
-    )
+
+        // Uma conversa só pode pertencer a uma entidade. Se ela foi movida de uma
+        // entidade antiga que ficou sem nenhum membro, removemos o macrogrupo órfão.
+        if (previous != null && previous.entityId != entityId) {
+            if (db.memory().linkCount(previous.entityId) == 0) {
+                db.memory().deleteEntity(previous.entityId)
+            }
+        }
+
+        return linkId
+    }
 
     suspend fun resolveConversation(packageName: String, sender: String): MemoryEntity? {
         val direct = db.memory().linkForConversation(packageName, sender)
@@ -93,6 +108,27 @@ class MemoryRepository(context: Context) {
     ): List<NotifEntity> = db.memory()
         .contextForEntity(entityId, query.trim(), limit.coerceIn(1, 200))
         .sortedBy { it.timestamp }
+
+    suspend fun renameEntity(entityId: Long, newName: String) {
+        val current = db.memory().entityById(entityId) ?: return
+        db.memory().updateEntity(
+            current.copy(
+                name = newName.trim(),
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+    }
+
+    suspend fun deleteEntity(entityId: Long) {
+        db.memory().unlinkAll(entityId)
+        db.memory().deleteEntity(entityId)
+    }
+
+    suspend fun mergeEntities(sourceEntityId: Long, targetEntityId: Long) {
+        if (sourceEntityId == targetEntityId) return
+        db.memory().moveAllLinks(sourceEntityId, targetEntityId)
+        db.memory().deleteEntity(sourceEntityId)
+    }
 
     suspend fun trace(messageId: Long): NotifEntity? = db.dao().byId(messageId)
 

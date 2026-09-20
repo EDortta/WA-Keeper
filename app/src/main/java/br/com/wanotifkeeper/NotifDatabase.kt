@@ -153,6 +153,9 @@ interface MemoryDao {
     @Query("SELECT * FROM entity_links WHERE entityId = :entityId ORDER BY createdAt")
     suspend fun linksForEntity(entityId: Long): List<EntityLinkEntity>
 
+    @Query("SELECT COUNT(*) FROM entity_links WHERE entityId = :entityId")
+    suspend fun linkCount(entityId: Long): Int
+
     @Query("SELECT * FROM entity_links WHERE packageName = :packageName AND sender = :sender LIMIT 1")
     suspend fun linkForConversation(packageName: String, sender: String): EntityLinkEntity?
 
@@ -172,6 +175,15 @@ interface MemoryDao {
 
     @Query("DELETE FROM entity_links WHERE entityId = :entityId AND packageName = :packageName AND sender = :sender")
     suspend fun unlink(entityId: Long, packageName: String, sender: String)
+
+    @Query("DELETE FROM entity_links WHERE entityId = :entityId")
+    suspend fun unlinkAll(entityId: Long)
+
+    @Query("DELETE FROM memory_entities WHERE id = :entityId")
+    suspend fun deleteEntity(entityId: Long)
+
+    @Query("UPDATE entity_links SET entityId = :targetEntityId WHERE entityId = :sourceEntityId")
+    suspend fun moveAllLinks(sourceEntityId: Long, targetEntityId: Long)
 }
 
 @Dao
