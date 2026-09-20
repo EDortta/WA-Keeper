@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import br.com.wanotifkeeper.databinding.ActivityEntityDetailBinding
@@ -66,77 +65,21 @@ class EntityDetailActivity : AppCompatActivity() {
                         "com.whatsapp.w4b" -> "WhatsApp Business"
                         "com.whatsapp" -> "WhatsApp"
                         "wa.keeper.import" -> "Importado"
+                        EntityAssociationsActivity.CONTACTS_PACKAGE -> "Contato do telefone"
                         else -> link.packageName
                     }
-                    "• ${link.sender} — $source"
+                    val label = if (link.role == "CONTACT") {
+                        MemoryRepository.contactAliasLabel(link.sender)
+                    } else {
+                        link.sender
+                    }
+                    "• $label — $source"
                 }
             }
     }
 
     private fun showLinkConversationDialog() {
-        lifecycleScope.launch {
-            val all = db.dao().getAll()
-                .distinctBy { it.packageName to it.sender }
-                .sortedWith(compareBy<NotifEntity> { it.sender.lowercase() }.thenBy { it.packageName })
-
-            if (all.isEmpty()) {
-                AlertDialog.Builder(this@EntityDetailActivity)
-                    .setTitle("Sem conversas")
-                    .setMessage("Ainda não há conversas retidas para associar.")
-                    .setPositiveButton("OK", null)
-                    .show()
-                return@launch
-            }
-
-            val current = db.memory().linksForEntity(entityId)
-                .map { it.packageName to it.sender }
-                .toSet()
-
-            val labels = all.map {
-                val source = when (it.packageName) {
-                    "com.whatsapp.w4b" -> "Business"
-                    "com.whatsapp" -> "WhatsApp"
-                    "wa.keeper.import" -> "Importado"
-                    else -> it.packageName
-                }
-                "${it.sender}  ·  $source"
-            }.toTypedArray()
-
-            val checked = BooleanArray(all.size) { i ->
-                (all[i].packageName to all[i].sender) in current
-            }
-
-            AlertDialog.Builder(this@EntityDetailActivity)
-                .setTitle("Associar conversas")
-                .setMultiChoiceItems(labels, checked) { _, which, isChecked ->
-                    checked[which] = isChecked
-                }
-                .setNegativeButton("Cancelar", null)
-                .setPositiveButton("Salvar") { _, _ ->
-                    lifecycleScope.launch {
-                        all.forEachIndexed { index, conversation ->
-                            val pair = conversation.packageName to conversation.sender
-                            val isLinkedHere = pair in current
-                            when {
-                                checked[index] && !isLinkedHere ->
-                                    memory.linkConversation(
-                                        entityId,
-                                        conversation.packageName,
-                                        conversation.sender
-                                    )
-                                !checked[index] && isLinkedHere ->
-                                    db.memory().unlink(
-                                        entityId,
-                                        conversation.packageName,
-                                        conversation.sender
-                                    )
-                            }
-                        }
-                        renderLinks()
-                    }
-                }
-                .show()
-        }
+        startActivity(EntityAssociationsActivity.intent(this, entityId))
     }
 
     private fun askMemory() {
