@@ -37,6 +37,7 @@ class ConversationActivity : AppCompatActivity() {
 
         val sender = intent.getStringExtra(EXTRA_SENDER)?.takeIf { it.isNotBlank() }
         val pkg = intent.getStringExtra(EXTRA_PACKAGE)?.takeIf { it.isNotBlank() }
+        val conversationKey = intent.getStringExtra(EXTRA_CONVERSATION_KEY)?.takeIf { it.isNotBlank() }
         if (sender == null || pkg == null) {
             finish()
             return
@@ -81,8 +82,14 @@ class ConversationActivity : AppCompatActivity() {
                 .collectLatest { allMessages ->
                     val messages = allMessages
                         .asSequence()
-                        .filter { it.packageName == pkg }
-                        .filter { ConversationIdentity.sameConversation(it.sender, sender) }
+                        .filter {
+                            ConversationIdentity.sameConversation(
+                                item = it,
+                                packageName = pkg,
+                                sender = sender,
+                                conversationKey = conversationKey
+                            )
+                        }
                         .sortedBy { it.timestamp }
                         .toList()
 
@@ -100,11 +107,18 @@ class ConversationActivity : AppCompatActivity() {
     companion object {
         private const val EXTRA_SENDER = "conversation_sender"
         private const val EXTRA_PACKAGE = "conversation_package"
+        private const val EXTRA_CONVERSATION_KEY = "conversation_key"
 
-        fun intent(context: Context, packageName: String, sender: String) =
+        fun intent(
+            context: Context,
+            packageName: String,
+            sender: String,
+            conversationKey: String? = null
+        ) =
             Intent(context, ConversationActivity::class.java)
                 .putExtra(EXTRA_PACKAGE, packageName)
                 .putExtra(EXTRA_SENDER, sender)
+                .putExtra(EXTRA_CONVERSATION_KEY, conversationKey)
     }
 }
 
