@@ -269,6 +269,14 @@ class NotifListenerService : NotificationListenerService() {
                     imagePath = imagePath
                 )
             )
+
+            // Se o usuário já associou este contato do telefone a uma entidade,
+            // conecta automaticamente a primeira conversa recebida desse contato.
+            runCatching {
+                MemoryRepository(applicationContext)
+                    .maybeLinkIncomingConversation(sbn.packageName, title)
+            }
+
             record.rowId.complete(rowId)
 
             val imageJob = if (imagePath == null && isImage) {
