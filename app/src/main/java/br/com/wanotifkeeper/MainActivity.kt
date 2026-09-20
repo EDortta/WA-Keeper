@@ -233,7 +233,14 @@ class MainActivity : AppCompatActivity() {
                 // A home representa conversas, não mensagens: como os fluxos já chegam em
                 // timestamp DESC, a primeira ocorrência de (conta + remetente) é a última
                 // mensagem daquela conversa e vira o preview, como no WhatsApp.
-                val conversations = list.distinctBy { it.packageName to it.sender }
+                val conversations = list
+                    .asSequence()
+                    .filter(ConversationIdentity::isVisibleHomeConversation)
+                    .map { item ->
+                        item.copy(sender = ConversationIdentity.canonicalSender(item.sender))
+                    }
+                    .distinctBy { it.packageName to it.sender.lowercase() }
+                    .toList()
                 adapter.submitList(conversations)
                 binding.recycler.visibility = if (conversations.isEmpty()) View.GONE else View.VISIBLE
                 binding.emptyState.visibility = if (conversations.isEmpty()) View.VISIBLE else View.GONE
