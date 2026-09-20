@@ -21,7 +21,8 @@ data class NotifEntity(
     val sourceType: String = "NOTIFICATION",
     val sourceRef: String? = null,
     val author: String? = null,
-    val fingerprint: String? = null
+    val fingerprint: String? = null,
+    val conversationKey: String? = null
 )
 
 @Entity(tableName = "memory_entities")
@@ -212,7 +213,7 @@ interface SettingsDao {
         MemoryEntity::class,
         EntityLinkEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class NotifDatabase : RoomDatabase() {
@@ -324,6 +325,16 @@ abstract class NotifDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE notifications ADD COLUMN conversationKey TEXT")
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_notifications_conversationKey " +
+                        "ON notifications (conversationKey)"
+                )
+            }
+        }
+
         fun get(ctx: Context): NotifDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(
                 ctx.applicationContext,
@@ -335,7 +346,8 @@ abstract class NotifDatabase : RoomDatabase() {
                 MIGRATION_3_4,
                 MIGRATION_4_5,
                 MIGRATION_5_6,
-                MIGRATION_6_7
+                MIGRATION_6_7,
+                MIGRATION_7_8
             ).build().also { INSTANCE = it }
         }
     }
