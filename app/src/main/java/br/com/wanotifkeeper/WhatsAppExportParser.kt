@@ -13,8 +13,8 @@ data class ImportedChatMessage(
 
 object WhatsAppExportParser {
     private val linePatterns = listOf(
-        Regex("""^(\\d{1,2}/\\d{1,2}/\\d{2,4}),\\s+(\\d{1,2}:\\d{2}(?::\\d{2})?(?:\\s?[APMapm]{2})?)\\s+-\\s+([^:]+):\\s?(.*)$"""),
-        Regex("""^\\[(\\d{1,2}/\\d{1,2}/\\d{2,4}),\\s+(\\d{1,2}:\\d{2}(?::\\d{2})?(?:\\s?[APMapm]{2})?)\\]\\s+([^:]+):\\s?(.*)$""")
+        Regex("""^(\d{1,2}/\d{1,2}/\d{2,4}),\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s?[APMapm]{2})?)\s+-\s+([^:]+):\s?(.*)$"""),
+        Regex("""^\[(\d{1,2}/\d{1,2}/\d{2,4}),\s+(\d{1,2}:\d{2}(?::\d{2})?(?:\s?[APMapm]{2})?)\]\s+([^:]+):\s?(.*)$""")
     )
 
     private val dateFormats = listOf(
@@ -71,7 +71,7 @@ object WhatsAppExportParser {
             conversation.trim().lowercase(),
             author.trim().lowercase(),
             timestamp.toString(),
-            text.trim().replace(Regex("""\\s+"""), " ")
+            text.trim().replace(Regex("""\s+"""), " ")
         ).joinToString("\u001F")
         return MessageDigest.getInstance("SHA-256")
             .digest(canonical.toByteArray(Charsets.UTF_8))
