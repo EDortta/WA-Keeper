@@ -33,7 +33,8 @@ data class AssociationCandidate(
     val packageName: String,
     val sender: String,
     val role: String,
-    val kind: Kind
+    val kind: Kind,
+    val memberSenders: List<String> = listOf(sender)
 ) {
     enum class Kind { CONVERSATION, CONTACT }
 }
@@ -126,27 +127,42 @@ class EntityAssociationsActivity : AppCompatActivity() {
 
         val links = db.memory().linksForEntity(entityId)
         selectedKeys.clear()
-        for (link in links) {
-            selectedKeys.add(keyFor(link.packageName, link.sender, link.role))
-        }
 
         val conversations = withContext(Dispatchers.IO) {
             db.dao().getAll()
-                .distinctBy { it.packageName to it.sender }
-                .map { item ->
+                .groupBy { item ->
+                    val canonical = if (item.packageName == "wa.keeper.import") {
+                        item.sender.trim()
+                    } else {
+                        ConversationIdentity.canonicalSender(item.sender, item.packageName)
+                    }
+                    item.packageName to canonical.lowercase()
+                }
+                .map { (_, items) ->
+                    val newest = items.maxByOrNull { it.timestamp } ?: items.first()
+                    val canonical = if (newest.packageName == "wa.keeper.import") {
+                        newest.sender.trim()
+                    } else {
+                        ConversationIdentity.canonicalSender(newest.sender, newest.packageName)
+                    }
+                    val members = (items.map { it.sender.trim() } + canonical)
+                        .filter { it.isNotBlank() }
+                        .distinct()
+
                     AssociationCandidate(
-                        key = keyFor(item.packageName, item.sender, "CONVERSATION"),
-                        title = item.sender,
-                        subtitle = when (item.packageName) {
+                        key = keyFor(newest.packageName, canonical, "CONVERSATION"),
+                        title = canonical,
+                        subtitle = when (newest.packageName) {
                             "com.whatsapp.w4b" -> "Conversa · WhatsApp Business"
                             "com.whatsapp" -> "Conversa · WhatsApp"
                             "wa.keeper.import" -> "Conversa · histórico importado"
                             else -> "Conversa"
                         },
-                        packageName = item.packageName,
-                        sender = item.sender,
+                        packageName = newest.packageName,
+                        sender = canonical,
                         role = "CONVERSATION",
-                        kind = AssociationCandidate.Kind.CONVERSATION
+                        kind = AssociationCandidate.Kind.CONVERSATION,
+                        memberSenders = members
                     )
                 }
         }
@@ -161,12 +177,27 @@ class EntityAssociationsActivity : AppCompatActivity() {
         allCandidates.addAll(conversations)
         allCandidates.addAll(contacts)
 
+        for (candidate in allCandidates) {
+            val selected = links.any { link ->
+                link.packageName == candidate.packageName &&
+                    link.role == candidate.role &&
+                    candidate.memberSenders.contains(link.sender)
+            }
+            if (selected) selectedKeys.add(candidate.key)
+        }
+
         applyFilter()
         updateSelectionCount()
     }
 
     private fun readDeviceContacts(): List<AssociationCandidate> {
-        val out = linkedMapOf<String, AssociationCandidate>()
+        data class ContactBucket(
+            var name: String,
+            val phones: LinkedHashMap<String, String> = linkedMapOf(),
+            val legacySenders: MutableList<String> = mutableListOf()
+        )
+
+        val byContact = linkedMapOf<Long, ContactBucket>()
         val projection = arrayOf(
             ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
             ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
@@ -187,25 +218,67 @@ class EntityAssociationsActivity : AppCompatActivity() {
             while (cursor.moveToNext()) {
                 val contactId = cursor.getLong(idIndex)
                 val name = cursor.getString(nameIndex)?.trim().orEmpty()
-                val number = cursor.getString(numberIndex)?.trim().orEmpty()
-                if (name.isBlank() && number.isBlank()) continue
+                val rawNumber = cursor.getString(numberIndex)?.trim().orEmpty()
+                if (name.isBlank() && rawNumber.isBlank()) continue
 
-                val encoded = MemoryRepository.encodeContactAlias(name, number)
-                val key = keyFor(CONTACTS_PACKAGE, encoded, "CONTACT")
-                if (!out.containsKey(key)) {
-                    out[key] = AssociationCandidate(
-                        key = key,
-                        title = if (name.isBlank()) number else name,
-                        subtitle = if (number.isBlank()) "Contato do telefone" else "Contato · $number",
-                        packageName = CONTACTS_PACKAGE,
-                        sender = encoded,
-                        role = "CONTACT",
-                        kind = AssociationCandidate.Kind.CONTACT
-                    )
+                val bucket = byContact.getOrPut(contactId) { ContactBucket(name) }
+                if (bucket.name.isBlank() && name.isNotBlank()) bucket.name = name
+
+                val normalized = normalizePhoneKey(rawNumber)
+                if (normalized.isNotBlank()) {
+                    bucket.phones.putIfAbsent(normalized, formatPhone(normalized))
                 }
+                bucket.legacySenders += MemoryRepository.encodeContactAlias(name, rawNumber)
             }
         }
-        return out.values.toList()
+
+        // Merge duplicate Android contacts when they share a normalized phone number.
+        val merged = mutableListOf<ContactBucket>()
+        for (bucket in byContact.values) {
+            val match = merged.firstOrNull { existing ->
+                existing.phones.keys.any { it in bucket.phones.keys }
+            }
+            if (match != null) {
+                if (match.name.isBlank()) match.name = bucket.name
+                match.phones.putAll(bucket.phones)
+                match.legacySenders.addAll(bucket.legacySenders)
+            } else {
+                merged += bucket
+            }
+        }
+
+        return merged.map { bucket ->
+            val phones = bucket.phones.values.toList()
+            val encoded = MemoryRepository.encodeContactAlias(bucket.name, phones.joinToString(","))
+            AssociationCandidate(
+                key = keyFor(CONTACTS_PACKAGE, encoded, "CONTACT"),
+                title = bucket.name.ifBlank { phones.firstOrNull() ?: "Contato" },
+                subtitle = if (phones.isEmpty()) {
+                    "Contato do telefone"
+                } else {
+                    "Contato\n" + phones.joinToString("\n")
+                },
+                packageName = CONTACTS_PACKAGE,
+                sender = encoded,
+                role = "CONTACT",
+                kind = AssociationCandidate.Kind.CONTACT,
+                memberSenders = (bucket.legacySenders + encoded).distinct()
+            )
+        }.sortedBy { it.title.lowercase() }
+    }
+
+    private fun normalizePhoneKey(value: String): String {
+        var digits = value.filter { it.isDigit() }
+        if (digits.startsWith("00")) digits = digits.drop(2)
+        if (digits.startsWith("55") && digits.length in 12..13) digits = digits.drop(2)
+        if (digits.startsWith("0") && digits.length in 11..12) digits = digits.drop(1)
+        return digits
+    }
+
+    private fun formatPhone(normalized: String): String = when (normalized.length) {
+        11 -> "+55 ${normalized.substring(0, 2)} ${normalized.substring(2, 7)}-${normalized.substring(7)}"
+        10 -> "+55 ${normalized.substring(0, 2)} ${normalized.substring(2, 6)}-${normalized.substring(6)}"
+        else -> normalized
     }
 
     private fun applyFilter() {
@@ -237,34 +310,44 @@ class EntityAssociationsActivity : AppCompatActivity() {
     private fun saveAndFinish() {
         lifecycleScope.launch {
             val existing = db.memory().linksForEntity(entityId)
-            val candidatesByKey = allCandidates.associateBy { it.key }
 
             for (candidate in allCandidates) {
                 val selected = selectedKeys.contains(candidate.key)
-                val alreadyHere = existing.any {
-                    keyFor(it.packageName, it.sender, it.role) == candidate.key
+                val existingForCandidate = existing.filter { link ->
+                    link.packageName == candidate.packageName &&
+                        link.role == candidate.role &&
+                        candidate.memberSenders.contains(link.sender)
                 }
-                if (selected && !alreadyHere) {
-                    memory.linkConversation(
-                        entityId = entityId,
-                        packageName = candidate.packageName,
-                        sender = candidate.sender,
-                        role = candidate.role
-                    )
-                } else if (!selected && alreadyHere) {
-                    db.memory().unlink(
-                        entityId,
-                        candidate.packageName,
-                        candidate.sender
-                    )
-                }
-            }
 
-            // Preserve links that are not represented by the current device/query source.
-            for (link in existing) {
-                val key = keyFor(link.packageName, link.sender, link.role)
-                if (!candidatesByKey.containsKey(key) && !selectedKeys.contains(key)) {
-                    selectedKeys.add(key)
+                if (selected) {
+                    // Keep one clean alias for contacts; keep all historical variants for
+                    // conversations so old retained messages remain part of the entity.
+                    if (candidate.kind == AssociationCandidate.Kind.CONTACT) {
+                        for (link in existingForCandidate) {
+                            if (link.sender != candidate.sender) {
+                                db.memory().unlink(entityId, link.packageName, link.sender)
+                            }
+                        }
+                        memory.linkConversation(
+                            entityId,
+                            candidate.packageName,
+                            candidate.sender,
+                            candidate.role
+                        )
+                    } else {
+                        for (sender in candidate.memberSenders) {
+                            memory.linkConversation(
+                                entityId,
+                                candidate.packageName,
+                                sender,
+                                candidate.role
+                            )
+                        }
+                    }
+                } else {
+                    for (link in existingForCandidate) {
+                        db.memory().unlink(entityId, link.packageName, link.sender)
+                    }
                 }
             }
 
