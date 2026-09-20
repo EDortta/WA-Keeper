@@ -49,7 +49,7 @@ class EntitiesActivity : AppCompatActivity() {
 
     private fun showCreateEntityDialog() {
         val input = EditText(this).apply {
-            hint = "Ex.: Fernanda, Projeto YouConsig"
+            hint = "Ex.: Cliente Alpha, Projeto Beta"
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
             setPadding(48, 12, 48, 0)
         }
