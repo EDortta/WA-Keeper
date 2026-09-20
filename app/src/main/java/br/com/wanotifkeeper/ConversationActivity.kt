@@ -77,8 +77,15 @@ class ConversationActivity : AppCompatActivity() {
         lifecycleScope.launch {
             NotifDatabase.get(this@ConversationActivity)
                 .dao()
-                .conversationFlow(sender, pkg)
-                .collectLatest { messages ->
+                .allFlow()
+                .collectLatest { allMessages ->
+                    val messages = allMessages
+                        .asSequence()
+                        .filter { it.packageName == pkg }
+                        .filter { ConversationIdentity.sameConversation(it.sender, sender) }
+                        .sortedBy { it.timestamp }
+                        .toList()
+
                     adapter.submitList(messages) {
                         if (messages.isNotEmpty()) {
                             binding.recycler.scrollToPosition(messages.lastIndex)
