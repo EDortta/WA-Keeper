@@ -27,8 +27,40 @@ class MemoryRepository(context: Context) {
     )
 
     suspend fun resolveConversation(packageName: String, sender: String): MemoryEntity? {
-        val link = db.memory().linkForConversation(packageName, sender) ?: return null
-        return db.memory().entityById(link.entityId)
+        val direct = db.memory().linkForConversation(packageName, sender)
+        if (direct != null) return db.memory().entityById(direct.entityId)
+
+        val alias = findContactAliasMatch(sender)
+        return if (alias != null) db.memory().entityById(alias.entityId) else null
+    }
+
+    suspend fun maybeLinkIncomingConversation(packageName: String, sender: String): Long? {
+        val direct = db.memory().linkForConversation(packageName, sender)
+        if (direct != null) return direct.entityId
+
+        val alias = findContactAliasMatch(sender) ?: return null
+        linkConversation(alias.entityId, packageName, sender, role = "CONVERSATION")
+        return alias.entityId
+    }
+
+    private suspend fun findContactAliasMatch(sender: String): EntityLinkEntity? {
+        val senderName = sender.trim().lowercase()
+        val senderDigits = normalizePhone(sender)
+
+        for (link in db.memory().linksByRole("CONTACT")) {
+            val parts = decodeContactAlias(link.sender)
+            val name = parts.first.trim().lowercase()
+            val phoneDigits = normalizePhone(parts.second)
+
+            val sameName = name.isNotBlank() && name == senderName
+            val samePhone = senderDigits.length >= 8 && phoneDigits.length >= 8 &&
+                (senderDigits == phoneDigits ||
+                    senderDigits.endsWith(phoneDigits.takeLast(8)) ||
+                    phoneDigits.endsWith(senderDigits.takeLast(8)))
+
+            if (sameName || samePhone) return link
+        }
+        return null
     }
 
     suspend fun ensureEntityForConversation(
@@ -38,6 +70,13 @@ class MemoryRepository(context: Context) {
     ): Long {
         val existing = db.memory().linkForConversation(packageName, sender)
         if (existing != null) return existing.entityId
+
+        val alias = findContactAliasMatch(sender)
+        if (alias != null) {
+            linkConversation(alias.entityId, packageName, sender)
+            return alias.entityId
+        }
+
         val entityId = createEntity(sender, kind)
         linkConversation(entityId, packageName, sender)
         return entityId
@@ -56,4 +95,28 @@ class MemoryRepository(context: Context) {
         .sortedBy { it.timestamp }
 
     suspend fun trace(messageId: Long): NotifEntity? = db.dao().byId(messageId)
+
+    companion object {
+        private const val CONTACT_SEPARATOR = "\u001F"
+
+        fun encodeContactAlias(name: String, phone: String): String =
+            name.trim() + CONTACT_SEPARATOR + phone.trim()
+
+        fun decodeContactAlias(encoded: String): Pair<String, String> {
+            val parts = encoded.split(CONTACT_SEPARATOR, limit = 2)
+            return (parts.getOrNull(0) ?: "") to (parts.getOrNull(1) ?: "")
+        }
+
+        fun contactAliasLabel(encoded: String): String {
+            val (name, phone) = decodeContactAlias(encoded)
+            return when {
+                name.isNotBlank() && phone.isNotBlank() -> "$name · $phone"
+                name.isNotBlank() -> name
+                else -> phone
+            }
+        }
+
+        private fun normalizePhone(value: String): String =
+            value.filter { it.isDigit() }
+    }
 }
