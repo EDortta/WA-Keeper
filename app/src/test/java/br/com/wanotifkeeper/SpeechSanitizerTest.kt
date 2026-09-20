@@ -36,6 +36,13 @@ class SpeechSanitizerTest {
     }
 
     @Test
+    fun `email com dominio nao vira URL`() {
+        val spoken = SpeechSanitizer.forAutomaticSpeech("Contato: joao.silva@empresa.com.br")
+        assertTrue(spoken.contains("Endereço de e-mail disponível."))
+        assertFalse(spoken.contains("URL disponível para visita."))
+    }
+
+    @Test
     fun `mensagem comum permanece equivalente`() {
         assertEquals("A parcela da casa está em aberto.", SpeechSanitizer.forAutomaticSpeech("A parcela da casa está em aberto"))
     }
