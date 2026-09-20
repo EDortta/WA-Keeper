@@ -94,6 +94,27 @@ class MemoryRepository(context: Context) {
         .contextForEntity(entityId, query.trim(), limit.coerceIn(1, 200))
         .sortedBy { it.timestamp }
 
+    suspend fun renameEntity(entityId: Long, newName: String) {
+        val current = db.memory().entityById(entityId) ?: return
+        db.memory().updateEntity(
+            current.copy(
+                name = newName.trim(),
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+    }
+
+    suspend fun deleteEntity(entityId: Long) {
+        db.memory().unlinkAll(entityId)
+        db.memory().deleteEntity(entityId)
+    }
+
+    suspend fun mergeEntities(sourceEntityId: Long, targetEntityId: Long) {
+        if (sourceEntityId == targetEntityId) return
+        db.memory().moveAllLinks(sourceEntityId, targetEntityId)
+        db.memory().deleteEntity(sourceEntityId)
+    }
+
     suspend fun trace(messageId: Long): NotifEntity? = db.dao().byId(messageId)
 
     companion object {
