@@ -8,7 +8,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Entity(
     tableName = "notifications",
-    indices = [Index(value = ["fingerprint"], unique = true)]
+    indices = [
+        Index(value = ["fingerprint"], unique = true),
+        Index(value = ["conversationKey"])
+    ]
 )
 data class NotifEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
