@@ -89,6 +89,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
+        binding.btnEntities.setOnClickListener {
+            startActivity(Intent(this, EntitiesActivity::class.java))
+        }
+
         binding.btnReadMode.setOnClickListener {
             val enabled = ManualReadMode.toggle()
             renderReadMode()
