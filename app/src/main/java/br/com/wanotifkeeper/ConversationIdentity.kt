@@ -1,6 +1,5 @@
 package br.com.wanotifkeeper
 
-import android.app.Notification
 import android.service.notification.StatusBarNotification
 
 object ConversationIdentity {
@@ -37,17 +36,6 @@ object ConversationIdentity {
         if (tag.isNotBlank()) return "tag:$tag"
 
         return "title:${sbn.packageName}:${canonicalTitle.lowercase()}"
-    }
-
-    fun messagingConversationTitle(notification: Notification): String? {
-        return runCatching {
-            Notification.MessagingStyle
-                .extractMessagingStyleFromNotification(notification)
-                ?.conversationTitle
-                ?.toString()
-                ?.trim()
-                ?.takeIf { it.isNotBlank() }
-        }.getOrNull()
     }
 
     fun displayGroupKey(item: NotifEntity): String =
