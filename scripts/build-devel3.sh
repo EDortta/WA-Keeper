@@ -5,9 +5,10 @@ EXPECTED_HOST="devel3"
 BRANCH="development"
 RELEASE_DIR="releases"
 APK_SOURCE="app/build/outputs/apk/release/app-release.apk"
-APK_DEST="$RELEASE_DIR/WA-Keeper-latest.apk"
-ZIP_DEST="$RELEASE_DIR/WA-Keeper-latest.zip"
-SHA_DEST="$RELEASE_DIR/WA-Keeper-latest.sha256"
+BUILD_STAMP="$(date '+%Y-%m-%d-%H-%M')"
+APK_DEST="$RELEASE_DIR/WA-Keeper-$BUILD_STAMP.apk"
+ZIP_DEST="$RELEASE_DIR/WA-Keeper-$BUILD_STAMP.zip"
+SHA_DEST="$RELEASE_DIR/WA-Keeper-$BUILD_STAMP.sha256"
 
 fail() {
   echo "ERRO: $*" >&2
@@ -52,6 +53,12 @@ echo "==> Compilando release no devel3"
 [[ -f "$APK_SOURCE" ]] || fail "APK não encontrado em $APK_SOURCE"
 
 mkdir -p "$RELEASE_DIR"
+
+echo "==> Removendo artefatos anteriores"
+rm -f "$RELEASE_DIR"/WA-Keeper-*.apk
+rm -f "$RELEASE_DIR"/WA-Keeper-*.zip
+rm -f "$RELEASE_DIR"/WA-Keeper-*.sha256
+
 cp -f "$APK_SOURCE" "$APK_DEST"
 
 echo "==> Gerando ZIP"
@@ -101,5 +108,6 @@ echo "PRONTO"
 echo "  APK: $APK_DEST"
 echo "  ZIP: $ZIP_DEST"
 echo "  SHA: $SHA_DEST"
+echo "  Nome: WA-Keeper-$BUILD_STAMP"
 echo "  Download ZIP:"
-echo "  https://raw.githubusercontent.com/EDortta/WA-Keeper/development/releases/WA-Keeper-latest.zip"
+echo "  https://raw.githubusercontent.com/EDortta/WA-Keeper/development/releases/WA-Keeper-$BUILD_STAMP.zip"
