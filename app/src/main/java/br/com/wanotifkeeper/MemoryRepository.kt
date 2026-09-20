@@ -65,13 +65,18 @@ class MemoryRepository(context: Context) {
         for (link in db.memory().linksByRole("CONTACT")) {
             val parts = decodeContactAlias(link.sender)
             val name = parts.first.trim().lowercase()
-            val phoneDigits = normalizePhone(parts.second)
+            val phoneDigits = parts.second
+                .split(",")
+                .map { normalizePhone(it) }
+                .filter { it.isNotBlank() }
 
             val sameName = name.isNotBlank() && name == senderName
-            val samePhone = senderDigits.length >= 8 && phoneDigits.length >= 8 &&
-                (senderDigits == phoneDigits ||
-                    senderDigits.endsWith(phoneDigits.takeLast(8)) ||
-                    phoneDigits.endsWith(senderDigits.takeLast(8)))
+            val samePhone = senderDigits.length >= 8 && phoneDigits.any { phone ->
+                phone.length >= 8 &&
+                    (senderDigits == phone ||
+                        senderDigits.endsWith(phone.takeLast(8)) ||
+                        phone.endsWith(senderDigits.takeLast(8)))
+            }
 
             if (sameName || samePhone) return link
         }
@@ -146,7 +151,8 @@ class MemoryRepository(context: Context) {
         fun contactAliasLabel(encoded: String): String {
             val (name, phone) = decodeContactAlias(encoded)
             return when {
-                name.isNotBlank() && phone.isNotBlank() -> "$name · $phone"
+                name.isNotBlank() && phone.isNotBlank() ->
+                    "$name · " + phone.split(",").joinToString(" · ")
                 name.isNotBlank() -> name
                 else -> phone
             }
