@@ -58,9 +58,34 @@ object ConversationIdentity {
     fun displayGroupKey(item: NotifEntity): String =
         groupKey(item.packageName, item.sender, item.conversationKey)
 
-    fun isVisibleHomeConversation(item: NotifEntity): Boolean =
+    fun isVisibleConversation(item: NotifEntity): Boolean =
         item.packageName != ConversationImportActivity.PACKAGE_IMPORTED &&
             item.sourceType != "WHATSAPP_EXPORT"
+
+    fun isVisibleHomeConversation(item: NotifEntity): Boolean = isVisibleConversation(item)
+
+    fun conversationBuckets(items: Iterable<NotifEntity>): List<List<NotifEntity>> =
+        items
+            .filter(::isVisibleConversation)
+            .groupBy { item ->
+                item.packageName to canonicalSender(item.sender, item.packageName).lowercase()
+            }
+            .values
+            .flatMap { sameTitleItems ->
+                val keyed = sameTitleItems
+                    .filter { !it.conversationKey.isNullOrBlank() }
+                    .groupBy { it.conversationKey!!.trim() }
+
+                val legacy = sameTitleItems.filter { it.conversationKey.isNullOrBlank() }
+
+                when {
+                    keyed.isEmpty() -> listOf(legacy)
+                    keyed.size == 1 -> listOf(keyed.values.first() + legacy)
+                    legacy.isEmpty() -> keyed.values.toList()
+                    else -> keyed.values.toList() + listOf(legacy)
+                }
+            }
+            .filter { it.isNotEmpty() }
 
     fun sameConversation(
         item: NotifEntity,

@@ -231,14 +231,10 @@ class MainActivity : AppCompatActivity() {
                 else -> db.dao().allFlow()
             }
             flow.collectLatest { list ->
-                // A home representa conversas, não mensagens: a identidade técnica da
-                // conversa vem primeiro de conversationKey (shortcutId no WhatsApp atual)
-                // e o título normalizado fica apenas como fallback/display.
-                val conversations = list
-                    .asSequence()
-                    .filter(ConversationIdentity::isVisibleHomeConversation)
-                    .groupBy { ConversationIdentity.displayGroupKey(it) }
-                    .values
+                // A home representa conversas, não mensagens: históricos importados ficam
+                // no contexto da entidade; conversas reais agrupam por título legado + chave
+                // técnica quando ela existe, juntando rows antigas sem conversationKey.
+                val conversations = ConversationIdentity.conversationBuckets(list)
                     .mapNotNull { items ->
                         val newest = items.maxByOrNull { it.timestamp } ?: return@mapNotNull null
                         newest.copy(
@@ -249,7 +245,6 @@ class MainActivity : AppCompatActivity() {
                         )
                     }
                     .sortedByDescending { it.timestamp }
-                    .toList()
                 adapter.submitList(conversations)
                 binding.recycler.visibility = if (conversations.isEmpty()) View.GONE else View.VISIBLE
                 binding.emptyState.visibility = if (conversations.isEmpty()) View.VISIBLE else View.GONE

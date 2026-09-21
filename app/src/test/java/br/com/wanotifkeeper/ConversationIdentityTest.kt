@@ -3,6 +3,7 @@ package br.com.wanotifkeeper
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class ConversationIdentityTest {
@@ -147,9 +148,77 @@ class ConversationIdentityTest {
             packageName = "com.whatsapp.w4b"
         )
 
-        assertEquals(
-            ConversationIdentity.displayGroupKey(a),
-            ConversationIdentity.displayGroupKey(b)
+        assertEquals(1, ConversationIdentity.conversationBuckets(listOf(a, b)).size)
+    }
+
+    @Test
+    fun importedHistoryIsNotConversationBucket() {
+        val imported = NotifEntity(
+            sender = "Open",
+            text = "histórico",
+            timestamp = 1L,
+            packageName = ConversationImportActivity.PACKAGE_IMPORTED,
+            sourceType = "WHATSAPP_EXPORT"
+        )
+        val live = NotifEntity(
+            sender = "Open",
+            text = "notificação",
+            timestamp = 2L,
+            packageName = "com.whatsapp.w4b",
+            conversationKey = "shortcut:open-live"
+        )
+
+        val buckets = ConversationIdentity.conversationBuckets(listOf(imported, live))
+
+        assertEquals(1, buckets.size)
+        assertEquals("notificação", buckets.single().single().text)
+    }
+
+    @Test
+    fun unkeyedLegacyRowsJoinSingleKeyedBucketWithSameCanonicalTitle() {
+        val legacy = NotifEntity(
+            sender = "Open (3 mensagens): Luís Henrique",
+            text = "antiga",
+            timestamp = 1L,
+            packageName = "com.whatsapp.w4b"
+        )
+        val keyed = NotifEntity(
+            sender = "Open",
+            text = "nova",
+            timestamp = 2L,
+            packageName = "com.whatsapp.w4b",
+            conversationKey = "shortcut:open-live"
+        )
+
+        val buckets = ConversationIdentity.conversationBuckets(listOf(legacy, keyed))
+
+        assertEquals(1, buckets.size)
+        assertEquals(setOf("antiga", "nova"), buckets.single().map { it.text }.toSet())
+    }
+
+    @Test
+    fun sameTitleWithDifferentKeysStaysSeparateInBuckets() {
+        val group = NotifEntity(
+            sender = "Open",
+            text = "grupo",
+            timestamp = 1L,
+            packageName = "com.whatsapp.w4b",
+            conversationKey = "shortcut:123@g.us"
+        )
+        val individual = NotifEntity(
+            sender = "Open",
+            text = "pessoa",
+            timestamp = 2L,
+            packageName = "com.whatsapp.w4b",
+            conversationKey = "shortcut:123@s.whatsapp.net"
+        )
+
+        val buckets = ConversationIdentity.conversationBuckets(listOf(group, individual))
+
+        assertEquals(2, buckets.size)
+        assertNotEquals(
+            buckets[0].single().conversationKey,
+            buckets[1].single().conversationKey
         )
     }
 }

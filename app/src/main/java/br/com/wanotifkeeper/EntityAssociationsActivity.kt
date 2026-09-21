@@ -129,21 +129,13 @@ class EntityAssociationsActivity : AppCompatActivity() {
         selectedKeys.clear()
 
         val conversations = withContext(Dispatchers.IO) {
-            db.dao().getAll()
-                .groupBy { item ->
-                    if (item.packageName == "wa.keeper.import") {
-                        item.packageName to item.sender.trim().lowercase()
-                    } else {
-                        item.packageName to ConversationIdentity.displayGroupKey(item)
-                    }
-                }
-                .map { (_, items) ->
+            ConversationIdentity.conversationBuckets(db.dao().getAll())
+                .map { items ->
                     val newest = items.maxByOrNull { it.timestamp } ?: items.first()
-                    val canonical = if (newest.packageName == "wa.keeper.import") {
-                        newest.sender.trim()
-                    } else {
-                        ConversationIdentity.canonicalSender(newest.sender, newest.packageName)
-                    }
+                    val canonical = ConversationIdentity.canonicalSender(
+                        newest.sender,
+                        newest.packageName
+                    )
                     val members = (items.map { it.sender.trim() } + canonical)
                         .filter { it.isNotBlank() }
                         .distinct()
@@ -154,7 +146,6 @@ class EntityAssociationsActivity : AppCompatActivity() {
                         subtitle = when (newest.packageName) {
                             "com.whatsapp.w4b" -> "Conversa · WhatsApp Business"
                             "com.whatsapp" -> "Conversa · WhatsApp"
-                            "wa.keeper.import" -> "Conversa · histórico importado"
                             else -> "Conversa"
                         },
                         packageName = newest.packageName,
