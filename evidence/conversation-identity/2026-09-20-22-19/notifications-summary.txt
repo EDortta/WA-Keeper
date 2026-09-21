@@ -1,0 +1,372 @@
+# WhatsApp notification identity summary
+raw=/home/esteban/Sync/Projects/WA-Keeper/evidence/conversation-identity/2026-09-20-22-19/notifications-raw.txt
+candidate_blocks=3
+
+## candidate 1 (raw line ~84)
+package: com.whatsapp
+notification key: 0|com.whatsapp.w4b|1|null|10328: | 0|com.whatsapp.w4b|1|null|10328
+tag: null
+groupKey: group_key_messages | 0|com.whatsapp.w4b|g:group_key_messages
+category: msg
+when: 1789952815000/1789952815000 | 1789952820222/1789952820222
+
+### extras and conversation-related lines
+- effectiveNotificationChannel=NotificationChannel{mId='CHR', mName=Bateria, mDescription=, mImportance=1, mBypassDnd=false, mLockscreenVisibility=-1000, mSound=null, mLights=false, mLightColor=0, mVibrationPattern=null, mVibrationEffect=null, mUserLockedFields=0, mUserVisibleTaskShown=false, mVibrationEnabled=false, mShowBadge=true, mDeleted=false, mDeletedTimeMs=-1, mGroup='null', mAudioAttributes=AudioAttributes: usage=USAGE_NOTIFICATION content=CONTENT_TYPE_SONIFICATION flags=0x800(FLAG_MUTE_HAPTIC)  tags= bundle=null, mBlockableSystem=false, mAllowBubbles=-1, mImportanceLockedByOEM=false, mImportanceLockedDefaultApp=true, mOriginalImp=1, mParent=null, mConversationId=null, mDemoted=false, mImportantConvo=false, mLastNotificationUpdateTimeMs=0, mSoundMissingReason=0}
+- shortcut=null found valid? false
+- mUserVisOverride=-1000
+- NotificationRecord(0x04020d05: pkg=com.whatsapp.w4b user=UserHandle{0} id=1 tag=null importance=2 key=0|com.whatsapp.w4b|1|null|10328: Notification(channel=silent_notifications_6 shortcut=5514998354550-1585313840@g.us contentView=null vibrate=null sound=null tick defaults=0 flags=GROUP_SUMMARY color=0xff21c063 category=msg groupKey=group_key_messages vis=PRIVATE publicVersion=Notification(channel=null shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=0 color=0xff21c063 category=msg vis=PRIVATE semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0) semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0))
+- android.title=String (Esteban-VGaspar)
+- android.textLines=CharSequence[] (2)
+- android.subText=null
+- android.template=String (android.app.Notification$InboxStyle)
+- android.people.list=ArrayList ([android.app.Person@a614a85c])
+- android.text=String (Novas mensagens: 2)
+- android.summaryText=String (Novas mensagens: 2)
+- android.title=String (WA Business)
+
+### raw excerpt
+```
+      effectiveNotificationChannel=NotificationChannel{mId='CHR', mName=Bateria, mDescription=, mImportance=1, mBypassDnd=false, mLockscreenVisibility=-1000, mSound=null, mLights=false, mLightColor=0, mVibrationPattern=null, mVibrationEffect=null, mUserLockedFields=0, mUserVisibleTaskShown=false, mVibrationEnabled=false, mShowBadge=true, mDeleted=false, mDeletedTimeMs=-1, mGroup='null', mAudioAttributes=AudioAttributes: usage=USAGE_NOTIFICATION content=CONTENT_TYPE_SONIFICATION flags=0x800(FLAG_MUTE_HAPTIC)  tags= bundle=null, mBlockableSystem=false, mAllowBubbles=-1, mImportanceLockedByOEM=false, mImportanceLockedDefaultApp=true, mOriginalImp=1, mParent=null, mConversationId=null, mDemoted=false, mImportantConvo=false, mLastNotificationUpdateTimeMs=0, mSoundMissingReason=0}
+      mAdjustments=[]
+      shortcut=null found valid? false
+      mUserVisOverride=-1000
+      hasSummarization=false
+      bundleType=0
+      mSuggestionsGeneratedByAssistant=false
+      mIsPromotion=false
+    NotificationRecord(0x04020d05: pkg=com.whatsapp.w4b user=UserHandle{0} id=1 tag=null importance=2 key=0|com.whatsapp.w4b|1|null|10328: Notification(channel=silent_notifications_6 shortcut=5514998354550-1585313840@g.us contentView=null vibrate=null sound=null tick defaults=0 flags=GROUP_SUMMARY color=0xff21c063 category=msg groupKey=group_key_messages vis=PRIVATE publicVersion=Notification(channel=null shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=0 color=0xff21c063 category=msg vis=PRIVATE semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0) semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0))
+      uid=10328 userId=0
+      opPkg=com.whatsapp.w4b
+      icon=Icon(typ=RESOURCE pkg=com.whatsapp.w4b id=0x7f080311)
+      flags=GROUP_SUMMARY
+      originalFlags=GROUP_SUMMARY
+      pri=0
+      key=0|com.whatsapp.w4b|1|null|10328
+      seen=false
+      groupKey=0|com.whatsapp.w4b|g:group_key_messages
+      notification=
+            fullscreenIntent=null
+            contentIntent=PendingIntent{bb5415a: PendingIntentRecord{e701021 com.whatsapp.w4b startActivity (allowlist: e21b6d9:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}}
+            deleteIntent=PendingIntent{bb26f8b: PendingIntentRecord{d36e789 com.whatsapp.w4b broadcastIntent (allowlist: e21b6d9:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}}
+            number=2
+            groupAlertBehavior=1
+            when=1789952815000/1789952815000
+            tickerText=Mensagem de Carlos Eduardo Roman @ Esteban-VGaspar
+            vis=0
+            contentView=null
+            bigContentView=null
+            headsUpContentView=null
+            color=0xff21c063
+            timeout=PT72H
+            parcelDataSize=8824
+            mAllowSystemGeneratedContextualActions=true
+            extras={
+                android.title=String (Esteban-VGaspar)
+                android.reduced.images=Boolean (true)
+                android.textLines=CharSequence[] (2)
+                  [0] Carlos Eduardo Roman: Agora foi
+                  [1] Carlos Eduardo Roman: 💟 Enviou uma figurinha
+                android.subText=null
+                android.template=String (android.app.Notification$InboxStyle)
+                android.showChronometer=Boolean (false)
+                android.people.list=ArrayList ([android.app.Person@a614a85c])
+                android.text=String (Novas mensagens: 2)
+                android.progress=Integer (0)
+                androidx.core.app.extra.COMPAT_TEMPLATE=String (androidx.core.app.NotificationCompat$InboxStyle)
+                android.progressMax=Integer (0)
+                android.appInfo=ApplicationInfo (ApplicationInfo{9780868 com.whatsapp.w4b})
+                android.showWhen=Boolean (true)
+                android.largeIcon=null
+                android.infoText=null
+                android.progressIndeterminate=Boolean (false)
+                android.remoteInputHistory=null
+                android.summaryText=String (Novas mensagens: 2)
+            }
+      publicNotification=
+            fullscreenIntent=null
+            contentIntent=null
+            deleteIntent=null
+            number=0
+            groupAlertBehavior=0
+            when=1789952820222/1789952820222
+            tickerText=null
+            vis=0
+            contentView=null
+            bigContentView=null
+            headsUpContentView=null
+            color=0xff21c063
+            timeout=PT0S
+            parcelDataSize=3772
+            mAllowSystemGeneratedContextualActions=true
+            extras={
+                android.title=String (WA Business)
+                android.reduced.images=Boolean (true)
+                android.subText=null
+                android.showChronometer=Boolean (false)
+                android.text=String (Novas mensagens: 2)
+                android.progress=Integer (0)
+                android.progressMax=Integer (0)
+                android.appInfo=ApplicationInfo (ApplicationInfo{31b7481 com.whatsapp.w4b})
+                android.showWhen=Boolean (true)
+                android.largeIcon=null
+                android.infoText=null
+                android.progressIndeterminate=Boolean (false)
+                android.remoteInputHistory=null
+            }
+      stats=SingleNotificationStats{posttimeElapsedMs=700091949, posttimeToFirstClickMs=-1, posttimeToDismissMs=-1, airtimeCount=0, airtimeMs=0, currentAirtimeStartElapsedMs=-1, airtimeExpandedMs=0, posttimeToFirstVisibleExpansionMs=-1, currentAirtimeExpandedStartElapsedMs=-1, requestedImportance=3, naturalImportance=2, isNoisy=false}
+      mContactAffinity=0.5
+      mPackagePriority=0
+      mPackageVisibility=-1000
+      mSystemImportance=UNSPECIFIED
+      mAsstImportance=UNSPECIFIED
+      mImportance=LOW
+      mImportanceExplanation=app
+```
+
+## candidate 2 (raw line ~201)
+package: com.whatsapp
+notification key: 0|com.whatsapp.w4b|1|WuD8C2nvtWnREk/hid2tcvB+XZrBmaQ09bNBQTg3BYc=
+tag: WuD8C2nvtWnREk/hid2tcvB+XZrBmaQ09bNBQTg3BYc=
+groupKey: group_key_messages | 0|com.whatsapp.w4b|g:group_key_messages
+category: msg
+when: 1789952815000/1789952815000 | 1789952820231/1789952820231
+
+### extras and conversation-related lines
+- effectiveNotificationChannel=NotificationChannel{mId='silent_notifications_6', mName=Notificações silenciadas, mDescription=, mImportance=2, mBypassDnd=false, mLockscreenVisibility=-1000, mSound=null, mLights=false, mLightColor=0, mVibrationPattern=null, mVibrationEffect=null, mUserLockedFields=0, mUserVisibleTaskShown=true, mVibrationEnabled=false, mShowBadge=true, mDeleted=false, mDeletedTimeMs=-1, mGroup='null', mAudioAttributes=AudioAttributes: usage=USAGE_NOTIFICATION content=CONTENT_TYPE_SONIFICATION flags=0x800(FLAG_MUTE_HAPTIC)  tags= bundle=null, mBlockableSystem=false, mAllowBubbles=-1, mImportanceLockedByOEM=false, mImportanceLockedDefaultApp=false, mOriginalImp=2, mParent=null, mConversationId=null, mDemoted=false, mImportantConvo=false, mLastNotificationUpdateTimeMs=0, mSoundMissingReason=0}
+- shortcut=5514998354550-1585313840@g.us found valid? true
+- mUserVisOverride=-1000
+- |10328: Notification(channel=group_chat_defaults_5 shortcut=5514998354550-1585313840@g.us contentView=null vibrate=null sound=null defaults=0 flags=ONLY_ALERT_ONCE color=0xff21c063 groupKey=group_key_messages sortKey=001 actions=3 vis=PRIVATE publicVersion=Notification(channel=null shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=0 color=0xff21c063 category=msg vis=PRIVATE semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0) semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0))
+- android.title=String (‎Esteban-VGaspar (2 mensagens): Carlos Eduardo Roman)
+- android.hiddenConversationTitle=String (‎Esteban-VGaspar (2 mensagens))
+- android.conversationTitle=String (‎Esteban-VGaspar (2 mensagens))
+- android.subText=null
+- android.template=String (android.app.Notification$MessagingStyle)
+- android.people.list=ArrayList ([android.app.Person@a614a85c])
+- android.text=String (💟 Enviou uma figurinha)
+- androidx.core.app.extra.COMPAT_TEMPLATE=String (androidx.core.app.NotificationCompat$MessagingStyle)
+- android.selfDisplayName=String (Você)
+- android.conversationUnreadMessageCount=Integer (0)
+- android.messages=Bundle[] (2)
+- [0] Bundle[{extras=Bundle[{}], sender_person=android.app.Person@40f7c62a, sender=Carlos Eduardo Roman, text=Agora foi, time=1789952809000}]
+- [1] Bundle[{extras=Bundle[{}], sender_person=android.app.Person@bdb60fef, sender=Carlos Eduardo Roman, uri=content://com.whatsapp.w4b.provider.media/item/a0aa5e00-0290-4f14-82b5-7b331fcf0b2f, text=💟 Enviou uma figurinha, time=1789952815000, type=image/webp}]
+- android.messagingStyleUser=Bundle (Bundle[mParcelledData.dataSize=496])
+- android.messagingUser=Person (android.app.Person@dd406740)
+- android.isGroupConversation=Boolean (true)
+- android.title=String (WA Business)
+- android.text=String (Novas mensagens: 2)
+
+### raw excerpt
+```
+      effectiveNotificationChannel=NotificationChannel{mId='silent_notifications_6', mName=Notificações silenciadas, mDescription=, mImportance=2, mBypassDnd=false, mLockscreenVisibility=-1000, mSound=null, mLights=false, mLightColor=0, mVibrationPattern=null, mVibrationEffect=null, mUserLockedFields=0, mUserVisibleTaskShown=true, mVibrationEnabled=false, mShowBadge=true, mDeleted=false, mDeletedTimeMs=-1, mGroup='null', mAudioAttributes=AudioAttributes: usage=USAGE_NOTIFICATION content=CONTENT_TYPE_SONIFICATION flags=0x800(FLAG_MUTE_HAPTIC)  tags= bundle=null, mBlockableSystem=false, mAllowBubbles=-1, mImportanceLockedByOEM=false, mImportanceLockedDefaultApp=false, mOriginalImp=2, mParent=null, mConversationId=null, mDemoted=false, mImportantConvo=false, mLastNotificationUpdateTimeMs=0, mSoundMissingReason=0}
+      mAdjustments=[]
+      shortcut=5514998354550-1585313840@g.us found valid? true
+      mUserVisOverride=-1000
+      hasSummarization=false
+      bundleType=0
+      mSuggestionsGeneratedByAssistant=false
+      mIsPromotion=false
+    NotificationRecord(0x0cf61926: pkg=com.whatsapp.w4b user=UserHandle{0} id=1 tag=WuD8C2nvtWnREk/hid2tcvB+XZrBmaQ09bNBQTg3BYc=
+ importance=4 key=0|com.whatsapp.w4b|1|WuD8C2nvtWnREk/hid2tcvB+XZrBmaQ09bNBQTg3BYc=
+|10328: Notification(channel=group_chat_defaults_5 shortcut=5514998354550-1585313840@g.us contentView=null vibrate=null sound=null defaults=0 flags=ONLY_ALERT_ONCE color=0xff21c063 groupKey=group_key_messages sortKey=001 actions=3 vis=PRIVATE publicVersion=Notification(channel=null shortcut=null contentView=null vibrate=null sound=null defaults=0 flags=0 color=0xff21c063 category=msg vis=PRIVATE semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0) semFlags=0x0 semPriority=0 semMissedCount=0 semScenarioType=0))
+      uid=10328 userId=0
+      opPkg=com.whatsapp.w4b
+      icon=Icon(typ=RESOURCE pkg=com.whatsapp.w4b id=0x7f080311)
+      flags=ONLY_ALERT_ONCE
+      originalFlags=ONLY_ALERT_ONCE
+      pri=0
+      key=0|com.whatsapp.w4b|1|WuD8C2nvtWnREk/hid2tcvB+XZrBmaQ09bNBQTg3BYc=
+|10328
+      seen=false
+      groupKey=0|com.whatsapp.w4b|g:group_key_messages
+      notification=
+            fullscreenIntent=null
+            contentIntent=PendingIntent{9d67967: PendingIntentRecord{e701021 com.whatsapp.w4b startActivity (allowlist: e21b6d9:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}}
+            deleteIntent=PendingIntent{5f94314: PendingIntentRecord{796527a com.whatsapp.w4b broadcastIntent (allowlist: e21b6d9:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}}
+            number=2
+            groupAlertBehavior=1
+            when=1789952815000/1789952815000
+            tickerText=null
+            vis=0
+            contentView=null
+            bigContentView=null
+            headsUpContentView=null
+            color=0xff21c063
+            timeout=PT72H
+            parcelDataSize=14812
+            mAllowSystemGeneratedContextualActions=true
+            actions={
+                [0] "Responder" -> PendingIntent{309d7bd: PendingIntentRecord{c7e7a2b com.whatsapp.w4b startService (allowlist: e21b6d9:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}}
+                [1] "Marcar como lida" -> PendingIntent{41aa1b2: PendingIntentRecord{ea62ea5 com.whatsapp.w4b startService (allowlist: e21b6d9:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}}
+                [2] "Silenciar" -> PendingIntent{e474503: PendingIntentRecord{503985 com.whatsapp.w4b startActivity (allowlist: e21b6d9:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}}
+              }
+            extras={
+                android.title=String (‎Esteban-VGaspar (2 mensagens): Carlos Eduardo Roman)
+                android.hiddenConversationTitle=String (‎Esteban-VGaspar (2 mensagens))
+                android.reduced.images=Boolean (true)
+                android.conversationTitle=String (‎Esteban-VGaspar (2 mensagens))
+                android.subText=null
+                android.template=String (android.app.Notification$MessagingStyle)
+                android.showChronometer=Boolean (false)
+                android.people.list=ArrayList ([android.app.Person@a614a85c])
+                android.text=String (💟 Enviou uma figurinha)
+                android.progress=Integer (0)
+                androidx.core.app.extra.COMPAT_TEMPLATE=String (androidx.core.app.NotificationCompat$MessagingStyle)
+                android.progressMax=Integer (0)
+                android.selfDisplayName=String (Você)
+                android.conversationUnreadMessageCount=Integer (0)
+                android.appInfo=ApplicationInfo (ApplicationInfo{eb17c80 com.whatsapp.w4b})
+                android.messages=Bundle[] (2)
+                  [0] Bundle[{extras=Bundle[{}], sender_person=android.app.Person@40f7c62a, sender=Carlos Eduardo Roman, text=Agora foi, time=1789952809000}]
+                  [1] Bundle[{extras=Bundle[{}], sender_person=android.app.Person@bdb60fef, sender=Carlos Eduardo Roman, uri=content://com.whatsapp.w4b.provider.media/item/a0aa5e00-0290-4f14-82b5-7b331fcf0b2f, text=💟 Enviou uma figurinha, time=1789952815000, type=image/webp}]
+                android.showWhen=Boolean (true)
+                android.largeIcon=Icon (Icon(typ=BITMAP size=115x115))
+                android.messagingStyleUser=Bundle (Bundle[mParcelledData.dataSize=496])
+                android.messagingUser=Person (android.app.Person@dd406740)
+                android.infoText=null
+                android.wearable.EXTENSIONS=Bundle (Bundle[{actions=[android.app.Notification$Action@7f1e0ac, android.app.Notification$Action@5794175]}])
+                android.progressIndeterminate=Boolean (false)
+                android.remoteInputHistory=null
+                last_row_id=Long (176632)
+                android.isGroupConversation=Boolean (true)
+            }
+      publicNotification=
+            fullscreenIntent=null
+            contentIntent=null
+            deleteIntent=null
+            number=0
+            groupAlertBehavior=0
+            when=1789952820231/1789952820231
+            tickerText=null
+            vis=0
+            contentView=null
+            bigContentView=null
+            headsUpContentView=null
+            color=0xff21c063
+            timeout=PT0S
+            parcelDataSize=3772
+            mAllowSystemGeneratedContextualActions=true
+            extras={
+                android.title=String (WA Business)
+                android.reduced.images=Boolean (true)
+                android.subText=null
+                android.showChronometer=Boolean (false)
+                android.text=String (Novas mensagens: 2)
+                android.progress=Integer (0)
+```
+
+## candidate 3 (raw line ~7512)
+package: com.whatsapp
+notification key: 'com.whatsapp.w4b' | 'com.picpay' | 'air.Prex'
+
+### extras and conversation-related lines
+- numPeopleCacheHit=5984,
+- numWithStaredPeople=253,
+- numWithValidPeople=2486,
+- numPeopleCacheMiss=261,
+- numUserInitiatedJob=480
+- numPeopleCacheHit=471,
+- numWithStaredPeople=0,
+- numWithValidPeople=0,
+- numPeopleCacheMiss=0,
+- numUserInitiatedJob=0
+- numPeopleCacheHit=34,
+
+### raw excerpt
+```
+      numImagesRemoved=0
+      numTooOld=0
+      note_imp_noisy_: [0, 0, 0, 1, 0, 0]
+      note_imp_quiet_: [0, 0, 0, 0, 0, 0]
+      note_importance_: [0, 0, 0, 0, 1, 0]
+      numUndecorateRVs=0
+    }
+    AggregatedStats{
+      key='com.whatsapp.w4b',
+      numEnqueuedByApp=4477,
+      numPostedByApp=716,
+      numUpdatedByApp=3362,
+      numRemovedByApp=414,
+      numPeopleCacheHit=5984,
+      numWithStaredPeople=253,
+      numWithValidPeople=2486,
+      numPeopleCacheMiss=261,
+      numBlocked=0,
+      numSuspendedByAdmin=0,
+      numWithActions=562,
+      numPrivate=3210,
+      numSecret=0,
+      numInterrupt=0,
+      numWithBigText=7,
+      numWithBigPicture=0
+      numForegroundService=393
+      numUserInitiatedJob=480
+      numOngoing=2446
+      numAutoCancel=13
+      numWithLargeIcon=4078
+      numWithInbox=234
+      numWithMediaSession=0
+      numWithTitle=2527
+      numWithText=2527
+      numWithSubText=0
+      numWithInfoText=0
+      numRateViolations=348
+      numAlertViolations=12
+      numQuotaViolations=0
+      numImagesRemoved=0
+      numTooOld=0
+      note_imp_noisy_: [0, 0, 58, 3494, 358, 0]
+      note_imp_quiet_: [0, 0, 0, 133, 35, 0]
+      note_importance_: [0, 0, 3175, 0, 903, 0]
+      numUndecorateRVs=0
+    }
+    AggregatedStats{
+      key='com.picpay',
+      numEnqueuedByApp=2,
+      numPostedByApp=1,
+      numUpdatedByApp=1,
+      numRemovedByApp=0,
+      numPeopleCacheHit=471,
+      numWithStaredPeople=0,
+      numWithValidPeople=0,
+      numPeopleCacheMiss=0,
+      numBlocked=0,
+      numSuspendedByAdmin=0,
+      numWithActions=0,
+      numPrivate=2,
+      numSecret=0,
+      numInterrupt=0,
+      numWithBigText=2,
+      numWithBigPicture=0
+      numForegroundService=0
+      numUserInitiatedJob=0
+      numOngoing=0
+      numAutoCancel=2
+      numWithLargeIcon=2
+      numWithInbox=0
+      numWithMediaSession=0
+      numWithTitle=2
+      numWithText=2
+      numWithSubText=0
+      numWithInfoText=0
+      numRateViolations=0
+      numAlertViolations=0
+      numQuotaViolations=0
+      numImagesRemoved=0
+      numTooOld=0
+      note_imp_noisy_: [0, 0, 0, 2, 0, 0]
+      note_imp_quiet_: [0, 0, 0, 0, 0, 0]
+      note_importance_: [0, 0, 0, 0, 2, 0]
+      numUndecorateRVs=0
+    }
+    AggregatedStats{
+      key='air.Prex',
+      numEnqueuedByApp=1,
+      numPostedByApp=1,
+      numUpdatedByApp=0,
+      numRemovedByApp=0,
+      numPeopleCacheHit=34,
+      numWithStaredPeople=0,
+      numWithValidPeople=0,
+      numPeopleCacheMiss=0,
+```
+

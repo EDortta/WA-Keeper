@@ -131,12 +131,11 @@ class EntityAssociationsActivity : AppCompatActivity() {
         val conversations = withContext(Dispatchers.IO) {
             db.dao().getAll()
                 .groupBy { item ->
-                    val canonical = if (item.packageName == "wa.keeper.import") {
-                        item.sender.trim()
+                    if (item.packageName == "wa.keeper.import") {
+                        item.packageName to item.sender.trim().lowercase()
                     } else {
-                        ConversationIdentity.canonicalSender(item.sender, item.packageName)
+                        item.packageName to ConversationIdentity.displayGroupKey(item)
                     }
-                    item.packageName to canonical.lowercase()
                 }
                 .map { (_, items) ->
                     val newest = items.maxByOrNull { it.timestamp } ?: items.first()
