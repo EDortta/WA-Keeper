@@ -3,13 +3,21 @@ package br.com.wanotifkeeper
 import android.service.notification.StatusBarNotification
 
 object ConversationIdentity {
+    private val bidiMarks = Regex("[\\u200e\\u200f\\u202a-\\u202e]")
+
     fun canonicalSender(raw: String, packageName: String? = null): String {
         var value = raw
+            .replace(bidiMarks, "")
             .removePrefix("WhatsApp: ")
             .trim()
 
         value = value.replace(
             Regex("""\s*\(\d+\s+mensage(?:m|ns)\)\s*:\s*.+$""", RegexOption.IGNORE_CASE),
+            ""
+        )
+
+        value = value.replace(
+            Regex("""\s*\(\d+\s+mensage(?:m|ns)\)\s*$""", RegexOption.IGNORE_CASE),
             ""
         )
 
@@ -22,7 +30,7 @@ object ConversationIdentity {
             value = value.substringBefore(": ").trim()
         }
 
-        return value.trim().ifBlank { raw.trim() }
+        return value.trim().ifBlank { raw.replace(bidiMarks, "").trim() }
     }
 
     fun stableKey(
@@ -38,8 +46,17 @@ object ConversationIdentity {
         return "title:${sbn.packageName}:${canonicalTitle.lowercase()}"
     }
 
+    fun groupKey(packageName: String, sender: String, conversationKey: String?): String {
+        val storedKey = conversationKey?.trim().orEmpty()
+        return if (storedKey.isNotBlank()) {
+            "conversation:$packageName:$storedKey"
+        } else {
+            "conversation:$packageName:${canonicalSender(sender, packageName).lowercase()}"
+        }
+    }
+
     fun displayGroupKey(item: NotifEntity): String =
-        "conversation:${item.packageName}:${canonicalSender(item.sender, item.packageName).lowercase()}"
+        groupKey(item.packageName, item.sender, item.conversationKey)
 
     fun isVisibleHomeConversation(item: NotifEntity): Boolean =
         item.packageName != ConversationImportActivity.PACKAGE_IMPORTED &&
@@ -53,12 +70,13 @@ object ConversationIdentity {
     ): Boolean {
         if (item.packageName != packageName) return false
 
-        val sameTitle = canonicalSender(item.sender, item.packageName)
-            .equals(canonicalSender(sender, packageName), ignoreCase = true)
-        if (sameTitle) return true
+        val wantedKey = conversationKey?.trim().orEmpty()
+        val itemKey = item.conversationKey?.trim().orEmpty()
+        if (wantedKey.isNotBlank() && itemKey.isNotBlank()) {
+            return itemKey == wantedKey
+        }
 
-        return !conversationKey.isNullOrBlank() &&
-            !item.conversationKey.isNullOrBlank() &&
-            item.conversationKey == conversationKey
+        return canonicalSender(item.sender, item.packageName)
+            .equals(canonicalSender(sender, packageName), ignoreCase = true)
     }
 }

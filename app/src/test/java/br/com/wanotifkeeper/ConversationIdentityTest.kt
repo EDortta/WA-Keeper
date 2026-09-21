@@ -91,6 +91,48 @@ class ConversationIdentityTest {
     }
 
     @Test
+    fun differentShortcutDoesNotCollapseSameTitleGroups() {
+        val group = NotifEntity(
+            sender = "Projeto",
+            text = "a",
+            timestamp = 1L,
+            packageName = "com.whatsapp.w4b",
+            conversationKey = "shortcut:5514998354550-1585313840@g.us"
+        )
+        val individual = NotifEntity(
+            sender = "Projeto",
+            text = "b",
+            timestamp = 2L,
+            packageName = "com.whatsapp.w4b",
+            conversationKey = "shortcut:5514999999999@s.whatsapp.net"
+        )
+
+        assertFalse(
+            ConversationIdentity.displayGroupKey(group) ==
+                ConversationIdentity.displayGroupKey(individual)
+        )
+        assertFalse(
+            ConversationIdentity.sameConversation(
+                item = individual,
+                packageName = "com.whatsapp.w4b",
+                sender = "Projeto",
+                conversationKey = "shortcut:5514998354550-1585313840@g.us"
+            )
+        )
+    }
+
+    @Test
+    fun stripsInvisibleMarksAndUnreadSuffixFromRealBusinessGroupTitle() {
+        assertEquals(
+            "Esteban-VGaspar",
+            ConversationIdentity.canonicalSender(
+                "‎Esteban-VGaspar (2 mensagens)",
+                "com.whatsapp.w4b"
+            )
+        )
+    }
+
+    @Test
     fun legacyRowsStillGroupByCanonicalTitle() {
         val a = NotifEntity(
             sender = "Open",

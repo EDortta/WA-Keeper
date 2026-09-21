@@ -231,21 +231,24 @@ class MainActivity : AppCompatActivity() {
                 else -> db.dao().allFlow()
             }
             flow.collectLatest { list ->
-                // A home representa conversas, não mensagens: como os fluxos já chegam em
-                // timestamp DESC, a primeira ocorrência de (conta + remetente) é a última
-                // mensagem daquela conversa e vira o preview, como no WhatsApp.
+                // A home representa conversas, não mensagens: a identidade técnica da
+                // conversa vem primeiro de conversationKey (shortcutId no WhatsApp atual)
+                // e o título normalizado fica apenas como fallback/display.
                 val conversations = list
                     .asSequence()
                     .filter(ConversationIdentity::isVisibleHomeConversation)
-                    .map { item ->
-                        item.copy(
+                    .groupBy { ConversationIdentity.displayGroupKey(it) }
+                    .values
+                    .mapNotNull { items ->
+                        val newest = items.maxByOrNull { it.timestamp } ?: return@mapNotNull null
+                        newest.copy(
                             sender = ConversationIdentity.canonicalSender(
-                                item.sender,
-                                item.packageName
+                                newest.sender,
+                                newest.packageName
                             )
                         )
                     }
-                    .distinctBy { ConversationIdentity.displayGroupKey(it) }
+                    .sortedByDescending { it.timestamp }
                     .toList()
                 adapter.submitList(conversations)
                 binding.recycler.visibility = if (conversations.isEmpty()) View.GONE else View.VISIBLE

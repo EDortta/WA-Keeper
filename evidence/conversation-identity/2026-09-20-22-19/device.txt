@@ -1,0 +1,45 @@
+# Device
+capturedAt=2026-09-20T22:19:50-03:00
+serial=RX8Y903RVWD
+
+## adb
+Android Debug Bridge version 1.0.41
+Version 36.0.2-14143358
+Installed as /opt/platform-tools/adb
+Running on Linux 5.15.0-187-generic (x86_64)
+
+## getprop selected
+ro.product.manufacturer=samsung
+ro.product.brand=samsung
+ro.product.model=SM-A175F
+ro.product.device=a17
+ro.build.version.release=16
+ro.build.version.sdk=36
+ro.build.version.security_patch=2026-07-05
+ro.build.fingerprint=samsung/a17xx/a17:16/BP4A.251205.006/A175FXXS6CZG1_OWO6CZG1:user/release-keys
+
+## packages
+### com.whatsapp
+    pkg=Package{e9692e6 com.whatsapp}
+    versionCode=263607422 minSdk=23 targetSdk=36
+    versionName=2.26.36.74
+    lastUpdateTime=2026-09-17 23:44:04
+      firstInstallTime=2026-01-10 17:53:47
+      firstInstallTime=1969-12-31 21:00:00
+
+### com.whatsapp.w4b
+    pkg=Package{7dda127 com.whatsapp.w4b}
+    versionCode=263607214 minSdk=23 targetSdk=36
+    versionName=2.26.36.72
+    lastUpdateTime=2026-09-16 01:30:49
+      firstInstallTime=2026-01-10 17:53:40
+      firstInstallTime=1969-12-31 21:00:00
+
+### br.com.wanotifkeeper
+    pkg=Package{201d495 br.com.wanotifkeeper}
+    versionCode=9 minSdk=26 targetSdk=34
+    versionName=1.0.9
+    lastUpdateTime=2026-09-20 21:49:36
+      firstInstallTime=2026-06-27 16:30:27
+      firstInstallTime=1969-12-31 21:00:00
+
