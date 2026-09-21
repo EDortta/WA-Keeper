@@ -2,6 +2,7 @@
 build/
 app/build/
 .gradle/
+.claude*
 
 # Android Studio / IntelliJ
 .idea/
