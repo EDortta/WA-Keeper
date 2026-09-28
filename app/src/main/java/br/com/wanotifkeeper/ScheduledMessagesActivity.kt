@@ -119,6 +119,10 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             return
         }
 
+        if (recipientPhone != null && !ensureDirectContactAccess()) {
+            return
+        }
+
         if (selectedMediaUri != null && !ensureMediaAutomationAccess()) {
             return
         }
@@ -181,6 +185,24 @@ class ScheduledMessagesActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         }
+    }
+
+    private fun ensureDirectContactAccess(): Boolean {
+        if (MediaShareAutomation.isEnabled(this)) return true
+
+        AlertDialog.Builder(this)
+            .setTitle("Ativar envio automático")
+            .setMessage(
+                "Como este contato ainda não precisa ter uma notificação aberta, " +
+                    "o WA Keeper usa sua automação de Acessibilidade para abrir a conversa " +
+                    "correta e tocar em Enviar no horário programado."
+            )
+            .setPositiveButton("Abrir Acessibilidade") { _, _ ->
+                runCatching { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) }
+            }
+            .setNegativeButton("Agora não", null)
+            .show()
+        return false
     }
 
     private fun ensureMediaAutomationAccess(): Boolean {
