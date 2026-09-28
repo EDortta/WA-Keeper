@@ -16,9 +16,9 @@ import kotlin.math.sqrt
  *
  * Entrada: quando disponível, TYPE_SIGNIFICANT_MOTION continua sendo o gatilho barato e rápido.
  * Saída: depois da entrada, amostramos LINEAR_ACCELERATION (ou acelerômetro como fallback) para
- * renovar o estado somente enquanto existe atividade física real. Sem atividade por 45 s, o
- * estado encerra. Isso substitui a janela cega de 5 minutos que sabia começar, mas não sabia
- * reconhecer adequadamente que o deslocamento terminou.
+ * renovar o estado somente com atividade consistente. A saída usa histerese: cerca de 12 s de
+ * repouso claro encerram o estado, e existe ainda um timeout duro de 35 s sem movimento
+ * confirmado. Picos isolados de vibração não renovam mais a sessão.
  *
  * Em aparelhos sem TYPE_SIGNIFICANT_MOTION, o sensor de atividade fica registrado continuamente
  * em taxa normal e cumpre também o papel de detectar a entrada.
@@ -40,7 +40,7 @@ class MotionDetector(context: Context) {
     private val activitySensor: Sensor? = linearAcceleration ?: accelerometer
     private val usesLinearAcceleration = linearAcceleration != null
 
-    private val tracker = MotionStateTracker(STILLNESS_MS)
+    private val tracker = MotionStateTracker()
 
     @Volatile private var started = false
     @Volatile private var activitySampling = false
@@ -57,14 +57,20 @@ class MotionDetector(context: Context) {
     private val activityListener = object : SensorEventListener {
         override fun onSensorChanged(event: SensorEvent) {
             val activity = activityMagnitude(event)
-            val threshold = if (usesLinearAcceleration) LINEAR_ACTIVITY_THRESHOLD else ACCEL_ACTIVITY_THRESHOLD
+            val activeThreshold =
+                if (usesLinearAcceleration) LINEAR_ACTIVE_THRESHOLD else ACCEL_ACTIVE_THRESHOLD
+            val quietThreshold =
+                if (usesLinearAcceleration) LINEAR_QUIET_THRESHOLD else ACCEL_QUIET_THRESHOLD
             val now = SystemClock.elapsedRealtime()
 
-            if (activity >= threshold) tracker.markActivity(now)
+            tracker.observeSample(
+                active = activity >= activeThreshold,
+                quiet = activity <= quietThreshold,
+                now = now
+            )
 
-            // Com o sensor significativo presente, a amostragem contínua só é necessária
-            // enquanto estamos validando que o movimento continua. Ao confirmar a parada,
-            // desliga novamente o sensor de maior consumo e volta ao one-shot barato.
+            // Com sensor significativo, o contínuo serve apenas para acompanhar o episódio.
+            // Quando o repouso foi confirmado, desliga e volta ao one-shot barato.
             if (significantMotion != null && !tracker.isInMotion(now)) {
                 stopActivitySampling()
             }
@@ -126,13 +132,12 @@ class MotionDetector(context: Context) {
     }
 
     companion object {
-        /** Tempo sem atividade suficiente para confirmar que o deslocamento terminou. */
-        private const val STILLNESS_MS = 45_000L
+        /** Histerese: acima do limiar ativo conta para um burst; abaixo do quieto confirma repouso. */
+        private const val LINEAR_ACTIVE_THRESHOLD = 0.55f
+        private const val LINEAR_QUIET_THRESHOLD = 0.12f
 
-        /** Movimento mínimo no sensor já descontado da gravidade. */
-        private const val LINEAR_ACTIVITY_THRESHOLD = 0.25f
-
-        /** Desvio mínimo da gravidade quando só existe acelerômetro bruto. */
-        private const val ACCEL_ACTIVITY_THRESHOLD = 0.35f
+        /** Fallback com acelerômetro bruto, já descontando a gravidade no cálculo da magnitude. */
+        private const val ACCEL_ACTIVE_THRESHOLD = 0.70f
+        private const val ACCEL_QUIET_THRESHOLD = 0.20f
     }
 }
