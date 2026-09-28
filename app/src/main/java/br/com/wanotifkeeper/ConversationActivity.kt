@@ -48,6 +48,12 @@ class ConversationActivity : AppCompatActivity() {
         binding.toolbar.subtitle = if (pkg == "com.whatsapp.w4b") "WhatsApp Business" else "WhatsApp"
         binding.toolbar.setNavigationOnClickListener { finish() }
 
+        binding.swAutoTranscribe.isChecked =
+            Prefs.isAutoTranscribeConversation(this, pkg, sender)
+        binding.swAutoTranscribe.setOnCheckedChangeListener { _, checked ->
+            Prefs.setAutoTranscribeConversation(this, pkg, sender, checked)
+        }
+
         binding.btnSchedule.setOnClickListener {
             startActivity(ScheduledMessagesActivity.intent(this, pkg, sender))
         }
