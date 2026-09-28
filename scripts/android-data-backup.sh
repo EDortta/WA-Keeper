@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 APP_ID="br.com.wanotifkeeper"
-OUT_DIR="${WA_KEEPER_BACKUP_DIR:-$PWD/backups/android}"
+OUT_DIR="${WA_KEEPER_BACKUP_DIR:-$HOME/wa-keeper-backups}"
 COMMAND="${1:-}"
 BACKUP_INPUT="${2:-}"
 
@@ -111,7 +111,7 @@ create_backup() {
   stamp="$(date '+%Y-%m-%d-%H-%M-%S')"
   mkdir -p "$OUT_DIR"
   work="$(mktemp -d "${TMPDIR:-/tmp}/wa-keeper-backup.XXXXXX")"
-  trap 'rm -rf "${work:-}"' RETURN
+  trap "rm -rf '$work'" EXIT
 
   printf '==> Parando o app para fechar banco/WAL de forma consistente\n'
   "${ADB[@]}" shell am force-stop "$APP_ID" >/dev/null 2>&1 || true
@@ -188,7 +188,7 @@ restore_backup() {
 
   local work
   work="$(mktemp -d "${TMPDIR:-/tmp}/wa-keeper-restore.XXXXXX")"
-  trap 'rm -rf "${work:-}"' RETURN
+  trap "rm -rf '$work'" EXIT
 
   printf '==> Abrindo e verificando pacote de backup\n'
   tar -xzf "$BACKUP_INPUT" -C "$work"
