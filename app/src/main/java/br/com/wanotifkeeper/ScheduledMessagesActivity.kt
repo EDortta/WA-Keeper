@@ -32,6 +32,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
 
     private val pkg by lazy { intent.getStringExtra(EXTRA_PKG) ?: "com.whatsapp" }
     private val sender by lazy { intent.getStringExtra(EXTRA_SENDER).orEmpty() }
+    private val recipientPhone by lazy { intent.getStringExtra(EXTRA_RECIPIENT_PHONE)?.takeIf { it.isNotBlank() } }
     private val dao by lazy { NotifDatabase.get(this).scheduled() }
 
     private var editingId: Long? = null
@@ -59,7 +60,18 @@ class ScheduledMessagesActivity : AppCompatActivity() {
 
         if (sender.isBlank()) { finish(); return }
 
-        binding.tvConversation.text = sender
+        binding.tvConversation.text = if (recipientPhone != null) {
+            sender + " · " + formatPhoneForDisplay(recipientPhone!!)
+        } else {
+            sender
+        }
+
+        if (recipientPhone != null) {
+            binding.radioAtTime.isChecked = true
+            binding.radioNextIncoming.isEnabled = false
+            binding.radioNextIncoming.alpha = 0.45f
+        }
+
         binding.btnArm.setOnClickListener { save() }
         binding.btnCancelEdit.setOnClickListener { resetComposer() }
         binding.btnAttachment.setOnClickListener { pickAttachment.launch(arrayOf("*/*")) }
@@ -125,6 +137,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
                         mediaUri = selectedMediaUri,
                         mediaMimeType = selectedMediaMimeType,
                         mediaName = selectedMediaName,
+                        recipientPhone = recipientPhone,
                         createdAt = now,
                         updatedAt = now
                     )
@@ -139,6 +152,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
                     mediaUri = selectedMediaUri,
                     mediaMimeType = selectedMediaMimeType,
                     mediaName = selectedMediaName,
+                    recipientPhone = recipientPhone,
                     now = now
                 )
             }
@@ -379,7 +393,11 @@ class ScheduledMessagesActivity : AppCompatActivity() {
         selectedMediaMimeType = null
         selectedMediaName = null
         selectedScheduledAt = null
-        binding.radioNextIncoming.isChecked = true
+        if (recipientPhone != null) {
+            binding.radioAtTime.isChecked = true
+        } else {
+            binding.radioNextIncoming.isChecked = true
+        }
         binding.btnDateTime.text = "Escolher data e hora"
         binding.btnArm.text = "Programar"
         binding.btnCancelEdit.visibility = View.GONE
@@ -393,6 +411,17 @@ class ScheduledMessagesActivity : AppCompatActivity() {
         } ?: "Sem anexo"
         binding.btnRemoveAttachment.visibility =
             if (selectedMediaUri == null) View.GONE else View.VISIBLE
+    }
+
+    private fun formatPhoneForDisplay(raw: String): String {
+        val digits = ContactPhone.normalizeForWhatsApp(raw)
+        return if (digits.startsWith("55") && digits.length == 13) {
+            "+55 " + digits.substring(2, 4) + " " + digits.substring(4, 9) + "-" + digits.substring(9)
+        } else if (digits.startsWith("55") && digits.length == 12) {
+            "+55 " + digits.substring(2, 4) + " " + digits.substring(4, 8) + "-" + digits.substring(8)
+        } else {
+            "+" + digits
+        }
     }
 
     private fun displayName(uriText: String): String? = runCatching {
@@ -413,10 +442,17 @@ class ScheduledMessagesActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_PKG = "pkg"
         const val EXTRA_SENDER = "sender"
+        const val EXTRA_RECIPIENT_PHONE = "recipient_phone"
 
-        fun intent(ctx: Context, packageName: String, sender: String): Intent =
+        fun intent(
+            ctx: Context,
+            packageName: String,
+            sender: String,
+            recipientPhone: String? = null
+        ): Intent =
             Intent(ctx, ScheduledMessagesActivity::class.java)
                 .putExtra(EXTRA_PKG, packageName)
                 .putExtra(EXTRA_SENDER, sender)
+                .putExtra(EXTRA_RECIPIENT_PHONE, recipientPhone)
     }
 }
