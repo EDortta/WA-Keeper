@@ -105,6 +105,29 @@ class AudioArbiter private constructor(context: Context) {
         enqueue(Output.FileAudio(path))
     }
 
+    fun pauseFile(): Boolean = synchronized(lock) {
+        if (current !is Output.FileAudio || player == null) return@synchronized false
+        runCatching { player?.pause() }.isSuccess
+    }
+
+    fun resumeFile(): Boolean = synchronized(lock) {
+        if (current !is Output.FileAudio || player == null || !playerPrepared) {
+            return@synchronized false
+        }
+        if (!requestFocusLocked()) return@synchronized false
+        runCatching { player?.start() }.isSuccess
+    }
+
+    fun stopFile(): Boolean = synchronized(lock) {
+        if (current !is Output.FileAudio) return@synchronized false
+        releasePlayerLocked()
+        current = null
+        currentSpeechPart = 0
+        currentToken++
+        abandonFocusLocked()
+        true
+    }
+
     fun isBusy(): Boolean = synchronized(lock) { current != null || queue.isNotEmpty() }
 
     fun pauseAll() {
