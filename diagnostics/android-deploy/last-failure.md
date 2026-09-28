@@ -1,8 +1,8 @@
 # Última falha do android-deploy
 
-- Data UTC: `2026-09-28T20:35:55Z`
+- Data UTC: `2026-09-28T21:08:37Z`
 - Branch testada: `development`
-- Commit testado: `c17b4c52781a328575cee29b859c91f86a2e1216`
+- Commit testado: `9a621b34a7494e7e5230496f86dae7926c40491c`
 - Variante: `release`
 - Etapa: `Testes unitários`
 - Código de saída: `1`
@@ -20,36 +20,34 @@
 > Task :app:dataBindingMergeDependencyArtifactsDebug UP-TO-DATE
 > Task :app:generateDebugResValues UP-TO-DATE
 > Task :app:generateDebugResources
-> Task :app:mergeDebugResources
 > Task :app:packageDebugResources
-> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:mergeDebugResources
+> Task :app:parseDebugLocalResources
+> Task :app:checkDebugAarMetadata
+> Task :app:dataBindingGenBaseClassesDebug
 > Task :app:mapDebugSourceSetPaths
 > Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
 > Task :app:extractDeepLinksDebug UP-TO-DATE
-> Task :app:parseDebugLocalResources
 > Task :app:processDebugMainManifest
-> Task :app:dataBindingGenBaseClassesDebug
 > Task :app:processDebugManifest
 > Task :app:javaPreCompileDebug UP-TO-DATE
-> Task :app:processDebugManifestForPackage
 > Task :app:preDebugUnitTestBuild UP-TO-DATE
 > Task :app:javaPreCompileDebugUnitTest UP-TO-DATE
+> Task :app:processDebugManifestForPackage
 > Task :app:processDebugResources
 > Task :app:kspDebugKotlin
 
 > Task :app:compileDebugKotlin
-w: file://~/Sync/Projects/WA-Keeper/app/src/main/java/br/com/wanotifkeeper/ReplySender.kt:113:34 No cast needed
-w: file://~/Sync/Projects/WA-Keeper/app/src/main/java/br/com/wanotifkeeper/ReplySender.kt:163:34 No cast needed
+w: file://~/Sync/Projects/WA-Keeper/app/src/main/java/br/com/wanotifkeeper/EntityDetailActivity.kt:298:69 Unnecessary non-null assertion (!!) on a non-null receiver of type String
+w: file://~/Sync/Projects/WA-Keeper/app/src/main/java/br/com/wanotifkeeper/EntityDetailActivity.kt:311:75 Unnecessary non-null assertion (!!) on a non-null receiver of type String
+w: file://~/Sync/Projects/WA-Keeper/app/src/main/java/br/com/wanotifkeeper/TranscriptionClient.kt:167:31 Unnecessary non-null assertion (!!) on a non-null receiver of type MediaFormat
 
 > Task :app:compileDebugJavaWithJavac
+> Task :app:bundleDebugClassesToCompileJar
 > Task :app:bundleDebugClassesToRuntimeJar
 > Task :app:processDebugJavaRes UP-TO-DATE
-> Task :app:bundleDebugClassesToCompileJar
 > Task :app:kspDebugUnitTestKotlin
-
 > Task :app:compileDebugUnitTestKotlin
-w: file://~/Sync/Projects/WA-Keeper/app/src/test/java/br/com/wanotifkeeper/ScheduledMessageCoordinatorTest.kt:427:60 The corresponding parameter in the supertype 'ReplySender' is named 'sender'. This may cause problems when calling this function with named arguments.
-
 > Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processDebugUnitTestJavaRes UP-TO-DATE
 
@@ -71,7 +69,7 @@ Execution failed for task ':app:testDebugUnitTest'.
 * Try:
 > Run with --scan to get full insights.
 
-BUILD FAILED in 44s
-28 actionable tasks: 19 executed, 9 up-to-date
+BUILD FAILED in 1m 25s
+28 actionable tasks: 20 executed, 8 up-to-date
 
 ```
