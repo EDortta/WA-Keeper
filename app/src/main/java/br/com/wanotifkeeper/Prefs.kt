@@ -18,6 +18,10 @@ object Prefs {
     private const val KEY_AUDIO_PLAY_MOTION = "audio_play_in_motion"
     private const val KEY_AUDIO_BLOCKED = "audio_blocked_senders"
     private const val KEY_TTS_MODE_PREFIX = "tts_mode_"
+    private const val KEY_AUTO_TRANSCRIBE_CONVERSATION_PREFIX = "auto_transcribe_conversation_"
+    private const val KEY_AUTO_TRANSCRIBE_ENTITY_PREFIX = "auto_transcribe_entity_"
+    private const val KEY_TRANSCRIBER_URL = "transcriber_url"
+    private const val KEY_TRANSCRIBER_TOKEN = "transcriber_token"
     // Público: quem precisa reagir na hora (ver [registerChangeListener]) filtra por essa chave
     // em vez de fazer polling — foi exatamente a falta disso que deixava o microfone ligado por
     // até VOICE_GATE_CHECK_MS depois do switch desligar (ver NotifListenerService).
@@ -34,6 +38,7 @@ object Prefs {
 
     const val PKG_WHATSAPP = "com.whatsapp"
     const val PKG_BUSINESS = "com.whatsapp.w4b"
+    const val DEFAULT_TRANSCRIBER_URL = "https://whisper.inovacaosistemas.com.br/v1/transcribe"
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
@@ -67,6 +72,51 @@ object Prefs {
     ) {
         val key = KEY_TTS_MODE_PREFIX + packageName + "|" + sender.trim().lowercase()
         prefs(context).edit().putString(key, mode.name).apply()
+    }
+
+    fun isAutoTranscribeConversation(
+        context: Context,
+        packageName: String,
+        sender: String
+    ): Boolean {
+        val key = KEY_AUTO_TRANSCRIBE_CONVERSATION_PREFIX +
+            packageName + "|" + sender.trim().lowercase()
+        return prefs(context).getBoolean(key, false)
+    }
+
+    fun setAutoTranscribeConversation(
+        context: Context,
+        packageName: String,
+        sender: String,
+        enabled: Boolean
+    ) {
+        val key = KEY_AUTO_TRANSCRIBE_CONVERSATION_PREFIX +
+            packageName + "|" + sender.trim().lowercase()
+        prefs(context).edit().putBoolean(key, enabled).apply()
+    }
+
+    fun isAutoTranscribeEntity(context: Context, entityId: Long): Boolean =
+        prefs(context).getBoolean(KEY_AUTO_TRANSCRIBE_ENTITY_PREFIX + entityId, false)
+
+    fun setAutoTranscribeEntity(context: Context, entityId: Long, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_AUTO_TRANSCRIBE_ENTITY_PREFIX + entityId, enabled).apply()
+    }
+
+    fun transcriberUrl(context: Context): String =
+        prefs(context).getString(KEY_TRANSCRIBER_URL, DEFAULT_TRANSCRIBER_URL)
+            ?.trim()
+            ?.ifBlank { DEFAULT_TRANSCRIBER_URL }
+            ?: DEFAULT_TRANSCRIBER_URL
+
+    fun setTranscriberUrl(context: Context, url: String) {
+        prefs(context).edit().putString(KEY_TRANSCRIBER_URL, url.trim()).apply()
+    }
+
+    fun transcriberToken(context: Context): String =
+        prefs(context).getString(KEY_TRANSCRIBER_TOKEN, "").orEmpty()
+
+    fun setTranscriberToken(context: Context, token: String) {
+        prefs(context).edit().putString(KEY_TRANSCRIBER_TOKEN, token.trim()).apply()
     }
 
     /** Guardar os áudios de voz recebidos desta conta (copia o .opus antes que apaguem). Desligado por padrão. */
