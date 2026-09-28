@@ -51,6 +51,13 @@ object MediaShareAutomation {
         uriText: String,
         mimeType: String
     ): ReplyResult {
+        if (BankMode.isEnabled(context)) {
+            return ReplyResult.Rejected(
+                "Modo Banco ativo: envio de mídia pausado",
+                consumesAttempt = false
+            )
+        }
+
         if (!isEnabled(context)) {
             return ReplyResult.Rejected(
                 "ative a automação de mídia do WA Keeper em Acessibilidade",
@@ -133,6 +140,7 @@ object MediaShareAutomation {
 class MediaShareAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        if (BankMode.isEnabled(applicationContext)) return
         val job = MediaShareAutomation.current() ?: return
         if (event?.packageName?.toString() != job.packageName) return
         val root = rootInActiveWindow ?: return
