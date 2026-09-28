@@ -216,7 +216,7 @@ interface SettingsDao {
         MemoryEntity::class,
         EntityLinkEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 abstract class NotifDatabase : RoomDatabase() {
@@ -338,6 +338,12 @@ abstract class NotifDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE scheduled_messages ADD COLUMN recipientPhone TEXT")
+            }
+        }
+
         fun get(ctx: Context): NotifDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(
                 ctx.applicationContext,
@@ -350,7 +356,8 @@ abstract class NotifDatabase : RoomDatabase() {
                 MIGRATION_4_5,
                 MIGRATION_5_6,
                 MIGRATION_6_7,
-                MIGRATION_7_8
+                MIGRATION_7_8,
+                MIGRATION_8_9
             ).build().also { INSTANCE = it }
         }
     }
