@@ -103,15 +103,73 @@
                         android:textColor="#FFFFFF"
                         app:backgroundTint="@color/wa_primary" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnPlayAudio"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:id="@+id/audioControls"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:text="▶  Tocar áudio"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPlayAudio"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="▶ Play"
+                            android:textAllCaps="false"
+                            android:textColor="#FFFFFF"
+                            app:backgroundTint="@color/wa_primary" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPauseAudio"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:text="⏸ Pausa"
+                            android:textAllCaps="false" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnStopAudio"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:text="■ Stop"
+                            android:textAllCaps="false" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTranscribeAudio"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Transcrever áudio"
                         android:textAllCaps="false"
-                        android:textColor="#FFFFFF"
-                        app:backgroundTint="@color/wa_primary"
+                        android:visibility="gone" />
+
+                    <ProgressBar
+                        android:id="@+id/progressTranscription"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="10dp"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/tvTranscript"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:background="@color/wa_surface_soft"
+                        android:padding="12dp"
+                        android:textColor="@color/wa_text_primary"
+                        android:textIsSelectable="true"
+                        android:textSize="14sp"
                         android:visibility="gone" />
 
                 </LinearLayout>
