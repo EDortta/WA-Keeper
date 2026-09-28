@@ -128,11 +128,13 @@ class NotifListenerService : NotificationListenerService() {
 
     private sealed class PendingPlayback {
         data class Text(val sender: String, val text: String) : PendingPlayback()
+        data class Prompt(val text: String) : PendingPlayback()
         data class Audio(val path: String) : PendingPlayback()
     }
 
     private val repostGuard = RepostGuard()
     private val announcementGuard = AnnouncementGuard()
+    private val compactAnnouncementTracker = CompactAnnouncementTracker()
 
     private suspend fun imagePathFromNotification(
         picture: Bitmap?,
@@ -269,11 +271,33 @@ class NotifListenerService : NotificationListenerService() {
                 now = System.currentTimeMillis()
             )
             if (announce) {
-                if (callDetector.isInCall()) {
-                    synchronized(pendingDuringCall) { pendingDuringCall.add(PendingPlayback.Text(title, text.trim())) }
-                    beeper().beep()
-                } else {
-                    speak(title, text.trim())
+                val mode = Prefs.ttsMessageMode(applicationContext, sbn.packageName, title)
+                when (mode) {
+                    Prefs.TtsMessageMode.FULL -> {
+                        if (callDetector.isInCall()) {
+                            synchronized(pendingDuringCall) {
+                                pendingDuringCall.add(PendingPlayback.Text(title, text.trim()))
+                            }
+                            beeper().beep()
+                        } else {
+                            speak(title, text.trim())
+                        }
+                    }
+                    Prefs.TtsMessageMode.NOTICE -> {
+                        val phrase = compactAnnouncementTracker.phrase(
+                            packageName = sbn.packageName,
+                            sender = title,
+                            now = System.currentTimeMillis()
+                        )
+                        if (callDetector.isInCall()) {
+                            synchronized(pendingDuringCall) {
+                                pendingDuringCall.add(PendingPlayback.Prompt(phrase))
+                            }
+                            beeper().beep()
+                        } else {
+                            sayPrompt(phrase)
+                        }
+                    }
                 }
             }
         }
@@ -407,6 +431,7 @@ class NotifListenerService : NotificationListenerService() {
         items.forEach { item ->
             when (item) {
                 is PendingPlayback.Text -> speak(item.sender, item.text)
+                is PendingPlayback.Prompt -> sayPrompt(item.text)
                 is PendingPlayback.Audio -> player().play(item.path)
             }
         }
