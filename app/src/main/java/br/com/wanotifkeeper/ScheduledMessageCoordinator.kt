@@ -88,6 +88,13 @@ class ScheduledMessageCoordinator(
                     uri = row.mediaUri!!,
                     mimeType = row.mediaMimeType!!
                 )
+            } else if (!row.recipientPhone.isNullOrBlank()) {
+                sender.sendToPhone(
+                    packageName = row.packageName,
+                    sender = row.sender,
+                    phone = row.recipientPhone,
+                    text = row.text
+                )
             } else {
                 sender.send(row.packageName, row.sender, row.text)
             }
