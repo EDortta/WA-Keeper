@@ -73,6 +73,14 @@
                     android:textColor="@color/wa_text_secondary"
                     android:textSize="13sp" />
 
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/swAutoTranscribeEntity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Transcrever automaticamente áudios desta entidade"
+                    android:textColor="@color/wa_text_primary" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLinkConversation"
                     android:layout_width="match_parent"
