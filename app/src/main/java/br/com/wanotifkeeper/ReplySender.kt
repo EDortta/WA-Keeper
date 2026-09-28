@@ -18,6 +18,13 @@ sealed class ReplyResult {
 interface ReplySender {
     suspend fun send(packageName: String, sender: String, text: String): ReplyResult
 
+    suspend fun sendToPhone(
+        packageName: String,
+        sender: String,
+        phone: String,
+        text: String
+    ): ReplyResult = send(packageName, sender, text)
+
     suspend fun sendMedia(
         packageName: String,
         sender: String,
@@ -74,6 +81,25 @@ object ReplyActionRegistry {
 }
 
 class NotificationReplySender(private val context: Context) : ReplySender {
+
+    override suspend fun sendToPhone(
+        packageName: String,
+        sender: String,
+        phone: String,
+        text: String
+    ): ReplyResult {
+        val cached = ReplyActionRegistry.get(packageName, sender)
+        return if (cached != null) {
+            send(packageName, sender, text)
+        } else {
+            DirectContactAutomation.send(
+                context = context,
+                packageName = packageName,
+                phone = phone,
+                text = text
+            )
+        }
+    }
 
     override suspend fun send(packageName: String, sender: String, text: String): ReplyResult {
         val cached = ReplyActionRegistry.get(packageName, sender)
