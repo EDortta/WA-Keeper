@@ -11,8 +11,16 @@ import java.net.URLEncoder
 
 object ContactPhone {
     fun normalizeForWhatsApp(raw: String): String {
-        var digits = raw.filter(Char::isDigit)
-        if (digits.startsWith("00")) digits = digits.drop(2)
+        val trimmed = raw.trim()
+        var digits = trimmed.filter(Char::isDigit)
+
+        // Prefixos internacionais explícitos já trazem o código do país.
+        // Depois de remover "00", não podemos aplicar a heurística brasileira
+        // baseada apenas no comprimento: um uruguaio, por exemplo, pode ter
+        // 10/11 dígitos e acabaria ganhando "55" indevidamente.
+        if (trimmed.startsWith("00")) return digits.drop(2)
+        if (trimmed.startsWith("+")) return digits
+
         return when {
             digits.startsWith("55") && digits.length in 12..13 -> digits
             digits.length == 10 || digits.length == 11 -> "55$digits"
