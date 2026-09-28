@@ -1,0 +1,156 @@
+package br.com.wanotifkeeper
+
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.view.accessibility.AccessibilityNodeInfo
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.withTimeoutOrNull
+import java.net.URLEncoder
+
+object ContactPhone {
+    fun normalizeForWhatsApp(raw: String): String {
+        var digits = raw.filter(Char::isDigit)
+        if (digits.startsWith("00")) digits = digits.drop(2)
+        return when {
+            digits.startsWith("55") && digits.length in 12..13 -> digits
+            digits.length == 10 || digits.length == 11 -> "55$digits"
+            else -> digits
+        }
+    }
+}
+
+object DirectContactAutomation {
+    private const val TIMEOUT_MS = 90_000L
+
+    data class Pending(
+        val packageName: String,
+        val phone: String,
+        val text: String,
+        val result: CompletableDeferred<ReplyResult>,
+        @Volatile var textFilled: Boolean = false
+    )
+
+    @Volatile private var pending: Pending? = null
+
+    suspend fun send(
+        context: Context,
+        packageName: String,
+        phone: String,
+        text: String
+    ): ReplyResult {
+        if (!MediaShareAutomation.isEnabled(context)) {
+            return ReplyResult.Rejected(
+                "ative a automação de mídia do WA Keeper em Acessibilidade",
+                consumesAttempt = false
+            )
+        }
+        if (BankMode.isEnabled(context)) {
+            return ReplyResult.Rejected("Modo Banco ativo", consumesAttempt = false)
+        }
+
+        val normalized = ContactPhone.normalizeForWhatsApp(phone)
+        if (normalized.length < 10) {
+            return ReplyResult.Rejected("telefone inválido para WhatsApp", consumesAttempt = true)
+        }
+
+        synchronized(this) {
+            if (pending != null || MediaShareAutomation.current() != null) {
+                return ReplyResult.Rejected(
+                    "há outra automação de envio em andamento",
+                    consumesAttempt = false
+                )
+            }
+        }
+
+        val result = CompletableDeferred<ReplyResult>()
+        val job = Pending(packageName, normalized, text, result)
+        synchronized(this) { pending = job }
+
+        val started = runCatching {
+            val encoded = URLEncoder.encode(text, "UTF-8")
+            val intent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://wa.me/$normalized?text=$encoded")
+            ).apply {
+                setPackage(packageName)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        }.isSuccess
+
+        if (!started) {
+            clear(job)
+            return ReplyResult.Rejected("não foi possível abrir o contato no WhatsApp")
+        }
+
+        val outcome = withTimeoutOrNull(TIMEOUT_MS) { result.await() }
+        if (outcome != null) return outcome
+
+        clear(job)
+        return ReplyResult.Rejected(
+            "o envio para o contato não concluiu em 90 segundos",
+            consumesAttempt = false
+        )
+    }
+
+    fun current(): Pending? = pending
+
+    fun handle(root: AccessibilityNodeInfo, eventPackage: String?) {
+        val job = pending ?: return
+        if (eventPackage != job.packageName) return
+
+        if (!job.textFilled) {
+            val editable = findEditable(root)
+            if (editable != null) {
+                val current = editable.text?.toString().orEmpty()
+                if (current.isBlank() && job.text.isNotBlank()) {
+                    val args = Bundle().apply {
+                        putCharSequence(
+                            AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,
+                            job.text
+                        )
+                    }
+                    editable.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+                }
+                job.textFilled = true
+            }
+        }
+
+        val send = findSend(root)
+        if (send != null && send.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+            job.result.complete(ReplyResult.Accepted)
+            clear(job)
+        }
+    }
+
+    private fun findEditable(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        if (node.isEditable) return node
+        for (i in 0 until node.childCount) {
+            val found = node.getChild(i)?.let(::findEditable)
+            if (found != null) return found
+        }
+        return null
+    }
+
+    private fun findSend(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        val labels = listOf("Enviar", "Send", "Enviar mensagem", "Send message")
+        val text = node.text?.toString()?.trim()
+        val desc = node.contentDescription?.toString()?.trim()
+        if (node.isClickable && labels.any { it.equals(text, true) || it.equals(desc, true) }) {
+            return node
+        }
+        for (i in 0 until node.childCount) {
+            val found = node.getChild(i)?.let(::findSend)
+            if (found != null) return found
+        }
+        return null
+    }
+
+    private fun clear(job: Pending) {
+        synchronized(this) {
+            if (pending === job) pending = null
+        }
+    }
+}
