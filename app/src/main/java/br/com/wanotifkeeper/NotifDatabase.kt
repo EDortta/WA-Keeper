@@ -25,7 +25,10 @@ data class NotifEntity(
     val sourceRef: String? = null,
     val author: String? = null,
     val fingerprint: String? = null,
-    val conversationKey: String? = null
+    val conversationKey: String? = null,
+    val transcript: String? = null,
+    val transcriptStatus: String = "NONE",
+    val transcriptError: String? = null
 )
 
 @Entity(tableName = "memory_entities")
@@ -81,6 +84,15 @@ interface NotifDao {
 
     @Query("UPDATE notifications SET audioPath = :path WHERE id = :id")
     suspend fun setAudioPath(id: Long, path: String)
+
+    @Query("UPDATE notifications SET transcriptStatus = 'RUNNING', transcriptError = NULL WHERE id = :id")
+    suspend fun markTranscriptionRunning(id: Long)
+
+    @Query("UPDATE notifications SET transcript = :text, transcriptStatus = 'DONE', transcriptError = NULL WHERE id = :id")
+    suspend fun setTranscript(id: Long, text: String)
+
+    @Query("UPDATE notifications SET transcriptStatus = 'ERROR', transcriptError = :error WHERE id = :id")
+    suspend fun setTranscriptError(id: Long, error: String)
 
     @Query("UPDATE notifications SET audioPath = NULL WHERE sender = :sender")
     suspend fun clearAudioForSender(sender: String)
@@ -163,6 +175,9 @@ interface MemoryDao {
     @Query("SELECT * FROM entity_links WHERE packageName = :packageName AND sender = :sender LIMIT 1")
     suspend fun linkForConversation(packageName: String, sender: String): EntityLinkEntity?
 
+    @Query("SELECT entityId FROM entity_links WHERE packageName = :packageName AND sender = :sender")
+    suspend fun entityIdsForConversation(packageName: String, sender: String): List<Long>
+
     @Query("SELECT * FROM entity_links WHERE role = :role")
     suspend fun linksByRole(role: String): List<EntityLinkEntity>
 
@@ -171,7 +186,7 @@ interface MemoryDao {
            INNER JOIN entity_links l
              ON l.packageName = n.packageName AND l.sender = n.sender
            WHERE l.entityId = :entityId
-             AND (:query = '' OR n.text LIKE '%' || :query || '%' OR n.sender LIKE '%' || :query || '%')
+             AND (:query = '' OR n.text LIKE '%' || :query || '%' OR n.transcript LIKE '%' || :query || '%' OR n.sender LIKE '%' || :query || '%')
            ORDER BY n.timestamp DESC
            LIMIT :limit"""
     )
@@ -216,7 +231,7 @@ interface SettingsDao {
         MemoryEntity::class,
         EntityLinkEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 abstract class NotifDatabase : RoomDatabase() {
@@ -344,6 +359,14 @@ abstract class NotifDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE notifications ADD COLUMN transcript TEXT")
+                db.execSQL("ALTER TABLE notifications ADD COLUMN transcriptStatus TEXT NOT NULL DEFAULT 'NONE'")
+                db.execSQL("ALTER TABLE notifications ADD COLUMN transcriptError TEXT")
+            }
+        }
+
         fun get(ctx: Context): NotifDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(
                 ctx.applicationContext,
@@ -357,7 +380,8 @@ abstract class NotifDatabase : RoomDatabase() {
                 MIGRATION_5_6,
                 MIGRATION_6_7,
                 MIGRATION_7_8,
-                MIGRATION_8_9
+                MIGRATION_8_9,
+                MIGRATION_9_10
             ).build().also { INSTANCE = it }
         }
     }
