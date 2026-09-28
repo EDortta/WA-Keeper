@@ -81,9 +81,16 @@ class NotifListenerService : NotificationListenerService() {
 
     private val voicePrefsListener =
         SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == Prefs.KEY_VOICE_COMMANDS_ENABLED || key == Prefs.KEY_DIRECT_COMMAND_UNTIL) {
+            if (
+                key == Prefs.KEY_VOICE_COMMANDS_ENABLED ||
+                key == Prefs.KEY_DIRECT_COMMAND_UNTIL ||
+                key == Prefs.KEY_BANK_MODE_ENABLED
+            ) {
                 android.util.Log.d(TAG_VOICE_GATE, "$key mudou — reavaliando na hora")
-                scope.launch { updateListeningState() }
+                scope.launch {
+                    if (Prefs.isBankModeEnabled(applicationContext)) enterBankModePause()
+                    else exitBankModePause()
+                }
             }
         }
 
@@ -147,9 +154,13 @@ class NotifListenerService : NotificationListenerService() {
     override fun onListenerConnected() {
         super.onListenerConnected()
         Prefs.registerChangeListener(applicationContext, voicePrefsListener)
-        motion.start()
-        callDetector.start(scope)
-        scope.launch { runPurge() }
+        if (Prefs.isBankModeEnabled(applicationContext)) {
+            enterBankModePause()
+        } else {
+            motion.start()
+            callDetector.start(scope)
+            scope.launch { runPurge() }
+        }
         scope.launch { runVoiceGateLoop() }
     }
 
@@ -182,6 +193,7 @@ class NotifListenerService : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
+        if (Prefs.isBankModeEnabled(applicationContext)) return
         if (sbn.packageName !in watchedPackages) return
 
         if ((sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) return
@@ -400,6 +412,24 @@ class NotifListenerService : NotificationListenerService() {
         }
     }
 
+    private fun enterBankModePause() {
+        motion.stop()
+        callDetector.stop()
+        stopVoiceListening()
+        directCommandArmedFor = 0L
+        Prefs.setDirectCommandUntil(applicationContext, 0L)
+        Prefs.setManualListenUntil(applicationContext, 0L)
+        Prefs.setManualDurationMinutes(applicationContext, 0)
+        ManualReadMode.disable()
+        AudioArbiter.get(applicationContext).pauseAll()
+    }
+
+    private fun exitBankModePause() {
+        motion.start()
+        callDetector.start(scope)
+        updateListeningState()
+    }
+
     private suspend fun runVoiceGateLoop() {
         while (scope.isActive) {
             updateListeningState()
@@ -408,6 +438,11 @@ class NotifListenerService : NotificationListenerService() {
     }
 
     private fun updateListeningState() {
+        if (Prefs.isBankModeEnabled(applicationContext)) {
+            if (voiceListening) stopVoiceListening()
+            return
+        }
+
         val masterEnabled = Prefs.isVoiceCommandsEnabled(applicationContext)
         val sdkSupported = Build.VERSION.SDK_INT >= MIN_SDK_VOICE_COMMANDS
         val hasRecordAudioPermission = ContextCompat.checkSelfPermission(
