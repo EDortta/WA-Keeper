@@ -107,6 +107,20 @@ class AudioArbiter private constructor(context: Context) {
 
     fun isBusy(): Boolean = synchronized(lock) { current != null || queue.isNotEmpty() }
 
+    fun pauseAll() {
+        synchronized(lock) {
+            queue.clear()
+            currentToken++
+            speechSpeaking = false
+            runCatching { tts?.stop() }
+            releasePlayerLocked()
+            current = null
+            currentSpeechPart = 0
+            microphoneActive = false
+            abandonFocusLocked()
+        }
+    }
+
     fun isAudiblyBusy(): Boolean = synchronized(lock) { !microphoneActive && current != null }
 
     fun setMicrophoneActive(active: Boolean) {
