@@ -60,8 +60,69 @@ class DetailActivity : AppCompatActivity() {
             }
 
             if (originalAudio != null) {
-                binding.btnPlayAudio.visibility = View.VISIBLE
-                binding.btnPlayAudio.setOnClickListener { audio.play(originalAudio.absolutePath) }
+                binding.audioControls.visibility = View.VISIBLE
+                binding.btnTranscribeAudio.visibility = View.VISIBLE
+
+                binding.btnPlayAudio.setOnClickListener {
+                    if (!audio.resumeFile()) {
+                        audio.play(originalAudio.absolutePath)
+                    }
+                }
+                binding.btnPauseAudio.setOnClickListener {
+                    audio.pauseFile()
+                }
+                binding.btnStopAudio.setOnClickListener {
+                    audio.stopFile()
+                }
+
+                renderTranscript(item)
+                binding.btnTranscribeAudio.setOnClickListener {
+                    transcribe(item.id)
+                }
+            }
+        }
+    }
+
+    private fun renderTranscript(item: NotifEntity) {
+        when {
+            !item.transcript.isNullOrBlank() -> {
+                binding.tvTranscript.visibility = View.VISIBLE
+                binding.tvTranscript.text = item.transcript
+                binding.btnTranscribeAudio.text = "Transcrever novamente"
+            }
+            item.transcriptStatus == "ERROR" -> {
+                binding.tvTranscript.visibility = View.VISIBLE
+                binding.tvTranscript.text = "Falha na transcrição: ${item.transcriptError ?: "sem detalhe"}"
+                binding.btnTranscribeAudio.text = "Tentar novamente"
+            }
+            else -> {
+                binding.tvTranscript.visibility = View.GONE
+                binding.btnTranscribeAudio.text = "Transcrever áudio"
+            }
+        }
+    }
+
+    private fun transcribe(id: Long) {
+        binding.progressTranscription.visibility = View.VISIBLE
+        binding.btnTranscribeAudio.isEnabled = false
+        lifecycleScope.launch {
+            val result = AudioTranscriptionManager.transcribe(
+                context = applicationContext,
+                notificationId = id,
+                force = true
+            )
+            binding.progressTranscription.visibility = View.GONE
+            binding.btnTranscribeAudio.isEnabled = true
+
+            val refreshed = NotifDatabase.get(this@DetailActivity).dao().byId(id)
+            if (refreshed != null) renderTranscript(refreshed)
+
+            result.exceptionOrNull()?.let { error ->
+                if (refreshed?.transcript.isNullOrBlank()) {
+                    binding.tvTranscript.visibility = View.VISIBLE
+                    binding.tvTranscript.text =
+                        "Falha na transcrição: ${error.message ?: error.javaClass.simpleName}"
+                }
             }
         }
     }
