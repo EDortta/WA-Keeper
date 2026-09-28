@@ -35,6 +35,10 @@ class EntityDetailActivity : AppCompatActivity() {
         }
 
         binding.btnBack.setOnClickListener { finish() }
+        binding.swAutoTranscribeEntity.isChecked = Prefs.isAutoTranscribeEntity(this, entityId)
+        binding.swAutoTranscribeEntity.setOnCheckedChangeListener { _, checked ->
+            Prefs.setAutoTranscribeEntity(this, entityId, checked)
+        }
         binding.btnLinkConversation.setOnClickListener { showLinkConversationDialog() }
         binding.btnRenameEntity.setOnClickListener { renameEntity() }
         binding.btnMergeEntity.setOnClickListener { mergeEntity() }
@@ -207,6 +211,12 @@ object MemoryQuestionEngine {
         "foi","era","tem","tinha","me","eu","ele","ela","isso","isto","sobre"
     )
 
+    private fun memoryContent(item: NotifEntity): String {
+        return item.transcript?.takeIf { it.isNotBlank() }
+            ?.let { transcript -> "[Áudio transcrito] $transcript" }
+            ?: item.text
+    }
+
     fun answer(
         question: String,
         messages: List<NotifEntity>,
@@ -235,7 +245,8 @@ object MemoryQuestionEngine {
             val hay = (
                 message.sender + " " +
                     (message.author ?: "") + " " +
-                    message.text
+                    message.text + " " +
+                    (message.transcript ?: "")
                 ).lowercase()
 
             var hits = 0
@@ -286,10 +297,11 @@ object MemoryQuestionEngine {
         val date = fmt.format(Date(first.timestamp))
         val author = if (!first.author.isNullOrBlank()) first.author!! else first.sender
 
+        val firstContent = memoryContent(first)
         val answer = if (relevant.size == 1) {
-            "Encontrei uma referência direta: em $date, $author: “${first.text.take(320)}”"
+            "Encontrei uma referência direta: em $date, $author: “${firstContent.take(320)}”"
         } else {
-            "Encontrei ${relevant.size} referências relacionadas. A mais forte é de $date, $author: “${first.text.take(320)}”"
+            "Encontrei ${relevant.size} referências relacionadas. A mais forte é de $date, $author: “${firstContent.take(320)}”"
         }
 
         val sourceBuilder = StringBuilder()
@@ -303,7 +315,7 @@ object MemoryQuestionEngine {
                 .append(" — ")
                 .append(itemAuthor)
                 .append("\n")
-                .append(item.text.take(260))
+                .append(memoryContent(item).take(260))
         }
 
         return MemoryAnswer(answer, sourceBuilder.toString())
