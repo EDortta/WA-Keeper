@@ -335,6 +335,40 @@ class ScheduledMessageCoordinatorTest {
         assertNull(store.rows[id]!!.sentAt)
     }
 
+
+    @Test
+    fun `timed contact target uses phone-aware sender`() = runBlocking {
+        val store = FakeStore()
+        val id = store.arm("com.whatsapp", "Ana", "oi")
+        store.rows[id] = store.rows[id]!!.copy(
+            triggerType = ScheduledTrigger.AT_TIME.name,
+            scheduledAt = 1_000L,
+            recipientPhone = "5518999999999"
+        )
+
+        val sender = object : ReplySender {
+            var phone: String? = null
+            override suspend fun send(packageName: String, sender: String, text: String): ReplyResult {
+                throw AssertionError("send() não deveria ser usado para alvo com telefone")
+            }
+
+            override suspend fun sendToPhone(
+                packageName: String,
+                sender: String,
+                phone: String,
+                text: String
+            ): ReplyResult {
+                this.phone = phone
+                return ReplyResult.Accepted
+            }
+        }
+
+        val outcome = coordinator(store, sender, now = 1_000L).onTimedMessage(id)
+
+        assertEquals(TriggerOutcome.Sent(id), outcome)
+        assertEquals("5518999999999", sender.phone)
+    }
+
     // ---- ordem ---------------------------------------------------------------
 
     @Test
