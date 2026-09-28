@@ -94,6 +94,18 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, EntitiesActivity::class.java))
         }
 
+        binding.btnScheduleContact.setOnClickListener {
+            val pkg = when (currentTab) {
+                1 -> Prefs.PKG_WHATSAPP
+                2 -> Prefs.PKG_BUSINESS
+                else -> return@setOnClickListener
+            }
+            startActivity(
+                Intent(this, ContactScheduleActivity::class.java)
+                    .putExtra(ContactScheduleActivity.EXTRA_PACKAGE, pkg)
+            )
+        }
+
         binding.btnReadMode.setOnClickListener {
             val enabled = ManualReadMode.toggle()
             renderReadMode()
@@ -114,6 +126,7 @@ class MainActivity : AppCompatActivity() {
         binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 currentTab = tab.position
+                renderScheduleContactAction()
                 reload()
             }
             override fun onTabUnselected(tab: TabLayout.Tab) {}
@@ -129,7 +142,18 @@ class MainActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, st: Int, b: Int, c: Int) {}
         })
 
+        renderScheduleContactAction()
         reload()
+    }
+
+    private fun renderScheduleContactAction() {
+        binding.btnScheduleContact.visibility =
+            if (currentTab == 1 || currentTab == 2) View.VISIBLE else View.GONE
+        binding.btnScheduleContact.text = when (currentTab) {
+            1 -> "Agendar para contato · WhatsApp"
+            2 -> "Agendar para contato · Business"
+            else -> "Agendar para um contato"
+        }
     }
 
     override fun onResume() {
