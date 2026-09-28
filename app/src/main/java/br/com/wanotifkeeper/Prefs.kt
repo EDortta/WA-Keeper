@@ -29,6 +29,7 @@ object Prefs {
     private const val KEY_MANUAL_DURATION_MINUTES = "voice_manual_duration_minutes"
     private const val KEY_MANUAL_TIMER_MOTION_SEEN = "voice_manual_timer_motion_seen"
     private const val KEY_SPEECH_PACK_MISSING = "voice_speech_pack_missing"
+    const val KEY_BANK_MODE_ENABLED = "bank_mode_enabled"
 
     const val PKG_WHATSAPP = "com.whatsapp"
     const val PKG_BUSINESS = "com.whatsapp.w4b"
@@ -134,6 +135,13 @@ object Prefs {
 
     fun setSpeechPackMissing(context: Context, missing: Boolean) {
         prefs(context).edit().putBoolean(KEY_SPEECH_PACK_MISSING, missing).apply()
+    }
+
+    fun isBankModeEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_BANK_MODE_ENABLED, false)
+
+    fun setBankModeEnabled(context: Context, enabled: Boolean) {
+        prefs(context).edit().putBoolean(KEY_BANK_MODE_ENABLED, enabled).apply()
     }
 
     /**
