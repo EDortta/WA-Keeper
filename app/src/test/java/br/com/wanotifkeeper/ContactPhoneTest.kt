@@ -28,4 +28,12 @@ class ContactPhoneTest {
             ContactPhone.normalizeForWhatsApp("00598 99 123 456")
         )
     }
+
+    @Test
+    fun explicitForeignPlusPrefixIsNotRewrittenAsBrazilian() {
+        assertEquals(
+            "59899123456",
+            ContactPhone.normalizeForWhatsApp("+598 99 123 456")
+        )
+    }
 }
