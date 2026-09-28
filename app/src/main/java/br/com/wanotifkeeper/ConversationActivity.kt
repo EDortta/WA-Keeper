@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
@@ -57,6 +58,11 @@ class ConversationActivity : AppCompatActivity() {
             )
         }
 
+        refreshTtsModeButton(pkg, sender)
+        binding.btnTtsMode.setOnClickListener {
+            showTtsModeDialog(pkg, sender)
+        }
+
         val adapter = ConversationMessageAdapter(
             fmt = fmt,
             onOpen = { item ->
@@ -102,6 +108,39 @@ class ConversationActivity : AppCompatActivity() {
                     binding.emptyState.visibility = if (messages.isEmpty()) View.VISIBLE else View.GONE
                 }
         }
+    }
+
+    private fun refreshTtsModeButton(packageName: String, sender: String) {
+        binding.btnTtsMode.text = when (
+            Prefs.ttsMessageMode(this, packageName, sender)
+        ) {
+            Prefs.TtsMessageMode.FULL -> "Leitura automática: mensagem completa"
+            Prefs.TtsMessageMode.NOTICE -> "Leitura automática: só aviso"
+        }
+    }
+
+    private fun showTtsModeDialog(packageName: String, sender: String) {
+        val modes = arrayOf(
+            "Ler a mensagem completa",
+            "Só avisar que chegou"
+        )
+        val current = Prefs.ttsMessageMode(this, packageName, sender)
+        val checked = if (current == Prefs.TtsMessageMode.FULL) 0 else 1
+
+        AlertDialog.Builder(this)
+            .setTitle("Leitura automática de $sender")
+            .setSingleChoiceItems(modes, checked) { dialog, which ->
+                val mode = if (which == 0) {
+                    Prefs.TtsMessageMode.FULL
+                } else {
+                    Prefs.TtsMessageMode.NOTICE
+                }
+                Prefs.setTtsMessageMode(this, packageName, sender, mode)
+                refreshTtsModeButton(packageName, sender)
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     companion object {
