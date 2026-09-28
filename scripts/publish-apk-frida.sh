@@ -212,35 +212,109 @@ rm -f "$root/$probe" 2>/dev/null || sudo -n rm -f "$root/$probe" 2>/dev/null || 
 REMOTE
 }
 
+ensure_frida_static_location() {
+  local static_root="/var/www"
+  local static_dir="$static_root/$REMOTE_SUBDIR"
+
+  log "8443 é borda WAN -> frida:443; garantindo location /$REMOTE_SUBDIR/ no vhost HTTPS" >&2
+
+  ssh "${SSH_OPTS[@]}" "$SSH_TARGET" bash -s -- "$REMOTE_SUBDIR" "$static_dir" <<'REMOTE'
+set -Eeuo pipefail
+subdir="$1"
+static_dir="$2"
+
+conf="$(
+  sudo -n grep -RslE "server_name[[:space:]]+frida\.inovacaosistemas\.com\.br[[:space:]]*;"     /etc/nginx/sites-enabled /etc/nginx/sites-available 2>/dev/null |
+  head -n1
+)"
+[[ -n "$conf" ]] || {
+  echo "vhost frida.inovacaosistemas.com.br não encontrado" >&2
+  exit 20
+}
+
+sudo -n mkdir -p "$static_dir"
+
+if ! sudo -n grep -Fq "# WA-KEEPER-STATIC-BEGIN" "$conf"; then
+  tmp="$(mktemp)"
+  sudo -n cat "$conf" > "$tmp"
+
+  python3 - "$tmp" "$subdir" "$static_dir" <<'PY'
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+subdir = sys.argv[2]
+static_dir = sys.argv[3]
+text = path.read_text()
+
+needle = "    location / { return 404; }"
+if needle not in text:
+    raise SystemExit("location catch-all do vhost frida não encontrada")
+
+block = f"""    # WA-KEEPER-STATIC-BEGIN
+    location /{subdir}/ {{
+        alias {static_dir}/;
+        autoindex on;
+        add_header Cache-Control "no-store";
+    }}
+    # WA-KEEPER-STATIC-END
+
+"""
+text = text.replace(needle, block + needle, 1)
+path.write_text(text)
+PY
+
+  sudo -n cp "$tmp" "$conf"
+  rm -f "$tmp"
+
+  sudo -n nginx -t
+  sudo -n nginx -s reload
+fi
+REMOTE
+
+  printf '%s\n' "$static_root"
+}
+
 discover_webroot() {
   local probe token root body
-  probe=".wa-keeper-probe-$$-$(date +%s).txt"
-  token="wa-keeper-probe-$$-$(date +%s)-$RANDOM"
+  probe=".wa-keeper-probe-$-$(date +%s).txt"
+  token="wa-keeper-probe-$-$(date +%s)-$RANDOM"
 
   mapfile -t CANDIDATES < <(collect_candidates | awk 'NF && /^\// && !seen[$0]++')
 
-  (("${#CANDIDATES[@]}" > 0)) ||
-    fail "não encontrei nenhum candidato a document root em $SSH_TARGET"
+  if (("${#CANDIDATES[@]}" > 0)); then
+    log "Testando ${#CANDIDATES[@]} candidato(s) de webroot com sonda HTTP" >&2
 
-  log "Testando ${#CANDIDATES[@]} candidato(s) de webroot com sonda HTTP" >&2
+    for root in "${CANDIDATES[@]}"; do
+      if ! remote_write_probe "$root/$REMOTE_SUBDIR" "$probe" "$token" >/dev/null 2>&1; then
+        continue
+      fi
 
-  for root in "${CANDIDATES[@]}"; do
+      body="$(curl -kfsSL --max-time 7 "${PUBLIC_BASE%/}/$REMOTE_SUBDIR/$probe" 2>/dev/null || true)"
+      remote_remove_probe "$root/$REMOTE_SUBDIR" "$probe"
 
-    if ! remote_write_probe "$root" "$probe" "$token" >/dev/null 2>&1; then
-      continue
-    fi
+      if [[ "$body" == "$token" ]]; then
+        printf '%s\n' "$root"
+        return 0
+      fi
+    done
+  fi
 
-    body="$(curl -kfsSL --max-time 7 "${PUBLIC_BASE%/}/$probe" 2>/dev/null || true)"
-    remote_remove_probe "$root" "$probe"
+  root="$(ensure_frida_static_location)" || return 1
 
-    if [[ "$body" == "$token" ]]; then
-      printf '%s\n' "$root"
-      return 0
-    fi
-  done
+  if ! remote_write_probe "$root/$REMOTE_SUBDIR" "$probe" "$token" >/dev/null 2>&1; then
+    return 1
+  fi
 
-  printf '\nCandidatos encontrados, mas nenhum respondeu à sonda em %s:\n' "$PUBLIC_BASE" >&2
-  printf '  %s\n' "${CANDIDATES[@]}" >&2
+  body="$(curl -kfsSL --max-time 7 "${PUBLIC_BASE%/}/$REMOTE_SUBDIR/$probe" 2>/dev/null || true)"
+  remote_remove_probe "$root/$REMOTE_SUBDIR" "$probe"
+
+  if [[ "$body" == "$token" ]]; then
+    printf '%s\n' "$root"
+    return 0
+  fi
+
+  printf '\nA location /%s/ foi configurada, mas a sonda pública ainda falhou em %s\n'     "$REMOTE_SUBDIR" "$PUBLIC_BASE" >&2
   return 1
 }
 
