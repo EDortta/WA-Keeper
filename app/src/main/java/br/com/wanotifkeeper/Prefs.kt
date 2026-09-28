@@ -17,6 +17,7 @@ object Prefs {
     private const val KEY_AUDIO_CAPTURE_PREFIX = "audio_capture_enabled_"
     private const val KEY_AUDIO_PLAY_MOTION = "audio_play_in_motion"
     private const val KEY_AUDIO_BLOCKED = "audio_blocked_senders"
+    private const val KEY_TTS_MODE_PREFIX = "tts_mode_"
     // Público: quem precisa reagir na hora (ver [registerChangeListener]) filtra por essa chave
     // em vez de fazer polling — foi exatamente a falta disso que deixava o microfone ligado por
     // até VOICE_GATE_CHECK_MS depois do switch desligar (ver NotifListenerService).
@@ -48,6 +49,25 @@ object Prefs {
     /** Alguma conta com leitura ligada — usado para evitar ligar sensores à toa. */
     fun anyTtsEnabled(context: Context): Boolean =
         isTtsEnabled(context, PKG_WHATSAPP) || isTtsEnabled(context, PKG_BUSINESS)
+
+    enum class TtsMessageMode { FULL, NOTICE }
+
+    fun ttsMessageMode(context: Context, packageName: String, sender: String): TtsMessageMode {
+        val key = KEY_TTS_MODE_PREFIX + packageName + "|" + sender.trim().lowercase()
+        val raw = prefs(context).getString(key, TtsMessageMode.FULL.name)
+        return runCatching { TtsMessageMode.valueOf(raw ?: TtsMessageMode.FULL.name) }
+            .getOrDefault(TtsMessageMode.FULL)
+    }
+
+    fun setTtsMessageMode(
+        context: Context,
+        packageName: String,
+        sender: String,
+        mode: TtsMessageMode
+    ) {
+        val key = KEY_TTS_MODE_PREFIX + packageName + "|" + sender.trim().lowercase()
+        prefs(context).edit().putString(key, mode.name).apply()
+    }
 
     /** Guardar os áudios de voz recebidos desta conta (copia o .opus antes que apaguem). Desligado por padrão. */
     fun isAudioCaptureEnabled(context: Context, packageName: String): Boolean =
