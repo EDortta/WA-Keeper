@@ -41,6 +41,16 @@
             android:textAllCaps="false" />
     </LinearLayout>
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnTtsMode"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="Leitura automática: completa"
+        android:textAllCaps="false" />
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
