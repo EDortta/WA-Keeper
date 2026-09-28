@@ -63,6 +63,9 @@ dependencies {
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
 
+    // ASR local/offline no próprio Android.
+    implementation 'com.github.k2-fsa.sherpa-onnx:sherpa-onnx:v1.13.8'
+
     // Testes unitários locais (JVM puro, sem instrumentação) — ver
     // VoiceGateDecisionTest, MediaHintsTest, ScheduledMessageCoordinatorTest.
     testImplementation 'junit:junit:4.13.2'
