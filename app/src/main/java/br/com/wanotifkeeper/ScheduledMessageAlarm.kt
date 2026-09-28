@@ -24,6 +24,11 @@ object ScheduledMessageAlarmScheduler {
         val pendingIntent = pendingIntent(app)
         alarm.cancel(pendingIntent)
 
+        if (BankMode.isEnabled(app)) {
+            Log.d(TAG, "Modo Banco ativo; alarme de mensagens agendadas permanece pausado")
+            return
+        }
+
         val nextAt = NotifDatabase.get(app).scheduled()
             .nextTimedAt(NotificationReplySender.NO_ACTION) ?: return
         val target = max(nextAt, System.currentTimeMillis() + 1_000L)
@@ -54,6 +59,13 @@ object ScheduledMessageAlarmScheduler {
         }
     }
 
+    suspend fun pause(context: Context) {
+        val app = context.applicationContext
+        val alarm = app.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarm.cancel(pendingIntent(app))
+        Log.d(TAG, "alarmes de mensagens agendadas pausados pelo Modo Banco")
+    }
+
     private fun pendingIntent(context: Context): PendingIntent =
         PendingIntent.getBroadcast(
             context,
@@ -68,7 +80,9 @@ class ScheduledMessageAlarmReceiver : BroadcastReceiver() {
         val pending = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
-                ScheduledMessageTrigger.onTime(context.applicationContext)
+                if (!BankMode.isEnabled(context.applicationContext)) {
+                    ScheduledMessageTrigger.onTime(context.applicationContext)
+                }
                 ScheduledMessageAlarmScheduler.reschedule(context.applicationContext)
             } finally {
                 pending.finish()
