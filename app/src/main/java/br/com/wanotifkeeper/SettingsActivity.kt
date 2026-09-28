@@ -33,6 +33,10 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.toolbar.setNavigationOnClickListener { finish() }
 
+        binding.btnBankMode.setOnClickListener {
+            startActivity(Intent(this, BankModeActivity::class.java))
+        }
+
         // --- Leitura em voz alta (TTS) por conta ---
         binding.swWhatsapp.isChecked = Prefs.isTtsEnabled(this, Prefs.PKG_WHATSAPP)
         binding.swBusiness.isChecked = Prefs.isTtsEnabled(this, Prefs.PKG_BUSINESS)
@@ -66,8 +70,20 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        refreshBankModeStatus()
         refreshAudioPermissionBanner()
         refreshVoiceSection()
+    }
+
+    private fun refreshBankModeStatus() {
+        binding.tvBankModeSummary.text = when (BankMode.status(this)) {
+            BankModeStatus.NORMAL -> "Desligado · WA Keeper funcionando normalmente"
+            BankModeStatus.WAITING_ACCESSIBILITY -> "Ativo · falta desligar Acessibilidade"
+            BankModeStatus.WAITING_NOTIFICATION_ACCESS -> "Ativo · falta desligar Acesso a notificações"
+            BankModeStatus.READY -> "Ativo · pronto para tentar abrir o banco"
+            BankModeStatus.RESUME_NEEDS_ACCESSIBILITY -> "WA Keeper retomado · Acessibilidade ainda desligada"
+            BankModeStatus.RESUME_NEEDS_NOTIFICATION_ACCESS -> "WA Keeper retomado · Acesso a notificações ainda desligado"
+        }
     }
 
     /** O aviso aparece só quando a guarda está ligada mas a permissão ainda falta. */
