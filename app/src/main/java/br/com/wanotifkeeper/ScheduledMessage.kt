@@ -39,6 +39,7 @@ data class ScheduledMessageEntity(
     val mediaUri: String? = null,
     val mediaMimeType: String? = null,
     val mediaName: String? = null,
+    val recipientPhone: String? = null,
     val state: String = ScheduledState.PENDING.name,
     val createdAt: Long,
     val updatedAt: Long,
@@ -165,6 +166,7 @@ interface ScheduledMessageDao {
         "UPDATE scheduled_messages SET " +
             "text = :text, triggerType = :triggerType, scheduledAt = :scheduledAt, " +
             "mediaUri = :mediaUri, mediaMimeType = :mediaMimeType, mediaName = :mediaName, " +
+            "recipientPhone = :recipientPhone, " +
             "updatedAt = :now, lastError = NULL, nextAttemptAt = 0 " +
             "WHERE id = :id AND state = 'PENDING'"
     )
@@ -176,6 +178,7 @@ interface ScheduledMessageDao {
         mediaUri: String?,
         mediaMimeType: String?,
         mediaName: String?,
+        recipientPhone: String?,
         now: Long
     ): Int
 
