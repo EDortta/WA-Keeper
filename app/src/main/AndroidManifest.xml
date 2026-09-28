@@ -119,6 +119,11 @@
             android:exported="false"
             android:parentActivityName=".MainActivity" />
 
+        <activity
+            android:name=".BankModeActivity"
+            android:exported="false"
+            android:parentActivityName=".SettingsActivity" />
+
         <service
             android:name=".MediaShareAccessibilityService"
             android:exported="true"
