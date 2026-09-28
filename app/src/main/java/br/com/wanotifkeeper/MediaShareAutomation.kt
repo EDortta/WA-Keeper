@@ -141,9 +141,16 @@ class MediaShareAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (BankMode.isEnabled(applicationContext)) return
-        val job = MediaShareAutomation.current() ?: return
-        if (event?.packageName?.toString() != job.packageName) return
         val root = rootInActiveWindow ?: return
+        val eventPackage = event?.packageName?.toString()
+
+        DirectContactAutomation.current()?.let {
+            DirectContactAutomation.handle(root, eventPackage)
+            return
+        }
+
+        val job = MediaShareAutomation.current() ?: return
+        if (eventPackage != job.packageName) return
 
         when (job.phase) {
             MediaShareAutomation.Phase.PICK_CONTACT -> pickContact(root, job)
