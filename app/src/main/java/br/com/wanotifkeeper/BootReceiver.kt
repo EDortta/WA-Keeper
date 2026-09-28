@@ -13,7 +13,9 @@ class BootReceiver : BroadcastReceiver() {
         val pending = goAsync()
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
-                ScheduledMessageAlarmScheduler.reschedule(context.applicationContext)
+                if (!BankMode.isEnabled(context.applicationContext)) {
+                    ScheduledMessageAlarmScheduler.reschedule(context.applicationContext)
+                }
             } finally {
                 pending.finish()
             }
