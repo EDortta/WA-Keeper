@@ -336,7 +336,7 @@ class NotifListenerService : NotificationListenerService() {
                 Prefs.isAudioCaptureEnabled(applicationContext, sbn.packageName) &&
                 !Prefs.isAudioBlocked(applicationContext, title)
             ) {
-                captureAudio(rowId, sbn.packageName, sbn.postTime)
+                captureAudio(rowId, sbn.packageName, title, sbn.postTime)
             }
             imageJob?.join()
             runPurge()
@@ -387,11 +387,31 @@ class NotifListenerService : NotificationListenerService() {
         }
     }
 
-    private suspend fun captureAudio(rowId: Long, pkg: String, postTime: Long) {
+    private suspend fun captureAudio(
+        rowId: Long,
+        pkg: String,
+        sender: String,
+        postTime: Long
+    ) {
         for (wait in longArrayOf(300, 1200, 3000, 6000)) {
             delay(wait)
             val path = MediaVault.captureLatest(applicationContext, pkg, postTime) ?: continue
             NotifDatabase.get(applicationContext).dao().setAudioPath(rowId, path)
+
+            if (AudioTranscriptionManager.shouldAutoTranscribe(
+                    applicationContext,
+                    pkg,
+                    sender
+                )
+            ) {
+                scope.launch {
+                    AudioTranscriptionManager.transcribe(
+                        context = applicationContext,
+                        notificationId = rowId
+                    )
+                }
+            }
+
             if (Prefs.isAudioPlayInMotion(applicationContext) &&
                 (motion.isInMotion() || ManualReadMode.isEnabled())
             ) {
