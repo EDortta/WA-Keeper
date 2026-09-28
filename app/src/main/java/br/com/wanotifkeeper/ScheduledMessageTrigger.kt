@@ -21,6 +21,7 @@ object ScheduledMessageTrigger {
         }
 
     suspend fun onIncoming(ctx: Context, sbn: StatusBarNotification, sender: String): TriggerOutcome {
+        if (BankMode.isEnabled(ctx)) return TriggerOutcome.NothingArmed
         val fromSelf = looksLikeOwnMessage(sbn.notification)
         val outcome = coordinator(ctx).onConversationActivity(
             packageName = sbn.packageName,
@@ -48,6 +49,7 @@ object ScheduledMessageTrigger {
     }
 
     suspend fun onTime(ctx: Context): List<TriggerOutcome> {
+        if (BankMode.isEnabled(ctx)) return emptyList()
         val dao = NotifDatabase.get(ctx).scheduled()
         val due = dao.dueTimed(System.currentTimeMillis())
         if (due.isEmpty()) return emptyList()
