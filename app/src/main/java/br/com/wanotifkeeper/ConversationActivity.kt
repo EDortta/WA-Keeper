@@ -117,11 +117,17 @@ class ConversationActivity : AppCompatActivity() {
     }
 
     private fun refreshTtsModeButton(packageName: String, sender: String) {
-        binding.btnTtsMode.text = when (
-            Prefs.ttsMessageMode(this, packageName, sender)
-        ) {
-            Prefs.TtsMessageMode.FULL -> "Leitura automática: mensagem completa"
-            Prefs.TtsMessageMode.NOTICE -> "Leitura automática: só aviso"
+        when (Prefs.ttsMessageMode(this, packageName, sender)) {
+            Prefs.TtsMessageMode.FULL -> {
+                binding.btnTtsMode.setIconResource(R.drawable.ic_tts_full)
+                binding.btnTtsMode.contentDescription =
+                    "Leitura automática: ler a mensagem completa"
+            }
+            Prefs.TtsMessageMode.NOTICE -> {
+                binding.btnTtsMode.setIconResource(R.drawable.ic_tts_notice)
+                binding.btnTtsMode.contentDescription =
+                    "Leitura automática: só avisar que chegou"
+            }
         }
     }
 
@@ -134,7 +140,8 @@ class ConversationActivity : AppCompatActivity() {
         val checked = if (current == Prefs.TtsMessageMode.FULL) 0 else 1
 
         AlertDialog.Builder(this)
-            .setTitle("Leitura automática de $sender")
+            .setTitle("Leitura automática")
+            .setMessage("Configuração desta conversa: $sender")
             .setSingleChoiceItems(modes, checked) { dialog, which ->
                 val mode = if (which == 0) {
                     Prefs.TtsMessageMode.FULL
