@@ -9,7 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.lifecycle.lifecycleScope
@@ -66,7 +66,7 @@ class ConversationActivity : AppCompatActivity() {
 
         refreshTtsModeButton(pkg, sender)
         binding.btnTtsMode.setOnClickListener {
-            showTtsModeDialog(pkg, sender)
+            toggleTtsMode(pkg, sender)
         }
 
         val adapter = ConversationMessageAdapter(
@@ -131,29 +131,19 @@ class ConversationActivity : AppCompatActivity() {
         }
     }
 
-    private fun showTtsModeDialog(packageName: String, sender: String) {
-        val modes = arrayOf(
-            "Ler a mensagem completa",
-            "Só avisar que chegou"
-        )
-        val current = Prefs.ttsMessageMode(this, packageName, sender)
-        val checked = if (current == Prefs.TtsMessageMode.FULL) 0 else 1
+    private fun toggleTtsMode(packageName: String, sender: String) {
+        val next = when (Prefs.ttsMessageMode(this, packageName, sender)) {
+            Prefs.TtsMessageMode.FULL -> Prefs.TtsMessageMode.NOTICE
+            Prefs.TtsMessageMode.NOTICE -> Prefs.TtsMessageMode.FULL
+        }
+        Prefs.setTtsMessageMode(this, packageName, sender, next)
+        refreshTtsModeButton(packageName, sender)
 
-        AlertDialog.Builder(this)
-            .setTitle("Leitura automática")
-            .setMessage("Configuração desta conversa: $sender")
-            .setSingleChoiceItems(modes, checked) { dialog, which ->
-                val mode = if (which == 0) {
-                    Prefs.TtsMessageMode.FULL
-                } else {
-                    Prefs.TtsMessageMode.NOTICE
-                }
-                Prefs.setTtsMessageMode(this, packageName, sender, mode)
-                refreshTtsModeButton(packageName, sender)
-                dialog.dismiss()
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
+        val label = when (next) {
+            Prefs.TtsMessageMode.FULL -> "Leitura automática: mensagem completa"
+            Prefs.TtsMessageMode.NOTICE -> "Leitura automática: só avisar que chegou"
+        }
+        Toast.makeText(this, label, Toast.LENGTH_SHORT).show()
     }
 
     companion object {
