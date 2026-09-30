@@ -1,5 +1,5 @@
 ==> Android: SM-A175F
-==> Relatório: diagnostics/asr-benchmark/2026-09-30-12-25-20
+==> Relatório: diagnostics/asr-benchmark/2026-09-30-12-46-17
 ==> Compilando build debug
 > Task :app:preBuild UP-TO-DATE
 > Task :app:preDebugBuild UP-TO-DATE
@@ -7,56 +7,57 @@
 > Task :app:checkKotlinGradlePluginConfigurationErrors
 > Task :app:dataBindingMergeDependencyArtifactsDebug UP-TO-DATE
 > Task :app:generateDebugResValues UP-TO-DATE
-> Task :app:generateDebugResources
-> Task :app:mergeDebugResources
-> Task :app:packageDebugResources
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:dataBindingGenBaseClassesDebug UP-TO-DATE
 > Task :app:checkDebugAarMetadata UP-TO-DATE
-> Task :app:mapDebugSourceSetPaths
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
 > Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
 > Task :app:extractDeepLinksDebug UP-TO-DATE
 > Task :app:processDebugMainManifest UP-TO-DATE
 > Task :app:processDebugManifest UP-TO-DATE
 > Task :app:processDebugManifestForPackage UP-TO-DATE
-> Task :app:parseDebugLocalResources
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:kspDebugKotlin UP-TO-DATE
+> Task :app:compileDebugKotlin UP-TO-DATE
 > Task :app:javaPreCompileDebug UP-TO-DATE
-> Task :app:dataBindingGenBaseClassesDebug
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
 > Task :app:mergeDebugShaders UP-TO-DATE
 > Task :app:compileDebugShaders NO-SOURCE
 > Task :app:generateDebugAssets UP-TO-DATE
 > Task :app:mergeDebugAssets UP-TO-DATE
 > Task :app:compressDebugAssets UP-TO-DATE
 > Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:dexBuilderDebug UP-TO-DATE
+> Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:mergeDebugJavaResource UP-TO-DATE
 > Task :app:checkDebugDuplicateClasses UP-TO-DATE
 > Task :app:mergeExtDexDebug UP-TO-DATE
 > Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:mergeProjectDexDebug UP-TO-DATE
 > Task :app:mergeDebugJniLibFolders UP-TO-DATE
 > Task :app:mergeDebugNativeLibs UP-TO-DATE
 > Task :app:stripDebugDebugSymbols UP-TO-DATE
 > Task :app:validateSigningDebug UP-TO-DATE
 > Task :app:writeDebugAppMetadata UP-TO-DATE
 > Task :app:writeDebugSigningConfigVersions UP-TO-DATE
-> Task :app:processDebugResources
-> Task :app:kspDebugKotlin
-> Task :app:compileDebugKotlin
-> Task :app:compileDebugJavaWithJavac UP-TO-DATE
-> Task :app:dexBuilderDebug
-> Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
-> Task :app:processDebugJavaRes UP-TO-DATE
-> Task :app:mergeProjectDexDebug
-> Task :app:mergeDebugJavaResource
-> Task :app:packageDebug
+> Task :app:packageDebug UP-TO-DATE
 > Task :app:createDebugApkListingFileRedirect UP-TO-DATE
-> Task :app:assembleDebug
+> Task :app:assembleDebug UP-TO-DATE
 
-BUILD SUCCESSFUL in 31s
-40 actionable tasks: 14 executed, 26 up-to-date
+BUILD SUCCESSFUL in 6s
+40 actionable tasks: 1 executed, 39 up-to-date
 ==> Instalando build debug sem apagar dados
 Performing Streamed Install
 Success
 ==> Lendo banco do WA-Keeper instalado
 ==> Medindo duração de amostras aleatórias
 ==> Três amostras escolhidas
-  pequena     4.9s  id=6775  Pr Everson
+  pequena     3.6s  id=6679  Luis Fernando Calegari
   media      33.8s  id=6784  Ricardo Lucena
-  longa     386.7s  id=6780  Ricardo Lucena
-==> Transcrevendo no devel3 com faster-whisper small
+  longa     159.6s  id=6776  Ricardo Lucena
+==> Transcrevendo no devel3 com faster-whisper small local
+scripts/asr-benchmark-android.sh: line 259: unexpected EOF while looking for matching `''
