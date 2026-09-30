@@ -1,5 +1,5 @@
 ==> Android: SM-A175F
-==> Relatório: diagnostics/asr-benchmark/2026-09-30-13-17-38
+==> Relatório: diagnostics/asr-benchmark/2026-09-30-13-43-26
 ==> Compilando build debug
 > Task :app:preBuild UP-TO-DATE
 > Task :app:preDebugBuild UP-TO-DATE
@@ -48,7 +48,7 @@
 > Task :app:createDebugApkListingFileRedirect UP-TO-DATE
 > Task :app:assembleDebug UP-TO-DATE
 
-BUILD SUCCESSFUL in 4s
+BUILD SUCCESSFUL in 6s
 40 actionable tasks: 1 executed, 39 up-to-date
 ==> Instalando build debug sem apagar dados
 Performing Streamed Install
@@ -58,24 +58,6 @@ Success
 ==> Três amostras escolhidas
   pequena     4.9s  id=6775  Pr Everson
   media      17.4s  id=6874  Merlin Y Gerson
-  longa     153.2s  id=6750  Ricardo Lucena
+  longa     159.6s  id=6776  Ricardo Lucena
 ==> Transcrevendo no devel3 com faster-whisper small local
-diagnostics/asr-benchmark/2026-09-30-13-17-38/samples/pequena-6775.opus: 1 file pushed, 0 skipped. 54.6 MB/s (10949 bytes in 0.000s)
-==> Android: tiny / pequena / 4.886s
-diagnostics/asr-benchmark/2026-09-30-13-17-38/samples/pequena-6775.opus: 1 file pushed, 0 skipped. 98.7 MB/s (10949 bytes in 0.000s)
-==> Android: base / pequena / 4.886s
-diagnostics/asr-benchmark/2026-09-30-13-17-38/samples/pequena-6775.opus: 1 file pushed, 0 skipped. 103.5 MB/s (10949 bytes in 0.000s)
-==> Android: small / pequena / 4.886s
-==> Calculando WER/CER e recomendação
-Traceback (most recent call last):
-  File "/home/esteban/Sync/Projects/WA-Keeper/scripts/asr-benchmark-report.py", line 256, in <module>
-    main()
-  File "/home/esteban/Sync/Projects/WA-Keeper/scripts/asr-benchmark-report.py", line 252, in main
-    args.func(args)
-  File "/home/esteban/Sync/Projects/WA-Keeper/scripts/asr-benchmark-report.py", line 124, in build_report
-    (root / "android" / model / f"{label}.json").read_text(
-  File "/usr/lib/python3.10/pathlib.py", line 1134, in read_text
-    with self.open(mode='r', encoding=encoding, errors=errors) as f:
-  File "/usr/lib/python3.10/pathlib.py", line 1119, in open
-    return self._accessor.open(self, mode, buffering, encoding, errors,
-FileNotFoundError: [Errno 2] No such file or directory: 'diagnostics/asr-benchmark/2026-09-30-13-17-38/android/tiny/media.json'
+scripts/asr-benchmark-android.sh: line 133: remote_tmp: unbound variable
