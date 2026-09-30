@@ -1,5 +1,5 @@
 ==> Android: SM-A175F
-==> Relatório: diagnostics/asr-benchmark/2026-09-30-13-52-25
+==> Relatório: diagnostics/asr-benchmark/2026-09-30-14-30-49
 ==> Compilando build debug
 > Task :app:preBuild UP-TO-DATE
 > Task :app:preDebugBuild UP-TO-DATE
@@ -20,36 +20,39 @@
 > Task :app:processDebugManifest UP-TO-DATE
 > Task :app:processDebugManifestForPackage UP-TO-DATE
 > Task :app:processDebugResources UP-TO-DATE
-> Task :app:kspDebugKotlin UP-TO-DATE
-> Task :app:compileDebugKotlin UP-TO-DATE
 > Task :app:javaPreCompileDebug UP-TO-DATE
-> Task :app:compileDebugJavaWithJavac UP-TO-DATE
 > Task :app:mergeDebugShaders UP-TO-DATE
 > Task :app:compileDebugShaders NO-SOURCE
 > Task :app:generateDebugAssets UP-TO-DATE
 > Task :app:mergeDebugAssets UP-TO-DATE
 > Task :app:compressDebugAssets UP-TO-DATE
 > Task :app:desugarDebugFileDependencies UP-TO-DATE
-> Task :app:dexBuilderDebug UP-TO-DATE
-> Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
-> Task :app:processDebugJavaRes UP-TO-DATE
-> Task :app:mergeDebugJavaResource UP-TO-DATE
 > Task :app:checkDebugDuplicateClasses UP-TO-DATE
 > Task :app:mergeExtDexDebug UP-TO-DATE
 > Task :app:mergeLibDexDebug UP-TO-DATE
-> Task :app:mergeProjectDexDebug UP-TO-DATE
 > Task :app:mergeDebugJniLibFolders UP-TO-DATE
 > Task :app:mergeDebugNativeLibs UP-TO-DATE
 > Task :app:stripDebugDebugSymbols UP-TO-DATE
 > Task :app:validateSigningDebug UP-TO-DATE
 > Task :app:writeDebugAppMetadata UP-TO-DATE
 > Task :app:writeDebugSigningConfigVersions UP-TO-DATE
-> Task :app:packageDebug UP-TO-DATE
-> Task :app:createDebugApkListingFileRedirect UP-TO-DATE
-> Task :app:assembleDebug UP-TO-DATE
+> Task :app:kspDebugKotlin
 
-BUILD SUCCESSFUL in 6s
-40 actionable tasks: 1 executed, 39 up-to-date
+> Task :app:compileDebugKotlin
+w: file:///home/esteban/Sync/Projects/WA-Keeper/app/src/main/java/br/com/wanotifkeeper/TranscriptionClient.kt:173:13 Elvis operator (?:) always returns the left operand of non-nullable type MediaFormat?
+
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:mergeDebugJavaResource UP-TO-DATE
+> Task :app:mergeProjectDexDebug
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleDebug
+
+BUILD SUCCESSFUL in 51s
+40 actionable tasks: 6 executed, 34 up-to-date
 ==> Instalando build debug sem apagar dados
 Performing Streamed Install
 Success
@@ -57,13 +60,96 @@ Success
 ==> Medindo duração de amostras aleatórias
 ==> Três amostras escolhidas
   pequena     4.9s  id=6775  Pr Everson
-  media      17.4s  id=6874  Merlin Y Gerson
+  media      25.1s  id=6671  +55 18 99677-1251
   longa     386.7s  id=6780  Ricardo Lucena
 ==> Transcrevendo no devel3 com faster-whisper small local
-diagnostics/asr-benchmark/2026-09-30-13-52-25/samples/pequena-6775.opus: 1 file pushed, 0 skipped. 16.1 MB/s (10949 bytes in 0.001s)
+diagnostics/asr-benchmark/2026-09-30-14-30-49/samples/pequena-6775.opus: 1 file pushed, 0 skipped. 12.8 MB/s (10949 bytes in 0.001s)
 ==> Android: tiny / pequena / 4.886s
-diagnostics/asr-benchmark/2026-09-30-13-52-25/samples/media-6874.opus: 1 file pushed, 0 skipped. 208.7 MB/s (42694 bytes in 0.000s)
-==> Android: tiny / media / 17.387s
-diagnostics/asr-benchmark/2026-09-30-13-52-25/samples/longa-6780.opus: 1 file pushed, 0 skipped. 330.2 MB/s (953429 bytes in 0.003s)
+diagnostics/asr-benchmark/2026-09-30-14-30-49/samples/media-6671.opus: 1 file pushed, 0 skipped. 22.1 MB/s (58611 bytes in 0.003s)
+==> Android: tiny / media / 25.067s
+diagnostics/asr-benchmark/2026-09-30-14-30-49/samples/longa-6780.opus: 1 file pushed, 0 skipped. 71.0 MB/s (953429 bytes in 0.013s)
 ==> Android: tiny / longa / 386.726s
-Falha no Android: Failed to allocate a 16 byte allocation with 962528 free bytes and 939KB until OOM, target footprint 268435456, growth limit 268435456; giving up on allocation because <1% of heap free after GC.
+diagnostics/asr-benchmark/2026-09-30-14-30-49/samples/pequena-6775.opus: 1 file pushed, 0 skipped. 23.0 MB/s (10949 bytes in 0.000s)
+==> Android: base / pequena / 4.886s
+diagnostics/asr-benchmark/2026-09-30-14-30-49/samples/media-6671.opus: 1 file pushed, 0 skipped. 30.7 MB/s (58611 bytes in 0.002s)
+==> Android: base / media / 25.067s
+diagnostics/asr-benchmark/2026-09-30-14-30-49/samples/longa-6780.opus: 1 file pushed, 0 skipped. 118.4 MB/s (953429 bytes in 0.008s)
+==> Android: base / longa / 386.726s
+diagnostics/asr-benchmark/2026-09-30-14-30-49/samples/pequena-6775.opus: 1 file pushed, 0 skipped. 53.9 MB/s (10949 bytes in 0.000s)
+==> Android: small / pequena / 4.886s
+diagnostics/asr-benchmark/2026-09-30-14-30-49/samples/media-6671.opus: 1 file pushed, 0 skipped. 117.8 MB/s (58611 bytes in 0.000s)
+==> Android: small / media / 25.067s
+diagnostics/asr-benchmark/2026-09-30-14-30-49/samples/longa-6780.opus: 1 file pushed, 0 skipped. 151.4 MB/s (953429 bytes in 0.006s)
+==> Android: small / longa / 386.726s
+==> Calculando WER/CER e recomendação
+==> Limpando modelos e áudios temporários do benchmark no celular
+==> Reinstalando release sem apagar dados
+> Task :app:buildKotlinToolingMetadata UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:dataBindingMergeDependencyArtifactsRelease UP-TO-DATE
+> Task :app:generateReleaseResValues UP-TO-DATE
+> Task :app:generateReleaseResources
+> Task :app:packageReleaseResources
+> Task :app:mergeReleaseResources
+> Task :app:checkReleaseAarMetadata UP-TO-DATE
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:createReleaseCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksRelease UP-TO-DATE
+> Task :app:processReleaseMainManifest UP-TO-DATE
+> Task :app:processReleaseManifest UP-TO-DATE
+> Task :app:processReleaseManifestForPackage UP-TO-DATE
+> Task :app:parseReleaseLocalResources
+> Task :app:javaPreCompileRelease UP-TO-DATE
+> Task :app:dataBindingGenBaseClassesRelease
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:mergeReleaseJniLibFolders UP-TO-DATE
+> Task :app:mergeReleaseNativeLibs UP-TO-DATE
+> Task :app:stripReleaseDebugSymbols UP-TO-DATE
+> Task :app:extractReleaseNativeSymbolTables UP-TO-DATE
+> Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:checkReleaseDuplicateClasses UP-TO-DATE
+> Task :app:desugarReleaseFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexRelease UP-TO-DATE
+> Task :app:mergeReleaseArtProfile UP-TO-DATE
+> Task :app:mergeReleaseShaders UP-TO-DATE
+> Task :app:compileReleaseShaders NO-SOURCE
+> Task :app:generateReleaseAssets UP-TO-DATE
+> Task :app:mergeReleaseAssets UP-TO-DATE
+> Task :app:compressReleaseAssets UP-TO-DATE
+> Task :app:extractReleaseVersionControlInfo
+> Task :app:collectReleaseDependencies UP-TO-DATE
+> Task :app:sdkReleaseDependencyData UP-TO-DATE
+> Task :app:validateSigningRelease UP-TO-DATE
+> Task :app:writeReleaseAppMetadata UP-TO-DATE
+> Task :app:writeReleaseSigningConfigVersions UP-TO-DATE
+> Task :app:processReleaseResources
+> Task :app:optimizeReleaseResources
+> Task :app:kspReleaseKotlin
+
+> Task :app:compileReleaseKotlin
+w: file:///home/esteban/Sync/Projects/WA-Keeper/app/src/main/java/br/com/wanotifkeeper/TranscriptionClient.kt:173:13 Elvis operator (?:) always returns the left operand of non-nullable type MediaFormat?
+
+> Task :app:compileReleaseJavaWithJavac UP-TO-DATE
+> Task :app:generateReleaseLintVitalReportModel
+> Task :app:dexBuilderRelease
+> Task :app:mergeDexRelease
+> Task :app:mergeReleaseGlobalSynthetics UP-TO-DATE
+> Task :app:compileReleaseArtProfile
+> Task :app:processReleaseJavaRes UP-TO-DATE
+> Task :app:mergeReleaseJavaResource UP-TO-DATE
+> Task :app:lintVitalAnalyzeRelease
+> Task :app:packageRelease
+> Task :app:createReleaseApkListingFileRedirect UP-TO-DATE
+> Task :app:lintVitalReportRelease UP-TO-DATE
+> Task :app:lintVitalRelease
+> Task :app:assembleRelease
+
+BUILD SUCCESSFUL in 1m 37s
+52 actionable tasks: 19 executed, 33 up-to-date
+
+BENCHMARK CONCLUÍDO
+Recomendação automática: sherpa-onnx Whisper small
+Relatório: diagnostics/asr-benchmark/2026-09-30-14-30-49/report.md
+Métricas: diagnostics/asr-benchmark/2026-09-30-14-30-49/metrics.json

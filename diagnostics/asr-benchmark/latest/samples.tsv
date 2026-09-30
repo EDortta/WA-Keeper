@@ -1,4 +1,4 @@
 classe	id	duracao_s	remetente	arquivo
-pequena	6775	4.886	Pr Everson	diagnostics/asr-benchmark/2026-09-30-13-52-25/samples/pequena-6775.opus
-media	6874	17.387	Merlin Y Gerson	diagnostics/asr-benchmark/2026-09-30-13-52-25/samples/media-6874.opus
-longa	6780	386.726	Ricardo Lucena	diagnostics/asr-benchmark/2026-09-30-13-52-25/samples/longa-6780.opus
+pequena	6775	4.886	Pr Everson	diagnostics/asr-benchmark/2026-09-30-14-30-49/samples/pequena-6775.opus
+media	6671	25.067	+55 18 99677-1251	diagnostics/asr-benchmark/2026-09-30-14-30-49/samples/media-6671.opus
+longa	6780	386.726	Ricardo Lucena	diagnostics/asr-benchmark/2026-09-30-14-30-49/samples/longa-6780.opus
