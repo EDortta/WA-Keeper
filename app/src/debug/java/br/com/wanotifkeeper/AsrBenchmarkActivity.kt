@@ -1,6 +1,6 @@
 package br.com.wanotifkeeper
 
-import android.app.Activity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import com.k2fsa.sherpa.onnx.FeatureConfig
@@ -17,7 +17,7 @@ import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
-class AsrBenchmarkActivity : Activity() {
+class AsrBenchmarkActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
