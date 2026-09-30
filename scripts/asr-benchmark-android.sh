@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+APP_ID="br.com.wanotifkeeper"
+MY_TRANSCRIVER="${MY_TRANSCRIVER:-/home/esteban/Sync/Projects/my-transcriver}"
+POOL_SIZE="${ASR_SAMPLE_POOL:-24}"
+ANDROID_MODELS="${ASR_ANDROID_MODELS:-tiny,base,small}"
+WAIT_SECONDS="${ASR_WAIT_SECONDS:-900}"
+OUT_BASE="${ASR_BENCHMARK_DIR:-diagnostics/asr-benchmark}"
+STAMP="$(date '+%Y-%m-%d-%H-%M-%S')"
+OUT_DIR="$OUT_BASE/$STAMP"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/wa-keeper-asr.XXXXXX")"
+
+cleanup() { rm -rf "$WORK"; }
+trap cleanup EXIT
+fail() { printf 'ERRO: %s\n' "$*" >&2; exit 1; }
+log() { printf '==> %s\n' "$*"; }
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" ||
+  fail "execute dentro do repositório WA-Keeper"
+cd "$REPO_ROOT"
+
+for cmd in adb python3 ffprobe tar; do
+  command -v "$cmd" >/dev/null 2>&1 || fail "$cmd não encontrado"
+done
+[[ -x ./gradlew ]] || fail "./gradlew não encontrado"
+[[ -f "$MY_TRANSCRIVER/transcribe.py" ]] ||
+  fail "transcribe.py não encontrado em $MY_TRANSCRIVER"
+
+ADB=(adb)
+if [[ -n "${ANDROID_SERIAL:-}" ]]; then
+  ADB+=( -s "$ANDROID_SERIAL" )
+else
+  mapfile -t DEVICES < <(adb devices | awk 'NR>1 && $2=="device" {print $1}')
+  case "${#DEVICES[@]}" in
+    0) fail "nenhum Android autorizado conectado" ;;
+    1) ADB+=( -s "${DEVICES[0]}" ) ;;
+    *) fail "mais de um Android conectado; use ANDROID_SERIAL=<serial>" ;;
+  esac
+fi
+
+DEVICE="$("${ADB[@]}" shell getprop ro.product.model | tr -d '\r')"
+mkdir -p "$OUT_DIR"/{samples,reference,android,logs}
+
+log "Android: ${DEVICE:-desconhecido}"
+log "Relatório: $OUT_DIR"
+
+log "Compilando e instalando build debug sem apagar dados"
+./gradlew --console=plain assembleDebug >/dev/null
+DEBUG_APK="app/build/outputs/apk/debug/app-debug.apk"
+[[ -f "$DEBUG_APK" ]] || fail "APK debug não encontrado"
+"${ADB[@]}" install -r "$DEBUG_APK" >/dev/null ||
+  fail "não consegui instalar debug por cima da versão atual"
+"${ADB[@]}" shell am force-stop "$APP_ID" >/dev/null 2>&1 || true
+"${ADB[@]}" shell run-as "$APP_ID" id >/dev/null 2>&1 ||
+  fail "run-as não ficou disponível"
+
+log "Lendo banco do WA-Keeper instalado"
+"${ADB[@]}" exec-out run-as "$APP_ID" tar -cf - databases > "$WORK/databases.tar"
+tar -xf "$WORK/databases.tar" -C "$WORK"
+DB="$WORK/databases/wanotif.db"
+[[ -f "$DB" ]] || fail "wanotif.db não encontrado"
+
+python3 scripts/asr-benchmark-report.py select "$DB" "$WORK/candidates.tsv" --pool "$POOL_SIZE"
+
+log "Medindo duração de amostras aleatórias"
+: > "$WORK/measured.tsv"
+while IFS=$'\t' read -r id sender text audio_path; do
+  [[ -n "$audio_path" ]] || continue
+  local_file="$WORK/audio-$id.opus"
+  "${ADB[@]}" exec-out run-as "$APP_ID" cat "$audio_path" > "$local_file" 2>/dev/null || continue
+  [[ -s "$local_file" ]] || continue
+  duration="$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$local_file" 2>/dev/null || true)"
+  [[ "$duration" =~ ^[0-9]+([.][0-9]+)?$ ]] || continue
+  printf '%s\t%s\t%s\t%s\t%s\n' "$id" "$duration" "$sender" "$text" "$local_file" >> "$WORK/measured.tsv"
+done < "$WORK/candidates.tsv"
+
+python3 scripts/asr-benchmark-report.py pick "$WORK/measured.tsv" "$WORK/selected.tsv"
+
+printf 'classe\tid\tduracao_s\tremetente\tarquivo\n' > "$OUT_DIR/samples.tsv"
+while IFS=$'\t' read -r label id duration sender text source_file; do
+  sample="$OUT_DIR/samples/${label}-${id}.opus"
+  cp "$source_file" "$sample"
+  printf '%s\t%s\t%s\t%s\t%s\n' "$label" "$id" "$duration" "$sender" "$sample" >> "$OUT_DIR/samples.tsv"
+done < "$WORK/selected.tsv"
+
+log "Três amostras escolhidas"
+tail -n +2 "$OUT_DIR/samples.tsv" | awk -F '\t' '{printf "  %-8s %6.1fs  id=%s  %s\n", $1, $3, $2, $4}'
+
+if [[ -x "$MY_TRANSCRIVER/.venv/bin/python" ]]; then
+  TRANSCRIVER_PY="$MY_TRANSCRIVER/.venv/bin/python"
+elif [[ -x "$MY_TRANSCRIVER/.venv/bin/python3" ]]; then
+  TRANSCRIVER_PY="$MY_TRANSCRIVER/.venv/bin/python3"
+else
+  TRANSCRIVER_PY="python3"
+fi
+
+log "Transcrevendo no devel3 com faster-whisper small"
+while IFS=$'\t' read -r label id duration sender sample; do
+  [[ "$label" == "classe" ]] && continue
+  ref_dir="$OUT_DIR/reference/$label"
+  mkdir -p "$ref_dir"
+  start_ns="$(date +%s%N)"
+  (
+    cd "$MY_TRANSCRIVER"
+    "$TRANSCRIVER_PY" transcribe.py "$REPO_ROOT/$sample"       --output-dir "$REPO_ROOT/$ref_dir"       --model small       --overwrite
+  ) > "$OUT_DIR/logs/devel3-$label.log" 2>&1
+  end_ns="$(date +%s%N)"
+  echo "$(( (end_ns - start_ns) / 1000000 ))" > "$ref_dir/elapsed-ms.txt"
+  md="$ref_dir/$(basename "${sample%.opus}").md"
+  [[ -f "$md" ]] || fail "my-transcriver não gerou $md"
+  python3 - "$md" "$ref_dir/transcript.txt" <<'PY'
+import sys
+text = open(sys.argv[1], encoding="utf-8").read()
+body = text.split("## Transcrição", 1)[1] if "## Transcrição" in text else text
+open(sys.argv[2], "w", encoding="utf-8").write(body.strip() + "\n")
+PY
+done < "$OUT_DIR/samples.tsv"
+
+IFS=',' read -r -a MODELS <<< "$ANDROID_MODELS"
+for model in "${MODELS[@]}"; do
+  model="$(echo "$model" | xargs)"
+  [[ "$model" =~ ^(tiny|base|small)$ ]] || fail "modelo Android inválido: $model"
+  mkdir -p "$OUT_DIR/android/$model"
+
+  while IFS=$'\t' read -r label id duration sender sample; do
+    [[ "$label" == "classe" ]] && continue
+    name="benchmark-${label}-${id}.opus"
+    remote_tmp="/data/local/tmp/$name"
+
+    "${ADB[@]}" push "$sample" "$remote_tmp" >/dev/null
+    "${ADB[@]}" shell run-as "$APP_ID" mkdir -p files/asr-benchmark
+    "${ADB[@]}" shell run-as "$APP_ID" cp "$remote_tmp" "files/asr-benchmark/$name"
+    "${ADB[@]}" shell rm -f "$remote_tmp" >/dev/null 2>&1 || true
+    "${ADB[@]}" shell run-as "$APP_ID" rm -f files/asr-benchmark/result.json
+
+    log "Android: $model / $label / ${duration}s"
+    "${ADB[@]}" shell am start -W       -n "$APP_ID/.AsrBenchmarkActivity"       --es input "$name"       --es model "$model" >/dev/null
+
+    deadline=$(( $(date +%s) + WAIT_SECONDS ))
+    while ! "${ADB[@]}" shell run-as "$APP_ID" test -s files/asr-benchmark/result.json >/dev/null 2>&1; do
+      (( $(date +%s) < deadline )) || fail "timeout no Android: $model / $label"
+      sleep 2
+    done
+
+    result="$OUT_DIR/android/$model/$label.json"
+    "${ADB[@]}" exec-out run-as "$APP_ID" cat files/asr-benchmark/result.json > "$result"
+
+    python3 - "$result" "$OUT_DIR/android/$model/$label.txt" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+if not d.get("ok"):
+    raise SystemExit("Falha no Android: " + str(d.get("error")))
+open(sys.argv[2], "w", encoding="utf-8").write(d.get("text", "").strip() + "\n")
+PY
+  done < "$OUT_DIR/samples.tsv"
+done
+
+log "Calculando WER/CER e recomendação"
+RECOMMENDED="$(python3 scripts/asr-benchmark-report.py report "$OUT_DIR" --device "$DEVICE" --models "$ANDROID_MODELS")"
+
+log "Limpando modelos e áudios temporários do benchmark no celular"
+"${ADB[@]}" shell run-as "$APP_ID" rm -rf files/asr-benchmark >/dev/null 2>&1 || true
+
+log "Reinstalando release sem apagar dados"
+./gradlew --console=plain assembleRelease >/dev/null
+RELEASE_APK="app/build/outputs/apk/release/app-release.apk"
+"${ADB[@]}" install -r "$RELEASE_APK" >/dev/null ||
+  fail "benchmark terminou, mas falhou ao reinstalar release; NÃO desinstale o app"
+
+printf '\nBENCHMARK CONCLUÍDO\n'
+printf 'Recomendação automática: sherpa-onnx Whisper %s\n' "$RECOMMENDED"
+printf 'Relatório: %s/report.md\n' "$OUT_DIR"
+printf 'Métricas: %s/metrics.json\n' "$OUT_DIR"
