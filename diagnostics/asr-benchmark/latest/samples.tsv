@@ -1,4 +1,4 @@
 classe	id	duracao_s	remetente	arquivo
-pequena	6679	3.607	Luis Fernando Calegari	diagnostics/asr-benchmark/2026-09-30-12-46-17/samples/pequena-6679.opus
-media	6784	33.767	Ricardo Lucena	diagnostics/asr-benchmark/2026-09-30-12-46-17/samples/media-6784.opus
-longa	6776	159.566	Ricardo Lucena	diagnostics/asr-benchmark/2026-09-30-12-46-17/samples/longa-6776.opus
+pequena	6679	3.607	Luis Fernando Calegari	diagnostics/asr-benchmark/2026-09-30-12-54-12/samples/pequena-6679.opus
+media	6695	42.047	Pr Everson	diagnostics/asr-benchmark/2026-09-30-12-54-12/samples/media-6695.opus
+longa	6780	386.726	Ricardo Lucena	diagnostics/asr-benchmark/2026-09-30-12-54-12/samples/longa-6780.opus
