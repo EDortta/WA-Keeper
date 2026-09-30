@@ -159,7 +159,7 @@ for model in "${MODELS[@]}"; do
     "${ADB[@]}" shell am start -W \
       -n "$APP_ID/.AsrBenchmarkActivity" \
       --es input "$name" \
-      --es model "$model" >/dev/null
+      --es model "$model" </dev/null >/dev/null
 
     deadline=$(( $(date +%s) + WAIT_SECONDS ))
     while ! "${ADB[@]}" shell run-as "$APP_ID" test -s files/asr-benchmark/result.json >/dev/null 2>&1; do
