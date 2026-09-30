@@ -110,26 +110,92 @@ else
   TRANSCRIVER_PY="python3"
 fi
 
+"$TRANSCRIVER_PY" -c 'import faster_whisper' >/dev/null 2>&1 ||
+  fail "faster-whisper não está disponível no Python escolhido: $TRANSCRIVER_PY"
+
 STAGE="transcrição de referência no devel3"
-log "Transcrevendo no devel3 com faster-whisper small"
-while IFS=$'\t' read -r label id duration sender sample; do
+log "Transcrevendo no devel3 com faster-whisper small local"
+while IFS=
+
+STAGE="transcrição local no Android"
+IFS=',' read -r -a MODELS <<< "$ANDROID_MODELS"
+for model in "${MODELS[@]}"; do
+  model="$(echo "$model" | xargs)"
+  [[ "$model" =~ ^(tiny|base|small)$ ]] || fail "modelo Android inválido: $model"
+  mkdir -p "$OUT_DIR/android/$model"
+
+  while IFS=$'\t' read -r label id duration sender sample; do
+    [[ "$label" == "classe" ]] && continue
+    name="benchmark-${label}-${id}.opus"
+    remote_tmp="/data/local/tmp/$name"
+
+    "${ADB[@]}" push "$sample" "$remote_tmp" >/dev/null
+    "${ADB[@]}" shell run-as "$APP_ID" mkdir -p files/asr-benchmark
+    "${ADB[@]}" shell run-as "$APP_ID" cp "$remote_tmp" "files/asr-benchmark/$name"
+    "${ADB[@]}" shell rm -f "$remote_tmp" >/dev/null 2>&1 || true
+    "${ADB[@]}" shell run-as "$APP_ID" rm -f files/asr-benchmark/result.json
+
+    log "Android: $model / $label / ${duration}s"
+    "${ADB[@]}" shell am start -W       -n "$APP_ID/.AsrBenchmarkActivity"       --es input "$name"       --es model "$model" >/dev/null
+
+    deadline=$(( $(date +%s) + WAIT_SECONDS ))
+    while ! "${ADB[@]}" shell run-as "$APP_ID" test -s files/asr-benchmark/result.json >/dev/null 2>&1; do
+      (( $(date +%s) < deadline )) || fail "timeout no Android: $model / $label"
+      sleep 2
+    done
+
+    result="$OUT_DIR/android/$model/$label.json"
+    "${ADB[@]}" exec-out run-as "$APP_ID" cat files/asr-benchmark/result.json > "$result"
+
+    python3 - "$result" "$OUT_DIR/android/$model/$label.txt" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+if not d.get("ok"):
+    raise SystemExit("Falha no Android: " + str(d.get("error")))
+open(sys.argv[2], "w", encoding="utf-8").write(d.get("text", "").strip() + "\n")
+PY
+  done < "$OUT_DIR/samples.tsv"
+done
+
+STAGE="cálculo de métricas e recomendação"
+log "Calculando WER/CER e recomendação"
+RECOMMENDED="$(python3 scripts/asr-benchmark-report.py report "$OUT_DIR" --device "$DEVICE" --models "$ANDROID_MODELS")"
+
+log "Limpando modelos e áudios temporários do benchmark no celular"
+"${ADB[@]}" shell run-as "$APP_ID" rm -rf files/asr-benchmark >/dev/null 2>&1 || true
+
+STAGE="restauração da build release"
+log "Reinstalando release sem apagar dados"
+./gradlew --console=plain assembleRelease
+RELEASE_APK="app/build/outputs/apk/release/app-release.apk"
+"${ADB[@]}" install -r "$RELEASE_APK" >/dev/null ||
+  fail "benchmark terminou, mas falhou ao reinstalar release; NÃO desinstale o app"
+
+printf '\nBENCHMARK CONCLUÍDO\n'
+printf 'Recomendação automática: sherpa-onnx Whisper %s\n' "$RECOMMENDED"
+printf 'Relatório: %s/report.md\n' "$OUT_DIR"
+printf 'Métricas: %s/metrics.json\n' "$OUT_DIR"
+STAGE="concluído"
+\t' read -r label id duration sender sample; do
   [[ "$label" == "classe" ]] && continue
   ref_dir="$OUT_DIR/reference/$label"
   mkdir -p "$ref_dir"
-  start_ns="$(date +%s%N)"
-  (
-    cd "$MY_TRANSCRIVER"
-    "$TRANSCRIVER_PY" transcribe.py "$REPO_ROOT/$sample"       --output-dir "$REPO_ROOT/$ref_dir"       --model small       --overwrite
-  ) > "$OUT_DIR/logs/devel3-$label.log" 2>&1
-  end_ns="$(date +%s%N)"
-  echo "$(( (end_ns - start_ns) / 1000000 ))" > "$ref_dir/elapsed-ms.txt"
-  md="$ref_dir/$(basename "${sample%.opus}").md"
-  [[ -f "$md" ]] || fail "my-transcriver não gerou $md"
-  python3 - "$md" "$ref_dir/transcript.txt" <<'PY'
-import sys
-text = open(sys.argv[1], encoding="utf-8").read()
-body = text.split("## Transcrição", 1)[1] if "## Transcrição" in text else text
-open(sys.argv[2], "w", encoding="utf-8").write(body.strip() + "\n")
+
+  result_json="$ref_dir/result.json"
+  "$TRANSCRIVER_PY" scripts/asr-reference-local.py "$sample" \
+    --model small \
+    --device cpu \
+    --compute-type int8 \
+    --output "$result_json" \
+    > "$OUT_DIR/logs/devel3-$label.log" 2>&1
+
+  python3 - "$result_json" "$ref_dir/transcript.txt" "$ref_dir/elapsed-ms.txt" <<'PY'
+import json, sys
+data = json.load(open(sys.argv[1], encoding="utf-8"))
+if not data.get("ok"):
+    raise SystemExit("Referência local falhou")
+open(sys.argv[2], "w", encoding="utf-8").write(data.get("text", "").strip() + "\n")
+open(sys.argv[3], "w", encoding="utf-8").write(str(data.get("elapsedMs", 0)) + "\n")
 PY
 done < "$OUT_DIR/samples.tsv"
 
