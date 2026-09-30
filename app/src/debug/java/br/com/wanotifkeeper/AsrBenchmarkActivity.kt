@@ -31,7 +31,7 @@ class AsrBenchmarkActivity : AppCompatActivity() {
             val resultFile = File(outDir, "result.json")
             resultFile.delete()
 
-            val started = System.nanoTime()
+            var elapsedMs = 0L
             val result = runCatching {
                 require(model in setOf("tiny", "base", "small")) {
                     "modelo inválido: $model"
@@ -43,6 +43,7 @@ class AsrBenchmarkActivity : AppCompatActivity() {
                 }
 
                 val modelFiles = ensureModel(model)
+                val started = System.nanoTime()
 
                 val config = OfflineRecognizerConfig(
                     featConfig = FeatureConfig(sampleRate = 16_000, featureDim = 80),
@@ -78,10 +79,9 @@ class AsrBenchmarkActivity : AppCompatActivity() {
                     parts.joinToString(" ").trim()
                 } finally {
                     recognizer.release()
+                    elapsedMs = (System.nanoTime() - started) / 1_000_000L
                 }
             }
-
-            val elapsedMs = (System.nanoTime() - started) / 1_000_000L
             val json = JSONObject()
                 .put("model", model)
                 .put("language", language.ifBlank { "auto" })
