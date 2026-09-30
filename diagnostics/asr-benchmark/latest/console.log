@@ -1,5 +1,5 @@
 ==> Android: SM-A175F
-==> Relatório: diagnostics/asr-benchmark/2026-09-30-13-43-26
+==> Relatório: diagnostics/asr-benchmark/2026-09-30-13-52-25
 ==> Compilando build debug
 > Task :app:preBuild UP-TO-DATE
 > Task :app:preDebugBuild UP-TO-DATE
@@ -58,6 +58,12 @@ Success
 ==> Três amostras escolhidas
   pequena     4.9s  id=6775  Pr Everson
   media      17.4s  id=6874  Merlin Y Gerson
-  longa     159.6s  id=6776  Ricardo Lucena
+  longa     386.7s  id=6780  Ricardo Lucena
 ==> Transcrevendo no devel3 com faster-whisper small local
-scripts/asr-benchmark-android.sh: line 133: remote_tmp: unbound variable
+diagnostics/asr-benchmark/2026-09-30-13-52-25/samples/pequena-6775.opus: 1 file pushed, 0 skipped. 16.1 MB/s (10949 bytes in 0.001s)
+==> Android: tiny / pequena / 4.886s
+diagnostics/asr-benchmark/2026-09-30-13-52-25/samples/media-6874.opus: 1 file pushed, 0 skipped. 208.7 MB/s (42694 bytes in 0.000s)
+==> Android: tiny / media / 17.387s
+diagnostics/asr-benchmark/2026-09-30-13-52-25/samples/longa-6780.opus: 1 file pushed, 0 skipped. 330.2 MB/s (953429 bytes in 0.003s)
+==> Android: tiny / longa / 386.726s
+Falha no Android: Failed to allocate a 16 byte allocation with 962528 free bytes and 939KB until OOM, target footprint 268435456, growth limit 268435456; giving up on allocation because <1% of heap free after GC.
