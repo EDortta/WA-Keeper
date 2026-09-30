@@ -1,0 +1,5 @@
+[1/1] ERRO em /home/esteban/Sync/Projects/WA-Keeper/diagnostics/asr-benchmark/2026-09-30-12-25-20/samples/pequena-6775.opus: Whisper HTTP 404: {"detail":"Model 'small' is not installed locally. You can download the model using `POST /v1/models`"}
+Whisper remoto: https://whisper.inovacaosistemas.com.br (small)
+[1/1] Transcrevendo: /home/esteban/Sync/Projects/WA-Keeper/diagnostics/asr-benchmark/2026-09-30-12-25-20/samples/pequena-6775.opus
+    [chunk 1/1] enviando chunk-00000.mp3 (0.1 MiB)
+Concluído: 0 sucesso(s), 1 falha(s).
