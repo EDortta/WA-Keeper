@@ -146,7 +146,13 @@ object AndroidAudioDecoder {
         val sampleRate: Int
     )
 
-    fun decodeToMono16k(file: File): Pcm {
+    fun forEachMono16kChunk(
+        file: File,
+        chunkSeconds: Int = 25,
+        consumer: (Pcm) -> Unit
+    ) {
+        require(chunkSeconds in 5..30) { "chunkSeconds deve ficar entre 5 e 30" }
+
         val extractor = MediaExtractor()
         extractor.setDataSource(file.absolutePath)
 
@@ -163,20 +169,40 @@ object AndroidAudioDecoder {
         }
         check(trackIndex >= 0 && inputFormat != null) { "nenhuma faixa de áudio encontrada" }
 
+        val selectedFormat = inputFormat
+            ?: error("formato de áudio ausente")
         extractor.selectTrack(trackIndex)
-        val mime = inputFormat!!.getString(MediaFormat.KEY_MIME)
+
+        val mime = selectedFormat.getString(MediaFormat.KEY_MIME)
             ?: error("codec de áudio desconhecido")
 
         val codec = MediaCodec.createDecoderByType(mime)
-        codec.configure(inputFormat, null, null, 0)
+        codec.configure(selectedFormat, null, null, 0)
         codec.start()
 
-        val pcm = ArrayList<Float>()
         val info = MediaCodec.BufferInfo()
         var inputDone = false
         var outputDone = false
-        var outputSampleRate = inputFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE)
-        var channels = inputFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT).coerceAtLeast(1)
+        var outputSampleRate = selectedFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE)
+        var channels = selectedFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT).coerceAtLeast(1)
+
+        var chunk = FloatArray(maxOf(1, outputSampleRate * chunkSeconds))
+        var chunkSize = 0
+
+        fun flushChunk() {
+            if (chunkSize <= 0) return
+            val source = chunk.copyOf(chunkSize)
+            val samples = if (outputSampleRate == TARGET_RATE) {
+                source
+            } else {
+                resampleLinear(source, outputSampleRate, TARGET_RATE)
+            }
+            if (samples.isNotEmpty()) {
+                consumer(Pcm(samples = samples, sampleRate = TARGET_RATE))
+            }
+            chunk = FloatArray(maxOf(1, outputSampleRate * chunkSeconds))
+            chunkSize = 0
+        }
 
         try {
             while (!outputDone) {
@@ -229,7 +255,10 @@ object AndroidAudioDecoder {
                                         count++
                                     }
                                 }
-                                if (count > 0) pcm += sum / count
+                                if (count > 0) {
+                                    if (chunkSize >= chunk.size) flushChunk()
+                                    chunk[chunkSize++] = sum / count
+                                }
                                 i += channels
                             }
                         }
@@ -240,6 +269,7 @@ object AndroidAudioDecoder {
                     }
 
                     outputIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
+                        flushChunk()
                         val format = codec.outputFormat
                         if (format.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
                             outputSampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
@@ -247,22 +277,33 @@ object AndroidAudioDecoder {
                         if (format.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) {
                             channels = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT).coerceAtLeast(1)
                         }
+                        chunk = FloatArray(maxOf(1, outputSampleRate * chunkSeconds))
+                        chunkSize = 0
                     }
                 }
             }
+            flushChunk()
         } finally {
             runCatching { codec.stop() }
             codec.release()
             extractor.release()
         }
+    }
 
-        val source = pcm.toFloatArray()
-        if (outputSampleRate == TARGET_RATE) return Pcm(source, TARGET_RATE)
-
-        return Pcm(
-            samples = resampleLinear(source, outputSampleRate, TARGET_RATE),
-            sampleRate = TARGET_RATE
-        )
+    fun decodeToMono16k(file: File): Pcm {
+        val chunks = mutableListOf<FloatArray>()
+        var total = 0
+        forEachMono16kChunk(file) { pcm ->
+            chunks += pcm.samples
+            total += pcm.samples.size
+        }
+        val all = FloatArray(total)
+        var offset = 0
+        chunks.forEach { part ->
+            part.copyInto(all, offset)
+            offset += part.size
+        }
+        return Pcm(samples = all, sampleRate = TARGET_RATE)
     }
 
     private fun resampleLinear(
@@ -294,7 +335,6 @@ class SherpaOfflineTranscriber(private val context: Context) {
     suspend fun transcribe(file: File): Result<String> = withContext(Dispatchers.IO) {
         runCatching {
             val model = SherpaModelManager.ensureInstalled(context).getOrThrow()
-            val audio = AndroidAudioDecoder.decodeToMono16k(file)
 
             val config = OfflineRecognizerConfig(
                 featConfig = FeatureConfig(
@@ -317,16 +357,22 @@ class SherpaOfflineTranscriber(private val context: Context) {
 
             val recognizer = OfflineRecognizer(config = config)
             try {
-                val stream = recognizer.createStream()
-                try {
-                    stream.acceptWaveform(audio.samples, audio.sampleRate)
-                    recognizer.decode(stream)
-                    val result = recognizer.getResult(stream).text.trim()
-                    check(result.isNotBlank()) { "nenhuma fala detectada" }
-                    result
-                } finally {
-                    stream.release()
+                val parts = mutableListOf<String>()
+                AndroidAudioDecoder.forEachMono16kChunk(file) { audio ->
+                    val stream = recognizer.createStream()
+                    try {
+                        stream.acceptWaveform(audio.samples, audio.sampleRate)
+                        recognizer.decode(stream)
+                        recognizer.getResult(stream).text.trim()
+                            .takeIf { it.isNotBlank() }
+                            ?.let(parts::add)
+                    } finally {
+                        stream.release()
+                    }
                 }
+                val result = parts.joinToString(" ").trim()
+                check(result.isNotBlank()) { "nenhuma fala detectada" }
+                result
             } finally {
                 recognizer.release()
             }
