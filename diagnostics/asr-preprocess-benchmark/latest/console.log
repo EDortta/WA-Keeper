@@ -1,6 +1,5 @@
 ==> Android: SM-A175F
-==> Relatório: diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14
-==> Compilando build debug
+==> Rodadas: 3 | resfriamento entre execuções: 90s
 > Task :app:preBuild UP-TO-DATE
 > Task :app:preDebugBuild UP-TO-DATE
 > Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
@@ -20,144 +19,48 @@
 > Task :app:processDebugManifest UP-TO-DATE
 > Task :app:processDebugManifestForPackage UP-TO-DATE
 > Task :app:processDebugResources UP-TO-DATE
+> Task :app:kspDebugKotlin UP-TO-DATE
+> Task :app:compileDebugKotlin UP-TO-DATE
 > Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
 > Task :app:mergeDebugShaders UP-TO-DATE
 > Task :app:compileDebugShaders NO-SOURCE
 > Task :app:generateDebugAssets UP-TO-DATE
 > Task :app:mergeDebugAssets UP-TO-DATE
 > Task :app:compressDebugAssets UP-TO-DATE
 > Task :app:desugarDebugFileDependencies UP-TO-DATE
+> Task :app:dexBuilderDebug UP-TO-DATE
+> Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:mergeDebugJavaResource UP-TO-DATE
 > Task :app:checkDebugDuplicateClasses UP-TO-DATE
 > Task :app:mergeExtDexDebug UP-TO-DATE
 > Task :app:mergeLibDexDebug UP-TO-DATE
+> Task :app:mergeProjectDexDebug UP-TO-DATE
 > Task :app:mergeDebugJniLibFolders UP-TO-DATE
 > Task :app:mergeDebugNativeLibs UP-TO-DATE
 > Task :app:stripDebugDebugSymbols UP-TO-DATE
 > Task :app:validateSigningDebug UP-TO-DATE
 > Task :app:writeDebugAppMetadata UP-TO-DATE
 > Task :app:writeDebugSigningConfigVersions UP-TO-DATE
-> Task :app:kspDebugKotlin
-> Task :app:compileDebugKotlin
-> Task :app:compileDebugJavaWithJavac UP-TO-DATE
-> Task :app:dexBuilderDebug
-> Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
-> Task :app:processDebugJavaRes UP-TO-DATE
-> Task :app:mergeDebugJavaResource UP-TO-DATE
-> Task :app:mergeProjectDexDebug
-> Task :app:packageDebug
+> Task :app:packageDebug UP-TO-DATE
 > Task :app:createDebugApkListingFileRedirect UP-TO-DATE
-> Task :app:assembleDebug
+> Task :app:assembleDebug UP-TO-DATE
 
-BUILD SUCCESSFUL in 27s
-40 actionable tasks: 6 executed, 34 up-to-date
-==> Instalando build debug sem apagar dados
+BUILD SUCCESSFUL in 21s
+40 actionable tasks: 1 executed, 39 up-to-date
 Performing Streamed Install
 Success
-==> Lendo banco do WA-Keeper instalado
-==> Medindo duração de amostras aleatórias
-==> Três amostras escolhidas
-  pequena     3.6s  id=6679  Luis Fernando Calegari
-  media      33.8s  id=6784  Ricardo Lucena
-  longa     159.6s  id=6776  Ricardo Lucena
-==> Criando referência com faster-whisper small
-==> Gerando variantes de pré-processamento
-==> Transcrevendo variantes no Android com Whisper small
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/pequena/original.wav: 1 file pushed, 0 skipped. 45.4 MB/s (115070 bytes in 0.002s)
-==> Android: original / pequena / 3.5935s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/media/original.wav: 1 file pushed, 0 skipped. 454.0 MB/s (1080190 bytes in 0.002s)
-==> Android: original / media / 33.7535s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/longa/original.wav: 1 file pushed, 0 skipped. 67.1 MB/s (5105790 bytes in 0.073s)
-==> Android: original / longa / 159.5535s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/pequena/silence.wav: 1 file pushed, 0 skipped. 166.9 MB/s (112426 bytes in 0.001s)
-==> Android: silence / pequena / 3.510875s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/media/silence.wav: 1 file pushed, 0 skipped. 407.7 MB/s (908224 bytes in 0.002s)
-==> Android: silence / media / 28.379563s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/longa/silence.wav: 1 file pushed, 0 skipped. 66.0 MB/s (4703456 bytes in 0.068s)
-==> Android: silence / longa / 146.980563s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/pequena/speed115.wav: 1 file pushed, 0 skipped. 198.5 MB/s (100044 bytes in 0.000s)
-==> Android: speed115 / pequena / 3.123938s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/media/speed115.wav: 1 file pushed, 0 skipped. 77.2 MB/s (939614 bytes in 0.012s)
-==> Android: speed115 / media / 29.3605s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/longa/speed115.wav: 1 file pushed, 0 skipped. 90.0 MB/s (4440132 bytes in 0.047s)
-==> Android: speed115 / longa / 138.751688s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/pequena/speed125.wav: 1 file pushed, 0 skipped. 27.9 MB/s (91464 bytes in 0.003s)
-==> Android: speed125 / pequena / 2.855813s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/media/speed125.wav: 1 file pushed, 0 skipped. 68.2 MB/s (864644 bytes in 0.012s)
-==> Android: speed125 / media / 27.017688s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/longa/speed125.wav: 1 file pushed, 0 skipped. 148.0 MB/s (4084744 bytes in 0.026s)
-==> Android: speed125 / longa / 127.645813s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/pequena/silence_speed115.wav: 1 file pushed, 0 skipped. 33.5 MB/s (97956 bytes in 0.003s)
-==> Android: silence_speed115 / pequena / 3.058688s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/media/silence_speed115.wav: 1 file pushed, 0 skipped. 99.2 MB/s (790102 bytes in 0.008s)
-==> Android: silence_speed115 / media / 24.68825s
-diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/variants/longa/silence_speed115.wav: 1 file pushed, 0 skipped. 114.8 MB/s (4090368 bytes in 0.034s)
-==> Android: silence_speed115 / longa / 127.821563s
-==> Calculando impacto de qualidade e tempo
-==> Limpando arquivos temporários do benchmark no celular
-==> Reinstalando release sem apagar dados
-> Task :app:buildKotlinToolingMetadata UP-TO-DATE
-> Task :app:checkKotlinGradlePluginConfigurationErrors
-> Task :app:preBuild UP-TO-DATE
-> Task :app:preReleaseBuild UP-TO-DATE
-> Task :app:dataBindingMergeDependencyArtifactsRelease UP-TO-DATE
-> Task :app:generateReleaseResValues UP-TO-DATE
-> Task :app:generateReleaseResources UP-TO-DATE
-> Task :app:mergeReleaseResources UP-TO-DATE
-> Task :app:packageReleaseResources UP-TO-DATE
-> Task :app:parseReleaseLocalResources UP-TO-DATE
-> Task :app:dataBindingGenBaseClassesRelease UP-TO-DATE
-> Task :app:checkReleaseAarMetadata UP-TO-DATE
-> Task :app:mapReleaseSourceSetPaths UP-TO-DATE
-> Task :app:createReleaseCompatibleScreenManifests UP-TO-DATE
-> Task :app:extractDeepLinksRelease UP-TO-DATE
-> Task :app:processReleaseMainManifest UP-TO-DATE
-> Task :app:processReleaseManifest UP-TO-DATE
-> Task :app:processReleaseManifestForPackage UP-TO-DATE
-> Task :app:processReleaseResources UP-TO-DATE
-> Task :app:kspReleaseKotlin UP-TO-DATE
-> Task :app:compileReleaseKotlin UP-TO-DATE
-> Task :app:javaPreCompileRelease UP-TO-DATE
-> Task :app:compileReleaseJavaWithJavac UP-TO-DATE
-> Task :app:extractProguardFiles UP-TO-DATE
-> Task :app:generateReleaseLintVitalReportModel UP-TO-DATE
-> Task :app:lintVitalAnalyzeRelease UP-TO-DATE
-> Task :app:lintVitalReportRelease UP-TO-DATE
-> Task :app:lintVitalRelease
-> Task :app:mergeReleaseJniLibFolders UP-TO-DATE
-> Task :app:mergeReleaseNativeLibs UP-TO-DATE
-> Task :app:stripReleaseDebugSymbols UP-TO-DATE
-> Task :app:extractReleaseNativeSymbolTables UP-TO-DATE
-> Task :app:mergeReleaseNativeDebugMetadata NO-SOURCE
-> Task :app:checkReleaseDuplicateClasses UP-TO-DATE
-> Task :app:dexBuilderRelease UP-TO-DATE
-> Task :app:desugarReleaseFileDependencies UP-TO-DATE
-> Task :app:mergeExtDexRelease UP-TO-DATE
-> Task :app:mergeDexRelease UP-TO-DATE
-> Task :app:mergeReleaseArtProfile UP-TO-DATE
-> Task :app:mergeReleaseGlobalSynthetics UP-TO-DATE
-> Task :app:compileReleaseArtProfile UP-TO-DATE
-> Task :app:mergeReleaseShaders UP-TO-DATE
-> Task :app:compileReleaseShaders NO-SOURCE
-> Task :app:generateReleaseAssets UP-TO-DATE
-> Task :app:mergeReleaseAssets UP-TO-DATE
-> Task :app:compressReleaseAssets UP-TO-DATE
-> Task :app:extractReleaseVersionControlInfo
-> Task :app:processReleaseJavaRes UP-TO-DATE
-> Task :app:mergeReleaseJavaResource UP-TO-DATE
-> Task :app:optimizeReleaseResources UP-TO-DATE
-> Task :app:collectReleaseDependencies UP-TO-DATE
-> Task :app:sdkReleaseDependencyData UP-TO-DATE
-> Task :app:validateSigningRelease UP-TO-DATE
-> Task :app:writeReleaseAppMetadata UP-TO-DATE
-> Task :app:writeReleaseSigningConfigVersions UP-TO-DATE
-> Task :app:packageRelease
-> Task :app:createReleaseApkListingFileRedirect UP-TO-DATE
-> Task :app:assembleRelease
-
-BUILD SUCCESSFUL in 30s
-52 actionable tasks: 4 executed, 48 up-to-date
-
-BENCHMARK DE PRÉ-PROCESSAMENTO CONCLUÍDO
-Recomendação automática: silence
-Relatório: diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/report.md
-Métricas: diagnostics/asr-preprocess-benchmark/2026-09-30-15-05-14/metrics.json
+==> Amostra: 386.726500s | id=6780 | Ricardo Lucena
+diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/variants/speed115.wav: 1 file pushed, 0 skipped. 24.5 MB/s (10761396 bytes in 0.419s)
+==> Rodada 1 | ordem 1 | speed115 | 336.291188s
+==> Resfriando 90s
+diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/variants/original.wav: 1 file pushed, 0 skipped. 27.0 MB/s (12374910 bytes in 0.438s)
+==> Rodada 1 | ordem 2 | original | 386.713500s
+==> Resfriando 90s
+diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/variants/speed125.wav: 1 file pushed, 0 skipped. 29.7 MB/s (9900274 bytes in 0.318s)
+==> Rodada 1 | ordem 3 | speed125 | 309.381125s
+==> Resfriando 90s
+diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/variants/silence_speed115.wav: 1 file pushed, 0 skipped. 29.6 MB/s (10049638 bytes in 0.324s)
+==> Rodada 1 | ordem 4 | silence_speed115 | 314.048750s
+ERRO: timeout: rodada 1 / silence_speed115
