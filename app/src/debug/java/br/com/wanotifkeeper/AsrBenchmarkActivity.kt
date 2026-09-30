@@ -43,7 +43,6 @@ class AsrBenchmarkActivity : AppCompatActivity() {
                 }
 
                 val modelFiles = ensureModel(model)
-                val audio = AndroidAudioDecoder.decodeToMono16k(input)
 
                 val config = OfflineRecognizerConfig(
                     featConfig = FeatureConfig(sampleRate = 16_000, featureDim = 80),
@@ -63,14 +62,20 @@ class AsrBenchmarkActivity : AppCompatActivity() {
 
                 val recognizer = OfflineRecognizer(config = config)
                 try {
-                    val stream = recognizer.createStream()
-                    try {
-                        stream.acceptWaveform(audio.samples, audio.sampleRate)
-                        recognizer.decode(stream)
-                        recognizer.getResult(stream).text.trim()
-                    } finally {
-                        stream.release()
+                    val parts = mutableListOf<String>()
+                    AndroidAudioDecoder.forEachMono16kChunk(input) { audio ->
+                        val stream = recognizer.createStream()
+                        try {
+                            stream.acceptWaveform(audio.samples, audio.sampleRate)
+                            recognizer.decode(stream)
+                            recognizer.getResult(stream).text.trim()
+                                .takeIf { it.isNotBlank() }
+                                ?.let(parts::add)
+                        } finally {
+                            stream.release()
+                        }
                     }
+                    parts.joinToString(" ").trim()
                 } finally {
                     recognizer.release()
                 }
