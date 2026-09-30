@@ -10,9 +10,20 @@ OUT_BASE="${ASR_BENCHMARK_DIR:-diagnostics/asr-benchmark}"
 STAMP="$(date '+%Y-%m-%d-%H-%M-%S')"
 OUT_DIR="$OUT_BASE/$STAMP"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/wa-keeper-asr.XXXXXX")"
+CONSOLE_LOG="$WORK/console.log"
+STAGE="inicialização"
+DEVICE="desconhecido"
 
-cleanup() { rm -rf "$WORK"; }
-trap cleanup EXIT
+on_exit() {
+  status=$?
+  bash scripts/asr-publish-evidence.sh     "$status" "$STAGE" "$DEVICE" "$OUT_DIR" "$CONSOLE_LOG" "$ANDROID_MODELS" || true
+  rm -rf "$WORK"
+  exit "$status"
+}
+trap on_exit EXIT
+
+exec > >(tee -a "$CONSOLE_LOG") 2>&1
+
 fail() { printf 'ERRO: %s\n' "$*" >&2; exit 1; }
 log() { printf '==> %s\n' "$*"; }
 
@@ -45,16 +56,20 @@ mkdir -p "$OUT_DIR"/{samples,reference,android,logs}
 log "Android: ${DEVICE:-desconhecido}"
 log "Relatório: $OUT_DIR"
 
-log "Compilando e instalando build debug sem apagar dados"
-./gradlew --console=plain assembleDebug >/dev/null
+STAGE="compilação da build debug"
+log "Compilando build debug"
+./gradlew --console=plain assembleDebug
 DEBUG_APK="app/build/outputs/apk/debug/app-debug.apk"
 [[ -f "$DEBUG_APK" ]] || fail "APK debug não encontrado"
-"${ADB[@]}" install -r "$DEBUG_APK" >/dev/null ||
+STAGE="instalação da build debug"
+log "Instalando build debug sem apagar dados"
+"${ADB[@]}" install -r "$DEBUG_APK" ||
   fail "não consegui instalar debug por cima da versão atual"
 "${ADB[@]}" shell am force-stop "$APP_ID" >/dev/null 2>&1 || true
 "${ADB[@]}" shell run-as "$APP_ID" id >/dev/null 2>&1 ||
   fail "run-as não ficou disponível"
 
+STAGE="coleta do banco e seleção de amostras"
 log "Lendo banco do WA-Keeper instalado"
 "${ADB[@]}" exec-out run-as "$APP_ID" tar -cf - databases > "$WORK/databases.tar"
 tar -xf "$WORK/databases.tar" -C "$WORK"
@@ -95,6 +110,7 @@ else
   TRANSCRIVER_PY="python3"
 fi
 
+STAGE="transcrição de referência no devel3"
 log "Transcrevendo no devel3 com faster-whisper small"
 while IFS=$'\t' read -r label id duration sender sample; do
   [[ "$label" == "classe" ]] && continue
@@ -117,6 +133,7 @@ open(sys.argv[2], "w", encoding="utf-8").write(body.strip() + "\n")
 PY
 done < "$OUT_DIR/samples.tsv"
 
+STAGE="transcrição local no Android"
 IFS=',' read -r -a MODELS <<< "$ANDROID_MODELS"
 for model in "${MODELS[@]}"; do
   model="$(echo "$model" | xargs)"
@@ -156,14 +173,16 @@ PY
   done < "$OUT_DIR/samples.tsv"
 done
 
+STAGE="cálculo de métricas e recomendação"
 log "Calculando WER/CER e recomendação"
 RECOMMENDED="$(python3 scripts/asr-benchmark-report.py report "$OUT_DIR" --device "$DEVICE" --models "$ANDROID_MODELS")"
 
 log "Limpando modelos e áudios temporários do benchmark no celular"
 "${ADB[@]}" shell run-as "$APP_ID" rm -rf files/asr-benchmark >/dev/null 2>&1 || true
 
+STAGE="restauração da build release"
 log "Reinstalando release sem apagar dados"
-./gradlew --console=plain assembleRelease >/dev/null
+./gradlew --console=plain assembleRelease
 RELEASE_APK="app/build/outputs/apk/release/app-release.apk"
 "${ADB[@]}" install -r "$RELEASE_APK" >/dev/null ||
   fail "benchmark terminou, mas falhou ao reinstalar release; NÃO desinstale o app"
@@ -172,3 +191,4 @@ printf '\nBENCHMARK CONCLUÍDO\n'
 printf 'Recomendação automática: sherpa-onnx Whisper %s\n' "$RECOMMENDED"
 printf 'Relatório: %s/report.md\n' "$OUT_DIR"
 printf 'Métricas: %s/metrics.json\n' "$OUT_DIR"
+STAGE="concluído"
