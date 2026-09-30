@@ -117,10 +117,12 @@
                             android:layout_width="0dp"
                             android:layout_height="52dp"
                             android:layout_weight="1"
-                            android:text="Play"
-                            android:textAllCaps="false"
+                            android:contentDescription="Tocar áudio"
+                            android:minWidth="0dp"
+                            android:text=""
                             app:icon="@drawable/ic_play"
                             app:iconGravity="textStart"
+                            app:iconPadding="0dp"
                             app:iconTint="@color/wa_primary" />
 
                         <com.google.android.material.button.MaterialButton
@@ -130,10 +132,12 @@
                             android:layout_height="52dp"
                             android:layout_marginStart="6dp"
                             android:layout_weight="1"
-                            android:text="Pausar"
-                            android:textAllCaps="false"
+                            android:contentDescription="Pausar áudio"
+                            android:minWidth="0dp"
+                            android:text=""
                             app:icon="@drawable/ic_pause"
                             app:iconGravity="textStart"
+                            app:iconPadding="0dp"
                             app:iconTint="@color/wa_primary" />
 
                         <com.google.android.material.button.MaterialButton
@@ -143,10 +147,12 @@
                             android:layout_height="52dp"
                             android:layout_marginStart="6dp"
                             android:layout_weight="1"
-                            android:text="Parar"
-                            android:textAllCaps="false"
+                            android:contentDescription="Parar áudio"
+                            android:minWidth="0dp"
+                            android:text=""
                             app:icon="@drawable/ic_stop"
                             app:iconGravity="textStart"
+                            app:iconPadding="0dp"
                             app:iconTint="@color/wa_primary" />
                     </LinearLayout>
 
