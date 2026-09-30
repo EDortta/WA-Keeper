@@ -39,17 +39,22 @@
             android:layout_weight="1"
             android:text="Retenção"
             android:textAllCaps="false" />
-    </LinearLayout>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnTtsMode"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="8dp"
-        android:text="Leitura automática: completa"
-        android:textAllCaps="false" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTtsMode"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="56dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:contentDescription="Configurar leitura automática"
+            android:minWidth="0dp"
+            android:paddingHorizontal="0dp"
+            android:text=""
+            app:icon="@drawable/ic_tts_full"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconTint="@color/wa_primary" />
+    </LinearLayout>
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/swAutoTranscribe"
