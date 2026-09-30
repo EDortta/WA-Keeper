@@ -113,33 +113,41 @@
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPlayAudio"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="52dp"
                             android:layout_weight="1"
-                            android:text="▶ Play"
+                            android:text="Play"
                             android:textAllCaps="false"
-                            android:textColor="#FFFFFF"
-                            app:backgroundTint="@color/wa_primary" />
+                            app:icon="@drawable/ic_play"
+                            app:iconGravity="textStart"
+                            app:iconTint="@color/wa_primary" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPauseAudio"
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="52dp"
                             android:layout_marginStart="6dp"
                             android:layout_weight="1"
-                            android:text="⏸ Pausa"
-                            android:textAllCaps="false" />
+                            android:text="Pausar"
+                            android:textAllCaps="false"
+                            app:icon="@drawable/ic_pause"
+                            app:iconGravity="textStart"
+                            app:iconTint="@color/wa_primary" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnStopAudio"
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="52dp"
                             android:layout_marginStart="6dp"
                             android:layout_weight="1"
-                            android:text="■ Stop"
-                            android:textAllCaps="false" />
+                            android:text="Parar"
+                            android:textAllCaps="false"
+                            app:icon="@drawable/ic_stop"
+                            app:iconGravity="textStart"
+                            app:iconTint="@color/wa_primary" />
                     </LinearLayout>
 
                     <com.google.android.material.button.MaterialButton
