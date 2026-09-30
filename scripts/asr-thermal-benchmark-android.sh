@@ -4,8 +4,8 @@ set -Eeuo pipefail
 APP_ID="br.com.wanotifkeeper"
 POOL_SIZE="${ASR_SAMPLE_POOL:-24}"
 REPEATS="${ASR_THERMAL_REPEATS:-3}"
-COOLDOWN="${ASR_COOLDOWN_SECONDS:-90}"
-WAIT_SECONDS="${ASR_WAIT_SECONDS:-1200}"
+COOLDOWN="${ASR_COOLDOWN_SECONDS:-120}"
+WAIT_SECONDS="${ASR_WAIT_SECONDS:-1800}"
 OUT_BASE="${ASR_THERMAL_BENCHMARK_DIR:-diagnostics/asr-preprocess-benchmark}"
 STAMP="$(date '+%Y-%m-%d-%H-%M-%S')-thermal"
 OUT_DIR="$OUT_BASE/$STAMP"
@@ -84,8 +84,11 @@ for line in open(sys.argv[1], encoding="utf-8"):
         rows.append((float(p[1]), p))
 if not rows:
     raise SystemExit("nenhuma amostra encontrada")
-rows.sort(key=lambda x:x[0], reverse=True)
-open(sys.argv[2],"w",encoding="utf-8").write("\t".join(rows[0][1])+"\n")
+target = 180.0
+long_rows = [row for row in rows if row[0] >= 90.0]
+pool = long_rows or rows
+chosen = min(pool, key=lambda row: abs(row[0] - target))
+open(sys.argv[2],"w",encoding="utf-8").write("\t".join(chosen[1])+"\n")
 PY
 
 IFS=$'\t' read -r id duration sender text source_file < "$WORK/long.tsv"
@@ -97,13 +100,10 @@ log "Amostra: ${duration}s | id=$id | $sender"
 STAGE="geração das variantes"
 V="$OUT_DIR/variants"
 ffmpeg -hide_banner -loglevel error -y -i "$sample" -ac 1 -ar 16000 -c:a pcm_s16le "$V/original.wav"
-ffmpeg -hide_banner -loglevel error -y -i "$sample" -af "silenceremove=start_periods=1:start_duration=0.15:start_threshold=-42dB:stop_periods=-1:stop_duration=0.45:stop_threshold=-42dB" -ac 1 -ar 16000 -c:a pcm_s16le "$V/silence.wav"
-ffmpeg -hide_banner -loglevel error -y -i "$sample" -af "atempo=1.15" -ac 1 -ar 16000 -c:a pcm_s16le "$V/speed115.wav"
-ffmpeg -hide_banner -loglevel error -y -i "$sample" -af "atempo=1.25" -ac 1 -ar 16000 -c:a pcm_s16le "$V/speed125.wav"
 ffmpeg -hide_banner -loglevel error -y -i "$sample" -af "silenceremove=start_periods=1:start_duration=0.15:start_threshold=-42dB:stop_periods=-1:stop_duration=0.45:stop_threshold=-42dB,atempo=1.15" -ac 1 -ar 16000 -c:a pcm_s16le "$V/silence_speed115.wav"
 
 printf 'classe\tvariante\tduracao_s\tarquivo\n' > "$OUT_DIR/variants.tsv"
-for variant in original silence speed115 speed125 silence_speed115; do
+for variant in original silence_speed115; do
   d="$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$V/$variant.wav")"
   printf 'longa\t%s\t%s\t%s\n' "$variant" "$d" "$V/$variant.wav" >> "$OUT_DIR/variants.tsv"
 done
@@ -113,7 +113,7 @@ printf 'rodada\tordem\tvariante\tduracao_s\telapsed_ms\tresult_json\ttranscript\
 
 STAGE="execuções aleatórias com resfriamento"
 for round in $(seq 1 "$REPEATS"); do
-  mapfile -t ORDER < <(printf '%s\n' original silence speed115 speed125 silence_speed115 | shuf)
+  mapfile -t ORDER < <(printf '%s\n' original silence_speed115 | shuf)
   order_no=0
 
   for variant in "${ORDER[@]}"; do
