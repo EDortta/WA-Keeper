@@ -1,13 +1,10 @@
 package br.com.wanotifkeeper.benchmark
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
-import com.k2fsa.sherpa.onnx.FeatureConfig
-import com.k2fsa.sherpa.onnx.OfflineModelConfig
-import com.k2fsa.sherpa.onnx.OfflineRecognizer
-import com.k2fsa.sherpa.onnx.OfflineRecognizerConfig
-import com.k2fsa.sherpa.onnx.OfflineWhisperModelConfig
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,12 +27,35 @@ class BenchmarkActivity : Activity() {
         }
         setContentView(statusView)
 
+        if (intent.getBooleanExtra("autonomous", false)) {
+            val serviceIntent = Intent(this, BenchmarkRunnerService::class.java).apply {
+                action = BenchmarkRunnerService.ACTION_START
+                putExtra(
+                    BenchmarkRunnerService.EXTRA_REPEATS,
+                    intent.getIntExtra("repeats", 3)
+                )
+                putExtra(
+                    BenchmarkRunnerService.EXTRA_COOLDOWN_SECONDS,
+                    intent.getIntExtra("cooldownSeconds", 120)
+                )
+                putExtra(
+                    BenchmarkRunnerService.EXTRA_MODEL,
+                    intent.getStringExtra("model").orEmpty().ifBlank { "small" }
+                )
+            }
+            ContextCompat.startForegroundService(this, serviceIntent)
+            statusView.text =
+                "Benchmark autônomo iniciado.\nPode desconectar o celular.\n" +
+                "O WA-Keeper continua independente."
+            return
+        }
+
         val inputName = intent.getStringExtra("input").orEmpty()
         if (inputName.isBlank()) return
 
         val model = intent.getStringExtra("model").orEmpty().ifBlank { "small" }
         val language = intent.getStringExtra("language").orEmpty()
-        scope.launch { runBenchmark(inputName, model, language) }
+        scope.launch { runSingle(inputName, model, language) }
     }
 
     override fun onDestroy() {
@@ -43,73 +63,35 @@ class BenchmarkActivity : Activity() {
         super.onDestroy()
     }
 
-    private suspend fun runBenchmark(inputName: String, model: String, language: String) {
+    private suspend fun runSingle(inputName: String, model: String, language: String) {
         val outDir = File(filesDir, "benchmark").apply { mkdirs() }
         val resultFile = File(outDir, "result.json")
         resultFile.delete()
         statusView.text = "Preparando modelo " + model + "..."
 
-        var elapsedMs = 0L
         val result = withContext(Dispatchers.IO) {
             runCatching {
                 val input = File(outDir, inputName)
-                require(input.isFile && input.length() > 0L) { "áudio não encontrado: " + inputName }
-
-                val modelFiles = BenchmarkModelManager.ensureModel(filesDir, model)
-                val started = System.nanoTime()
-
-                val config = OfflineRecognizerConfig(
-                    featConfig = FeatureConfig(sampleRate = 16_000, featureDim = 80),
-                    modelConfig = OfflineModelConfig(
-                        whisper = OfflineWhisperModelConfig(
-                            encoder = modelFiles.encoder.absolutePath,
-                            decoder = modelFiles.decoder.absolutePath,
-                            language = language,
-                            task = "transcribe"
-                        ),
-                        tokens = modelFiles.tokens.absolutePath,
-                        numThreads = 4,
-                        provider = "cpu",
-                        modelType = "whisper"
-                    )
-                )
-
-                val recognizer = OfflineRecognizer(config = config)
-                try {
-                    val parts = mutableListOf<String>()
-                    AudioDecoder.forEachMono16kChunk(input) { audio ->
-                        val stream = recognizer.createStream()
-                        try {
-                            stream.acceptWaveform(audio.samples, audio.sampleRate)
-                            recognizer.decode(stream)
-                            recognizer.getResult(stream).text.trim()
-                                .takeIf { it.isNotBlank() }
-                                ?.let(parts::add)
-                        } finally {
-                            stream.release()
-                        }
-                    }
-                    parts.joinToString(" ").trim()
-                } finally {
-                    recognizer.release()
-                    elapsedMs = (System.nanoTime() - started) / 1_000_000L
+                require(input.isFile && input.length() > 0L) {
+                    "áudio não encontrado: " + inputName
                 }
+                BenchmarkTranscriber.transcribe(filesDir, input, model, language)
             }
         }
 
-        val json = JSONObject()
-            .put("model", model)
-            .put("language", language.ifBlank { "auto" })
-            .put("elapsedMs", elapsedMs)
+        val json = JSONObject().put("model", model)
 
         result.fold(
             onSuccess = {
                 json.put("ok", true)
-                json.put("text", it)
-                statusView.text = "Concluído\nModelo: " + model + "\nTempo: " + elapsedMs + " ms"
+                json.put("elapsedMs", it.elapsedMs)
+                json.put("text", it.text)
+                statusView.text =
+                    "Concluído\nModelo: " + model + "\nTempo: " + it.elapsedMs + " ms"
             },
             onFailure = {
                 json.put("ok", false)
+                json.put("elapsedMs", 0)
                 json.put("error", it.message ?: it.javaClass.simpleName)
                 statusView.text = "Falhou\n" + (it.message ?: it.javaClass.simpleName)
             }
