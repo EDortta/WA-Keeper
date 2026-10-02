@@ -44,6 +44,26 @@ DB_NAME = "wanotif.db"
 PKG_WHATSAPP = "com.whatsapp"
 PKG_BUSINESS = "com.whatsapp.w4b"
 
+EVIDENCE_FILE: Path | None = None
+
+
+def init_evidence(root: Path) -> None:
+    global EVIDENCE_FILE
+    root.mkdir(parents=True, exist_ok=True)
+    EVIDENCE_FILE = root / "latest.log"
+    EVIDENCE_FILE.write_text(
+        "# WA-Keeper local-backup evidence\n"
+        f"started_at={dt.datetime.now().astimezone().isoformat(timespec='seconds')}\n",
+        encoding="utf-8",
+    )
+
+
+def evidence(message: str) -> None:
+    if EVIDENCE_FILE is None:
+        return
+    with EVIDENCE_FILE.open("a", encoding="utf-8") as fh:
+        fh.write(message.replace("\n", " | ") + "\n")
+
 
 def run(cmd: list[str], *, check: bool = True, capture: bool = True) -> subprocess.CompletedProcess:
     return subprocess.run(
@@ -69,10 +89,14 @@ def detect_serial(serial: str | None) -> str:
         return serial
     devices = adb_text(None, "devices").splitlines()[1:]
     online = [line.split()[0] for line in devices if line.strip().endswith("\tdevice")]
+    evidence(f"adb_online_devices={len(online)}")
     if len(online) == 1:
+        evidence("adb_device_selection=single")
         return online[0]
     if not online:
+        evidence("failure=no_adb_device")
         raise SystemExit("Nenhum aparelho adb conectado.")
+    evidence("failure=multiple_adb_devices")
     raise SystemExit("Mais de um aparelho conectado. Use --serial.")
 
 
@@ -106,6 +130,7 @@ def is_sqlite_bytes(data: bytes) -> bool:
 def copy_db_from_adb(serial: str, dest: Path) -> None:
     remote_abs = f"/data/data/{APP_ID}/databases/{DB_NAME}"
     attempts: list[str] = []
+    evidence("db_source=adb")
 
     # Caminho principal: run-as com caminho relativo ao data dir do app.
     cp = subprocess.run(
@@ -113,8 +138,11 @@ def copy_db_from_adb(serial: str, dest: Path) -> None:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
+    evidence(f"db_attempt_run_as_relative_rc={cp.returncode}")
+    evidence(f"db_attempt_run_as_relative_sqlite={is_sqlite_bytes(cp.stdout)}")
     if cp.returncode == 0 and is_sqlite_bytes(cp.stdout):
         dest.write_bytes(cp.stdout)
+        evidence("db_access=run_as_relative")
         return
     attempts.append(
         "run-as: " +
@@ -127,8 +155,11 @@ def copy_db_from_adb(serial: str, dest: Path) -> None:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
+    evidence(f"db_attempt_run_as_absolute_rc={cp.returncode}")
+    evidence(f"db_attempt_run_as_absolute_sqlite={is_sqlite_bytes(cp.stdout)}")
     if cp.returncode == 0 and is_sqlite_bytes(cp.stdout):
         dest.write_bytes(cp.stdout)
+        evidence("db_access=run_as_absolute")
         return
     attempts.append(
         "run-as(abs): " +
@@ -141,8 +172,11 @@ def copy_db_from_adb(serial: str, dest: Path) -> None:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
+    evidence(f"db_attempt_su_rc={cp.returncode}")
+    evidence(f"db_attempt_su_sqlite={is_sqlite_bytes(cp.stdout)}")
     if cp.returncode == 0 and is_sqlite_bytes(cp.stdout):
         dest.write_bytes(cp.stdout)
+        evidence("db_access=su")
         return
     attempts.append(
         "su: " +
@@ -271,7 +305,18 @@ def main() -> int:
     ap.add_argument("--audio-only", action="store_true")
     ap.add_argument("--documents-only", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument(
+        "--evidence-dir",
+        type=Path,
+        default=Path("evidence/local-backup"),
+        help="diretório para evidências técnicas versionáveis",
+    )
     args = ap.parse_args()
+    init_evidence(args.evidence_dir)
+    evidence(f"python={sys.version.split()[0]}")
+    evidence(f"dry_run={args.dry_run}")
+    evidence(f"audio_only={args.audio_only}")
+    evidence(f"documents_only={args.documents_only}")
 
     if args.audio_only and args.documents_only:
         ap.error("--audio-only e --documents-only são mutuamente exclusivos")
@@ -293,11 +338,16 @@ def main() -> int:
             db_path = Path(tmp) / DB_NAME
             copy_db_from_adb(serial, db_path)
         elif not db_path.is_file():
+            evidence("failure=db_file_not_found")
             raise SystemExit(f"Banco não encontrado: {db_path}")
+        else:
+            evidence("db_source=local_file")
 
         header = db_path.read_bytes()[:16]
+        evidence(f"db_header_valid={header == SQLITE_HEADER}")
         if header != SQLITE_HEADER:
             preview = db_path.read_bytes()[:200].decode("utf-8", errors="replace")
+            evidence("failure=invalid_sqlite_header")
             raise SystemExit(
                 f"O arquivo obtido não é um banco SQLite válido: {db_path}\\n"
                 f"Primeiros bytes: {preview!r}"
@@ -332,6 +382,9 @@ def main() -> int:
                 print(f"ERRO: não foi possível copiar {source}", file=sys.stderr)
 
         print(f"Encontrados: {seen} | copiados: {copied} | falhas: {failed}")
+        evidence(f"media_seen={seen}")
+        evidence(f"media_copied={copied}")
+        evidence(f"media_failed={failed}")
         if include_docs and not any(
             c in table_columns(conn, "notifications")
             for c in ("documentPath", "filePath", "attachmentPath")
@@ -342,8 +395,26 @@ def main() -> int:
                 file=sys.stderr,
             )
 
-    return 1 if failed else 0
+    code = 1 if failed else 0
+    evidence(f"exit_code={code}")
+    evidence(f"finished_at={dt.datetime.now().astimezone().isoformat(timespec='seconds')}")
+    return code
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except SystemExit as exc:
+        code = exc.code if isinstance(exc.code, int) else 1
+        evidence(f"exit_code={code}")
+        evidence(f"finished_at={dt.datetime.now().astimezone().isoformat(timespec='seconds')}")
+        if EVIDENCE_FILE is not None:
+            print(f"Evidência: {EVIDENCE_FILE}")
+        raise
+    except Exception as exc:
+        evidence(f"unhandled_exception={type(exc).__name__}:{exc}")
+        evidence("exit_code=1")
+        evidence(f"finished_at={dt.datetime.now().astimezone().isoformat(timespec='seconds')}")
+        if EVIDENCE_FILE is not None:
+            print(f"Evidência: {EVIDENCE_FILE}", file=sys.stderr)
+        raise
