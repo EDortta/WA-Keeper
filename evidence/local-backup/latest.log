@@ -1,0 +1,17 @@
+# WA-Keeper local-backup evidence
+started_at=2026-10-02T15:21:47-03:00
+python=3.10.12
+dry_run=False
+audio_only=False
+documents_only=False
+adb_online_devices=1
+adb_device_selection=single
+db_source=adb
+db_attempt_run_as_relative_rc=0
+db_attempt_run_as_relative_sqlite=False
+db_attempt_run_as_absolute_rc=0
+db_attempt_run_as_absolute_sqlite=False
+db_attempt_su_rc=0
+db_attempt_su_sqlite=False
+exit_code=1
+finished_at=2026-10-02T15:21:47-03:00
