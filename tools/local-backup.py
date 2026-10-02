@@ -271,6 +271,9 @@ def query_media(conn: sqlite3.Connection, include_audio: bool, include_docs: boo
         None,
     )
 
+    evidence(f"schema_has_audio_path={has_audio}")
+    evidence(f"schema_document_column={doc_col or 'none'}")
+
     if include_docs and not doc_col:
         print(
             "AVISO: este banco ainda não possui documentPath/filePath/attachmentPath; "
@@ -432,9 +435,12 @@ def main() -> int:
         copied = 0
         failed = 0
         seen = 0
+        seen_by_kind = {"audio": 0, "document": 0}
+        copied_by_kind = {"audio": 0, "document": 0}
 
         for kind, row in query_media(conn, include_audio, include_docs):
             seen += 1
+            seen_by_kind[kind] = seen_by_kind.get(kind, 0) + 1
             source = row["mediaPath"]
             dest = destination_for(args.output, phone_id, row, source)
 
@@ -450,6 +456,7 @@ def main() -> int:
 
             if ok:
                 copied += 1
+                copied_by_kind[kind] = copied_by_kind.get(kind, 0) + 1
             else:
                 failed += 1
                 print(f"ERRO: não foi possível copiar {source}", file=sys.stderr)
@@ -458,6 +465,10 @@ def main() -> int:
         evidence(f"media_seen={seen}")
         evidence(f"media_copied={copied}")
         evidence(f"media_failed={failed}")
+        evidence(f"audio_seen={seen_by_kind.get('audio', 0)}")
+        evidence(f"audio_copied={copied_by_kind.get('audio', 0)}")
+        evidence(f"documents_seen={seen_by_kind.get('document', 0)}")
+        evidence(f"documents_copied={copied_by_kind.get('document', 0)}")
         if include_docs and not any(
             c in table_columns(conn, "notifications")
             for c in ("documentPath", "filePath", "attachmentPath")
