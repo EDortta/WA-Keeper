@@ -54,6 +54,23 @@ class ConversationActivity : AppCompatActivity() {
             Prefs.setAutoTranscribeConversation(this, pkg, sender, checked)
         }
 
+        refreshDriveBackupButton(pkg, sender)
+        binding.btnDriveBackup.setOnClickListener {
+            if (DriveBackupPolicy.rootUri(this) == null) {
+                Toast.makeText(this, "Escolha primeiro a pasta do Google Drive.", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, DriveBackupSettingsActivity::class.java))
+            } else {
+                val next = DriveBackupPolicy.next(DriveBackupPolicy.conversationMode(this, pkg, sender))
+                DriveBackupPolicy.setConversationMode(this, pkg, sender, next)
+                refreshDriveBackupButton(pkg, sender)
+                if (next == DriveBackupMode.ENABLED) {
+                    lifecycleScope.launch {
+                        DriveBackupStore.backupConversation(this@ConversationActivity, pkg, sender)
+                    }
+                }
+            }
+        }
+
         binding.btnSchedule.setOnClickListener {
             startActivity(ScheduledMessagesActivity.intent(this, pkg, sender))
         }
@@ -113,6 +130,18 @@ class ConversationActivity : AppCompatActivity() {
                     binding.recycler.visibility = if (messages.isEmpty()) View.GONE else View.VISIBLE
                     binding.emptyState.visibility = if (messages.isEmpty()) View.VISIBLE else View.GONE
                 }
+        }
+    }
+
+    private fun refreshDriveBackupButton(packageName: String, sender: String) {
+        lifecycleScope.launch {
+            val mode = DriveBackupPolicy.conversationMode(this@ConversationActivity, packageName, sender)
+            val label = when (mode) {
+                DriveBackupMode.INHERIT -> "herdar (" + DriveBackupPolicy.inheritedDescription(this@ConversationActivity, packageName, sender) + ")"
+                DriveBackupMode.ENABLED -> "salvar"
+                DriveBackupMode.DISABLED -> "não salvar"
+            }
+            binding.btnDriveBackup.text = "Google Drive: " + label
         }
     }
 
