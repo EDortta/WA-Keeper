@@ -96,7 +96,7 @@ def timestamp_name(epoch_ms: int) -> str:
     return ts.strftime("%Y-%m-%d-%H-%M-%S")
 
 
-SQLITE_HEADER = b"SQLite format 3\\x00"
+SQLITE_HEADER = b"SQLite format 3\x00"
 
 
 def is_sqlite_bytes(data: bytes) -> bool:
@@ -118,7 +118,7 @@ def copy_db_from_adb(serial: str, dest: Path) -> None:
         return
     attempts.append(
         "run-as: " +
-        ((cp.stderr or cp.stdout or b"sem saída").decode("utf-8", errors="replace").strip()[:300])
+        ((cp.stderr or cp.stdout or b"no output").decode("utf-8", errors="replace").strip()[:300])
     )
 
     # Segunda tentativa: caminho absoluto sob run-as.
@@ -132,7 +132,7 @@ def copy_db_from_adb(serial: str, dest: Path) -> None:
         return
     attempts.append(
         "run-as(abs): " +
-        ((cp.stderr or cp.stdout or b"sem saída").decode("utf-8", errors="replace").strip()[:300])
+        ((cp.stderr or cp.stdout or b"no output").decode("utf-8", errors="replace").strip()[:300])
     )
 
     # Fallback para aparelho/emulador com root.
@@ -146,7 +146,7 @@ def copy_db_from_adb(serial: str, dest: Path) -> None:
         return
     attempts.append(
         "su: " +
-        ((cp.stderr or cp.stdout or b"sem saída").decode("utf-8", errors="replace").strip()[:300])
+        ((cp.stderr or cp.stdout or b"no output").decode("utf-8", errors="replace").strip()[:300])
     )
 
     raise SystemExit(
