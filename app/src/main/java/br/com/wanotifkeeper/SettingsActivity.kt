@@ -36,6 +36,9 @@ class SettingsActivity : AppCompatActivity() {
         binding.btnBankMode.setOnClickListener {
             startActivity(Intent(this, BankModeActivity::class.java))
         }
+        binding.btnDriveBackup.setOnClickListener {
+            startActivity(Intent(this, DriveBackupSettingsActivity::class.java))
+        }
 
         // --- Leitura em voz alta (TTS) por conta ---
         binding.swWhatsapp.isChecked = Prefs.isTtsEnabled(this, Prefs.PKG_WHATSAPP)
