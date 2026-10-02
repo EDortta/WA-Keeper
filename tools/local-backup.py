@@ -40,11 +40,16 @@ from pathlib import Path
 
 APP_ID = "br.com.wanotifkeeper"
 DB_NAME = "wanotif.db"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DEBUG_APK = REPO_ROOT / "app/build/outputs/apk/debug/app-debug.apk"
+RELEASE_APK = REPO_ROOT / "app/build/outputs/apk/release/app-release.apk"
 
 PKG_WHATSAPP = "com.whatsapp"
 PKG_BUSINESS = "com.whatsapp.w4b"
 
 EVIDENCE_FILE: Path | None = None
+DEBUG_BRIDGE_INSTALLED = False
+ACTIVE_SERIAL: str | None = None
 
 
 def init_evidence(root: Path) -> None:
@@ -127,67 +132,128 @@ def is_sqlite_bytes(data: bytes) -> bool:
     return len(data) >= len(SQLITE_HEADER) and data.startswith(SQLITE_HEADER)
 
 
-def copy_db_from_adb(serial: str, dest: Path) -> None:
-    remote_abs = f"/data/data/{APP_ID}/databases/{DB_NAME}"
-    attempts: list[str] = []
+def gradle(task: str) -> None:
+    evidence(f"gradle_task={task}")
+    cp = subprocess.run(
+        [str(REPO_ROOT / "gradlew"), "--console=plain", task],
+        cwd=REPO_ROOT,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    evidence(f"gradle_{task}_rc={cp.returncode}")
+    if cp.returncode != 0:
+        tail = "\n".join(cp.stdout.splitlines()[-40:])
+        evidence(f"gradle_{task}_tail={tail}")
+        raise SystemExit(f"Falha no Gradle: {task}\n{tail}")
+
+
+def adb_install(serial: str, apk: Path, label: str) -> None:
+    if not apk.is_file():
+        raise SystemExit(f"APK não encontrado: {apk}")
+    cp = subprocess.run(
+        adb_base(serial) + ["install", "-r", "-d", str(apk)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    evidence(f"install_{label}_rc={cp.returncode}")
+    evidence(f"install_{label}_result={cp.stdout.strip()[:500]}")
+    if cp.returncode != 0 or "Success" not in cp.stdout:
+        raise SystemExit(f"Falha instalando {label}: {cp.stdout.strip()}")
+
+
+def package_debuggable(serial: str) -> bool:
+    cp = subprocess.run(
+        adb_base(serial) + ["shell", "run-as", APP_ID, "id"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    ok = cp.returncode == 0 and "uid=" in cp.stdout
+    evidence(f"package_run_as_available={ok}")
+    return ok
+
+
+def ensure_debug_bridge(serial: str) -> bool:
+    """Retorna True se instalou debug temporariamente."""
+    if package_debuggable(serial):
+        evidence("debug_bridge=already_available")
+        return False
+
+    evidence("debug_bridge=required")
+    gradle("assembleDebug")
+    adb_install(serial, DEBUG_APK, "debug")
+    if not package_debuggable(serial):
+        raise SystemExit("A build debug foi instalada, mas run-as continua indisponível.")
+    evidence("debug_bridge=installed")
+    return True
+
+
+def restore_release(serial: str) -> None:
+    evidence("restore_release=begin")
+    gradle("assembleRelease")
+    adb_install(serial, RELEASE_APK, "release")
+    evidence("restore_release=ok")
+
+
+def adb_run_as_bytes(serial: str, relative_path: str) -> tuple[int, bytes, bytes]:
+    returncode = 0
+    cp = subprocess.run(
+        adb_base(serial) + ["exec-out", "run-as", APP_ID, "cat", relative_path],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    return cp.returncode, cp.stdout, cp.stderr
+
+
+def copy_sqlite_family_from_adb(serial: str, dest: Path) -> None:
+    """Copia DB principal e WAL/SHM quando existirem, com o app parado."""
+    subprocess.run(
+        adb_base(serial) + ["shell", "am", "force-stop", APP_ID],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    evidence("app_force_stop=done")
+
+    for suffix in ("", "-wal", "-shm"):
+        rel = f"databases/{DB_NAME}{suffix}"
+        rc, stdout, stderr = adb_run_as_bytes(serial, rel)
+        if suffix == "":
+            evidence(f"db_main_rc={rc}")
+            evidence(f"db_main_sqlite={is_sqlite_bytes(stdout)}")
+            if rc != 0 or not is_sqlite_bytes(stdout):
+                msg = (stderr or stdout or b"no output").decode("utf-8", errors="replace")[:300]
+                raise SystemExit(f"Não consegui copiar {rel}: {msg}")
+            dest.write_bytes(stdout)
+        elif rc == 0 and stdout:
+            Path(str(dest) + suffix).write_bytes(stdout)
+            evidence(f"db_sidecar_{suffix[1:]}=copied")
+        else:
+            evidence(f"db_sidecar_{suffix[1:]}=absent")
+
+
+def copy_db_from_adb(serial: str, dest: Path) -> bool:
+    """Obtém SQLite válido. Retorna True se uma build debug temporária foi instalada."""
     evidence("db_source=adb")
 
-    # Caminho principal: run-as com caminho relativo ao data dir do app.
-    cp = subprocess.run(
-        adb_base(serial) + ["exec-out", "run-as", APP_ID, "cat", f"databases/{DB_NAME}"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    evidence(f"db_attempt_run_as_relative_rc={cp.returncode}")
-    evidence(f"db_attempt_run_as_relative_sqlite={is_sqlite_bytes(cp.stdout)}")
-    if cp.returncode == 0 and is_sqlite_bytes(cp.stdout):
-        dest.write_bytes(cp.stdout)
-        evidence("db_access=run_as_relative")
-        return
-    attempts.append(
-        "run-as: " +
-        ((cp.stderr or cp.stdout or b"no output").decode("utf-8", errors="replace").strip()[:300])
-    )
+    # Primeiro tenta sem alterar o APK.
+    rc, stdout, stderr = adb_run_as_bytes(serial, f"databases/{DB_NAME}")
+    evidence(f"db_attempt_existing_run_as_rc={rc}")
+    evidence(f"db_attempt_existing_run_as_sqlite={is_sqlite_bytes(stdout)}")
+    if rc == 0 and is_sqlite_bytes(stdout):
+        copy_sqlite_family_from_adb(serial, dest)
+        evidence("db_access=existing_run_as")
+        return False
 
-    # Segunda tentativa: caminho absoluto sob run-as.
-    cp = subprocess.run(
-        adb_base(serial) + ["exec-out", "run-as", APP_ID, "cat", remote_abs],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    evidence(f"db_attempt_run_as_absolute_rc={cp.returncode}")
-    evidence(f"db_attempt_run_as_absolute_sqlite={is_sqlite_bytes(cp.stdout)}")
-    if cp.returncode == 0 and is_sqlite_bytes(cp.stdout):
-        dest.write_bytes(cp.stdout)
-        evidence("db_access=run_as_absolute")
-        return
-    attempts.append(
-        "run-as(abs): " +
-        ((cp.stderr or cp.stdout or b"no output").decode("utf-8", errors="replace").strip()[:300])
-    )
+    preview = (stderr or stdout or b"no output").decode("utf-8", errors="replace")[:200]
+    evidence(f"db_existing_run_as_message={preview}")
 
-    # Fallback para aparelho/emulador com root.
-    cp = subprocess.run(
-        adb_base(serial) + ["exec-out", "su", "-c", f"cat {remote_abs}"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    evidence(f"db_attempt_su_rc={cp.returncode}")
-    evidence(f"db_attempt_su_sqlite={is_sqlite_bytes(cp.stdout)}")
-    if cp.returncode == 0 and is_sqlite_bytes(cp.stdout):
-        dest.write_bytes(cp.stdout)
-        evidence("db_access=su")
-        return
-    attempts.append(
-        "su: " +
-        ((cp.stderr or cp.stdout or b"no output").decode("utf-8", errors="replace").strip()[:300])
-    )
-
-    raise SystemExit(
-        "Não consegui obter um SQLite válido do WA-Keeper via adb.\\n"
-        + "\\n".join("  - " + a for a in attempts)
-        + "\\nUse --db /caminho/wanotif.db se você já tiver uma cópia local do banco."
-    )
+    # Release não-debuggable: instala debug compatível, sem limpar /data.
+    installed_debug = ensure_debug_bridge(serial)
+    copy_sqlite_family_from_adb(serial, dest)
+    evidence("db_access=temporary_debug_bridge")
+    return installed_debug
 
 
 def table_columns(conn: sqlite3.Connection, table: str) -> set[str]:
@@ -332,11 +398,15 @@ def main() -> int:
 
     phone_id = args.phone_id or serial or "phone"
 
+    global DEBUG_BRIDGE_INSTALLED, ACTIVE_SERIAL
+    ACTIVE_SERIAL = serial
+    DEBUG_BRIDGE_INSTALLED = False
+
     with tempfile.TemporaryDirectory(prefix="wa-keeper-backup-") as tmp:
         db_path = args.db
         if db_path is None:
             db_path = Path(tmp) / DB_NAME
-            copy_db_from_adb(serial, db_path)
+            DEBUG_BRIDGE_INSTALLED = copy_db_from_adb(serial, db_path)
         elif not db_path.is_file():
             evidence("failure=db_file_not_found")
             raise SystemExit(f"Banco não encontrado: {db_path}")
@@ -402,19 +472,32 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    exit_code = 1
     try:
-        raise SystemExit(main())
+        exit_code = main()
     except SystemExit as exc:
-        code = exc.code if isinstance(exc.code, int) else 1
-        evidence(f"exit_code={code}")
+        exit_code = exc.code if isinstance(exc.code, int) else 1
+        evidence(f"exit_code={exit_code}")
         evidence(f"finished_at={dt.datetime.now().astimezone().isoformat(timespec='seconds')}")
-        if EVIDENCE_FILE is not None:
-            print(f"Evidência: {EVIDENCE_FILE}")
-        raise
     except Exception as exc:
         evidence(f"unhandled_exception={type(exc).__name__}:{exc}")
         evidence("exit_code=1")
         evidence(f"finished_at={dt.datetime.now().astimezone().isoformat(timespec='seconds')}")
+        print(f"{type(exc).__name__}: {exc}", file=sys.stderr)
+        exit_code = 1
+    finally:
+        if DEBUG_BRIDGE_INSTALLED and ACTIVE_SERIAL:
+            try:
+                restore_release(ACTIVE_SERIAL)
+            except BaseException as exc:
+                evidence(f"restore_release_failure={type(exc).__name__}:{exc}")
+                print(
+                    "ATENÇÃO: não consegui restaurar automaticamente a build release. "
+                    "Rode ./gradlew assembleRelease && adb install -r -d "
+                    "app/build/outputs/apk/release/app-release.apk",
+                    file=sys.stderr,
+                )
+                exit_code = 1
         if EVIDENCE_FILE is not None:
-            print(f"Evidência: {EVIDENCE_FILE}", file=sys.stderr)
-        raise
+            print(f"Evidência: {EVIDENCE_FILE}")
+    raise SystemExit(exit_code)
