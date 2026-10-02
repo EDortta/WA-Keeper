@@ -1,0 +1,6 @@
+classe	variante	duracao_s	arquivo
+longa	original	386.713500	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/variants/original.wav
+longa	silence	361.138500	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/variants/silence.wav
+longa	speed115	336.291188	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/variants/speed115.wav
+longa	speed125	309.381125	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/variants/speed125.wav
+longa	silence_speed115	314.048750	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/variants/silence_speed115.wav

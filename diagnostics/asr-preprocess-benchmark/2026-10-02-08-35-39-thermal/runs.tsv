@@ -1,0 +1,9 @@
+rodada	ordem	variante	duracao_s	elapsed_ms	result_json	transcript
+1	1	speed125	309.381125	498784	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-1/1-speed125.json	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-1/1-speed125.txt
+1	2	original	386.713500	460277	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-1/2-original.json	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-1/2-original.txt
+1	3	speed115	336.291188	451185	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-1/3-speed115.json	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-1/3-speed115.txt
+1	4	silence_speed115	314.048750	604967	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-1/4-silence_speed115.json	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-1/4-silence_speed115.txt
+1	5	silence	361.138500	440305	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-1/5-silence.json	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-1/5-silence.txt
+2	1	original	386.713500	494500	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-2/1-original.json	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-2/1-original.txt
+2	2	silence	361.138500	463076	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-2/2-silence.json	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-2/2-silence.txt
+2	3	silence_speed115	314.048750	611707	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-2/3-silence_speed115.json	diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/android/round-2/3-silence_speed115.txt

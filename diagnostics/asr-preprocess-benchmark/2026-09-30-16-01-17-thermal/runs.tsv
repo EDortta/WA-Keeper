@@ -1,0 +1,4 @@
+rodada	ordem	variante	duracao_s	elapsed_ms	result_json	transcript
+1	1	speed115	336.291188	481329	diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/android/round-1/1-speed115.json	diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/android/round-1/1-speed115.txt
+1	2	original	386.713500	474018	diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/android/round-1/2-original.json	diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/android/round-1/2-original.txt
+1	3	speed125	309.381125	488743	diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/android/round-1/3-speed125.json	diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/android/round-1/3-speed125.txt
