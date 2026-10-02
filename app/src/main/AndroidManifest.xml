@@ -45,7 +45,10 @@
         android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/Theme.WaNotifKeeper">
 
-        <activity
+                <activity
+            android:name=".DriveBackupSettingsActivity"
+            android:exported="false" />
+<activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
