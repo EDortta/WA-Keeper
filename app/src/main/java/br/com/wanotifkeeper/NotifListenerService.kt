@@ -324,6 +324,10 @@ class NotifListenerService : NotificationListenerService() {
                     .maybeLinkIncomingConversation(sbn.packageName, title)
             }
 
+            val shouldDriveBackup = runCatching {
+                DriveBackupPolicy.effectiveEnabled(applicationContext, sbn.packageName, title)
+            }.getOrDefault(false)
+
             record.rowId.complete(rowId)
 
             val imageJob = if (imagePath == null && isImage) {
@@ -333,12 +337,15 @@ class NotifListenerService : NotificationListenerService() {
             runCatching { ScheduledMessageTrigger.onIncoming(applicationContext, sbn, title) }
 
             if (isVoice &&
-                Prefs.isAudioCaptureEnabled(applicationContext, sbn.packageName) &&
+                (Prefs.isAudioCaptureEnabled(applicationContext, sbn.packageName) || shouldDriveBackup) &&
                 !Prefs.isAudioBlocked(applicationContext, title)
             ) {
                 captureAudio(rowId, sbn.packageName, title, sbn.postTime)
             }
             imageJob?.join()
+            if (shouldDriveBackup) {
+                runCatching { DriveBackupStore.backupMessage(applicationContext, rowId) }
+            }
             runPurge()
         }
     }
