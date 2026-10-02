@@ -36,12 +36,13 @@ done
 
 ADB=(adb)
 if [[ -n "${ANDROID_SERIAL:-}" ]]; then
-  ADB+=( -s "$ANDROID_SERIAL" )
+  SERIAL="$ANDROID_SERIAL"
+  ADB+=( -s "$SERIAL" )
 else
   mapfile -t DEVICES < <(adb devices | awk 'NR>1 && $2=="device" {print $1}')
   case "${#DEVICES[@]}" in
     0) fail "nenhum Android autorizado conectado" ;;
-    1) ADB+=( -s "${DEVICES[0]}" ) ;;
+    1) SERIAL="${DEVICES[0]}"; ADB+=( -s "$SERIAL" ) ;;
     *) fail "mais de um Android conectado; use ANDROID_SERIAL=<serial>" ;;
   esac
 fi
@@ -62,28 +63,55 @@ STAGE="instalação do aplicativo de benchmark"
 "${ADB[@]}" shell run-as "$BENCHMARK_APP_ID" id >/dev/null 2>&1 || fail "run-as indisponível no app de benchmark"
 
 STAGE="seleção autônoma de áudio"
-log "Procurando áudios reais nas áreas públicas de mídia do Android"
-"${ADB[@]}" shell sh -c 'find /sdcard/Android/media /sdcard/WhatsApp /sdcard/Download -type f 2>/dev/null | grep -Ei "\\.(opus|ogg|m4a|aac|mp3|wav)$"' | tr -d '\r' | tail -n 200 > "$WORK/candidates.txt" || true
-[[ -s "$WORK/candidates.txt" ]] || fail "não encontrei arquivos de áudio públicos acessíveis por ADB"
-log "Candidatos encontrados: $(wc -l < "$WORK/candidates.txt")"
+LOCAL_BACKUP_ROOT="${ASR_LOCAL_BACKUP_ROOT:-$ROOT/local-backup/$SERIAL}"
+EXPLICIT_AUDIO="${ASR_BENCHMARK_AUDIO:-}"
 
 : > "$WORK/measured.tsv"
-idx=0
-while IFS= read -r remote; do
-  [[ -n "$remote" ]] || continue
-  idx=$((idx + 1))
-  local_file="$WORK/candidate-$idx"
-  "${ADB[@]}" exec-out sh -c "cat \"$remote\"" > "$local_file" 2>/dev/null || continue
-  [[ -s "$local_file" ]] || continue
-  duration="$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$local_file" 2>/dev/null || true)"
-  [[ "$duration" =~ ^[0-9]+([.][0-9]+)?$ ]] || continue
-  printf '%s\t%s\t%s\n' "$duration" "$local_file" "$remote" >> "$WORK/measured.tsv"
-done < "$WORK/candidates.txt"
-if [[ ! -s "$WORK/measured.tsv" ]]; then
-  log "Nenhum candidato pôde ser lido/medido. Primeiros caminhos encontrados:"
-  head -n 10 "$WORK/candidates.txt" | sed "s/^/    /"
-  fail "nenhum áudio público pôde ser copiado e medido pelo ADB"
+
+measure_local_file() {
+  local source="$1"
+  [[ -f "$source" && -s "$source" ]] || return 0
+  local duration
+  duration="$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$source" 2>/dev/null || true)"
+  [[ "$duration" =~ ^[0-9]+([.][0-9]+)?$ ]] || return 0
+  printf '%s\t%s\t%s\n' "$duration" "$source" "$source" >> "$WORK/measured.tsv"
+}
+
+if [[ -n "$EXPLICIT_AUDIO" ]]; then
+  log "Usando áudio explícito: $EXPLICIT_AUDIO"
+  measure_local_file "$EXPLICIT_AUDIO"
+elif [[ -d "$LOCAL_BACKUP_ROOT" ]]; then
+  log "Usando primeiro os áudios reais exportados pelo WA-Keeper"
+  log "Fonte: $LOCAL_BACKUP_ROOT"
+  while IFS= read -r source; do
+    measure_local_file "$source"
+  done < <(
+    find "$LOCAL_BACKUP_ROOT" -type f \
+      \( -iname '*.opus' -o -iname '*.ogg' -o -iname '*.m4a' -o -iname '*.aac' -o -iname '*.mp3' -o -iname '*.wav' \) \
+      2>/dev/null
+  )
 fi
+
+if [[ ! -s "$WORK/measured.tsv" ]]; then
+  log "Backup local não forneceu áudio utilizável; procurando mídia pública no Android"
+  "${ADB[@]}" shell sh -c 'find /sdcard/Android/media /sdcard/WhatsApp /sdcard/Download -type f 2>/dev/null | grep -Ei "\\.(opus|ogg|m4a|aac|mp3|wav)$"' \
+    | tr -d '\r' | tail -n 200 > "$WORK/candidates.txt" || true
+
+  idx=0
+  while IFS= read -r remote; do
+    [[ -n "$remote" ]] || continue
+    idx=$((idx + 1))
+    local_file="$WORK/candidate-$idx"
+    "${ADB[@]}" exec-out sh -c "cat \"$remote\"" > "$local_file" 2>/dev/null || continue
+    [[ -s "$local_file" ]] || continue
+    duration="$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$local_file" 2>/dev/null || true)"
+    [[ "$duration" =~ ^[0-9]+([.][0-9]+)?$ ]] || continue
+    printf '%s\t%s\t%s\n' "$duration" "$local_file" "$remote" >> "$WORK/measured.tsv"
+  done < "$WORK/candidates.txt"
+fi
+
+[[ -s "$WORK/measured.tsv" ]] || fail "nenhum áudio real do WA-Keeper/WhatsApp pôde ser medido"
+log "Áudios candidatos medidos: $(wc -l < "$WORK/measured.tsv")"
 
 python3 - "$WORK/measured.tsv" "$WORK/chosen.tsv" "$TARGET_SECONDS" <<'PY'
 import sys
@@ -104,6 +132,7 @@ sample="$OUT_DIR/samples/longa.opus"
 cp "$source_file" "$sample"
 printf 'classe\tid\tduracao_s\tremetente\tarquivo\nlonga\tstandalone\t%s\tanonimo\t%s\n' "$duration" "$sample" > "$OUT_DIR/samples.tsv"
 log "Amostra escolhida: ${duration}s"
+log "Origem da amostra: $remote_path"
 log "WA-Keeper continua instalado e operando normalmente durante todo o teste"
 
 STAGE="geração das variantes"
