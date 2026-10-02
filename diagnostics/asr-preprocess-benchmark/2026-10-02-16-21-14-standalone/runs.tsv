@@ -1,0 +1,2 @@
+rodada	ordem	variante	duracao_s	elapsed_ms	result_json	transcript
+1	1	original	217.888000	278543	diagnostics/asr-preprocess-benchmark/2026-10-02-16-21-14-standalone/android/round-1/1-original.json	diagnostics/asr-preprocess-benchmark/2026-10-02-16-21-14-standalone/android/round-1/1-original.txt
