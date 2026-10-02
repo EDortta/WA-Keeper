@@ -1,5 +1,6 @@
 ==> Android: SM-A175F
 ==> Rodadas: 3 | resfriamento entre execuções: 90s
+Starting a Gradle Daemon (subsequent builds will be faster)
 > Task :app:preBuild UP-TO-DATE
 > Task :app:preDebugBuild UP-TO-DATE
 > Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
@@ -47,20 +48,17 @@
 > Task :app:createDebugApkListingFileRedirect UP-TO-DATE
 > Task :app:assembleDebug UP-TO-DATE
 
-BUILD SUCCESSFUL in 21s
+BUILD SUCCESSFUL in 51s
 40 actionable tasks: 1 executed, 39 up-to-date
 Performing Streamed Install
 Success
 ==> Amostra: 386.726500s | id=6780 | Ricardo Lucena
-diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/variants/speed115.wav: 1 file pushed, 0 skipped. 24.5 MB/s (10761396 bytes in 0.419s)
-==> Rodada 1 | ordem 1 | speed115 | 336.291188s
+diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/variants/speed125.wav: 1 file pushed, 0 skipped. 26.3 MB/s (9900274 bytes in 0.359s)
+==> Rodada 1 | ordem 1 | speed125 | 309.381125s
 ==> Resfriando 90s
-diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/variants/original.wav: 1 file pushed, 0 skipped. 27.0 MB/s (12374910 bytes in 0.438s)
+diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/variants/original.wav: 1 file pushed, 0 skipped. 26.4 MB/s (12374910 bytes in 0.448s)
 ==> Rodada 1 | ordem 2 | original | 386.713500s
 ==> Resfriando 90s
-diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/variants/speed125.wav: 1 file pushed, 0 skipped. 29.7 MB/s (9900274 bytes in 0.318s)
-==> Rodada 1 | ordem 3 | speed125 | 309.381125s
+diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/variants/speed115.wav: 1 file pushed, 0 skipped. 29.0 MB/s (10761396 bytes in 0.354s)
+==> Rodada 1 | ordem 3 | speed115 | 336.291188s
 ==> Resfriando 90s
-diagnostics/asr-preprocess-benchmark/2026-09-30-16-01-17-thermal/variants/silence_speed115.wav: 1 file pushed, 0 skipped. 29.6 MB/s (10049638 bytes in 0.324s)
-==> Rodada 1 | ordem 4 | silence_speed115 | 314.048750s
-ERRO: timeout: rodada 1 / silence_speed115
