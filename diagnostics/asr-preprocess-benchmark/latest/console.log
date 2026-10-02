@@ -44,7 +44,15 @@
 > Task :benchmark:createDebugApkListingFileRedirect UP-TO-DATE
 > Task :benchmark:assembleDebug UP-TO-DATE
 
-BUILD SUCCESSFUL in 11s
+BUILD SUCCESSFUL in 8s
 36 actionable tasks: 1 executed, 35 up-to-date
-==> Procurando áudios reais nas pastas públicas do WhatsApp/Business
-ERRO: nenhum áudio encontrado pôde ser medido
+==> Procurando áudios reais nas áreas públicas de mídia do Android
+==> Candidatos encontrados: 200
+==> Amostra escolhida: 217.888s
+==> WA-Keeper continua instalado e operando normalmente durante todo o teste
+diagnostics/asr-preprocess-benchmark/2026-10-02-16-21-14-standalone/variants/original.wav: 1 file pushed, 0 skipped. 45.9 MB/s (6972606 bytes in 0.145s)
+==> Rodada 1 | ordem 1 | original | 217.888000s
+==> Aguardando 120s; o celular pode continuar sendo usado normalmente
+diagnostics/asr-preprocess-benchmark/2026-10-02-16-21-14-standalone/variants/silence_speed115.wav: 1 file pushed, 0 skipped. 63.6 MB/s (5879914 bytes in 0.088s)
+==> Rodada 1 | ordem 2 | silence_speed115 | 183.741375s
+ERRO: timeout: rodada 1 / silence_speed115
