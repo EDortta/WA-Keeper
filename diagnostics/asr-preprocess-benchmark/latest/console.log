@@ -1,64 +1,50 @@
 ==> Android: SM-A175F
-==> Rodadas: 3 | resfriamento entre execuções: 90s
-Starting a Gradle Daemon (subsequent builds will be faster)
-> Task :app:preBuild UP-TO-DATE
-> Task :app:preDebugBuild UP-TO-DATE
-> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
-> Task :app:checkKotlinGradlePluginConfigurationErrors
-> Task :app:dataBindingMergeDependencyArtifactsDebug UP-TO-DATE
-> Task :app:generateDebugResValues UP-TO-DATE
-> Task :app:generateDebugResources UP-TO-DATE
-> Task :app:mergeDebugResources UP-TO-DATE
-> Task :app:packageDebugResources UP-TO-DATE
-> Task :app:parseDebugLocalResources UP-TO-DATE
-> Task :app:dataBindingGenBaseClassesDebug UP-TO-DATE
-> Task :app:checkDebugAarMetadata UP-TO-DATE
-> Task :app:mapDebugSourceSetPaths UP-TO-DATE
-> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
-> Task :app:extractDeepLinksDebug UP-TO-DATE
-> Task :app:processDebugMainManifest UP-TO-DATE
-> Task :app:processDebugManifest UP-TO-DATE
-> Task :app:processDebugManifestForPackage UP-TO-DATE
-> Task :app:processDebugResources UP-TO-DATE
-> Task :app:kspDebugKotlin UP-TO-DATE
-> Task :app:compileDebugKotlin UP-TO-DATE
-> Task :app:javaPreCompileDebug UP-TO-DATE
-> Task :app:compileDebugJavaWithJavac UP-TO-DATE
-> Task :app:mergeDebugShaders UP-TO-DATE
-> Task :app:compileDebugShaders NO-SOURCE
-> Task :app:generateDebugAssets UP-TO-DATE
-> Task :app:mergeDebugAssets UP-TO-DATE
-> Task :app:compressDebugAssets UP-TO-DATE
-> Task :app:desugarDebugFileDependencies UP-TO-DATE
-> Task :app:dexBuilderDebug UP-TO-DATE
-> Task :app:mergeDebugGlobalSynthetics UP-TO-DATE
-> Task :app:processDebugJavaRes UP-TO-DATE
-> Task :app:mergeDebugJavaResource UP-TO-DATE
-> Task :app:checkDebugDuplicateClasses UP-TO-DATE
-> Task :app:mergeExtDexDebug UP-TO-DATE
-> Task :app:mergeLibDexDebug UP-TO-DATE
-> Task :app:mergeProjectDexDebug UP-TO-DATE
-> Task :app:mergeDebugJniLibFolders UP-TO-DATE
-> Task :app:mergeDebugNativeLibs UP-TO-DATE
-> Task :app:stripDebugDebugSymbols UP-TO-DATE
-> Task :app:validateSigningDebug UP-TO-DATE
-> Task :app:writeDebugAppMetadata UP-TO-DATE
-> Task :app:writeDebugSigningConfigVersions UP-TO-DATE
-> Task :app:packageDebug UP-TO-DATE
-> Task :app:createDebugApkListingFileRedirect UP-TO-DATE
-> Task :app:assembleDebug UP-TO-DATE
+==> Instalando somente o aplicativo de benchmark; WA-Keeper não será substituído nem parado
+> Task :benchmark:preBuild UP-TO-DATE
+> Task :benchmark:preDebugBuild UP-TO-DATE
+> Task :benchmark:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :benchmark:checkKotlinGradlePluginConfigurationErrors
+> Task :benchmark:checkDebugAarMetadata UP-TO-DATE
+> Task :benchmark:generateDebugResValues UP-TO-DATE
+> Task :benchmark:mapDebugSourceSetPaths UP-TO-DATE
+> Task :benchmark:generateDebugResources UP-TO-DATE
+> Task :benchmark:mergeDebugResources UP-TO-DATE
+> Task :benchmark:packageDebugResources UP-TO-DATE
+> Task :benchmark:parseDebugLocalResources UP-TO-DATE
+> Task :benchmark:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :benchmark:extractDeepLinksDebug UP-TO-DATE
+> Task :benchmark:processDebugMainManifest UP-TO-DATE
+> Task :benchmark:processDebugManifest UP-TO-DATE
+> Task :benchmark:processDebugManifestForPackage UP-TO-DATE
+> Task :benchmark:processDebugResources UP-TO-DATE
+> Task :benchmark:compileDebugKotlin UP-TO-DATE
+> Task :benchmark:javaPreCompileDebug UP-TO-DATE
+> Task :benchmark:compileDebugJavaWithJavac NO-SOURCE
+> Task :benchmark:mergeDebugShaders UP-TO-DATE
+> Task :benchmark:compileDebugShaders NO-SOURCE
+> Task :benchmark:generateDebugAssets UP-TO-DATE
+> Task :benchmark:mergeDebugAssets UP-TO-DATE
+> Task :benchmark:compressDebugAssets UP-TO-DATE
+> Task :benchmark:desugarDebugFileDependencies UP-TO-DATE
+> Task :benchmark:dexBuilderDebug UP-TO-DATE
+> Task :benchmark:mergeDebugGlobalSynthetics UP-TO-DATE
+> Task :benchmark:processDebugJavaRes UP-TO-DATE
+> Task :benchmark:mergeDebugJavaResource UP-TO-DATE
+> Task :benchmark:checkDebugDuplicateClasses UP-TO-DATE
+> Task :benchmark:mergeExtDexDebug UP-TO-DATE
+> Task :benchmark:mergeLibDexDebug UP-TO-DATE
+> Task :benchmark:mergeProjectDexDebug UP-TO-DATE
+> Task :benchmark:mergeDebugJniLibFolders UP-TO-DATE
+> Task :benchmark:mergeDebugNativeLibs UP-TO-DATE
+> Task :benchmark:stripDebugDebugSymbols UP-TO-DATE
+> Task :benchmark:validateSigningDebug UP-TO-DATE
+> Task :benchmark:writeDebugAppMetadata UP-TO-DATE
+> Task :benchmark:writeDebugSigningConfigVersions UP-TO-DATE
+> Task :benchmark:packageDebug UP-TO-DATE
+> Task :benchmark:createDebugApkListingFileRedirect UP-TO-DATE
+> Task :benchmark:assembleDebug UP-TO-DATE
 
-BUILD SUCCESSFUL in 51s
-40 actionable tasks: 1 executed, 39 up-to-date
-Performing Streamed Install
-Success
-==> Amostra: 386.726500s | id=6780 | Ricardo Lucena
-diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/variants/speed125.wav: 1 file pushed, 0 skipped. 26.3 MB/s (9900274 bytes in 0.359s)
-==> Rodada 1 | ordem 1 | speed125 | 309.381125s
-==> Resfriando 90s
-diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/variants/original.wav: 1 file pushed, 0 skipped. 26.4 MB/s (12374910 bytes in 0.448s)
-==> Rodada 1 | ordem 2 | original | 386.713500s
-==> Resfriando 90s
-diagnostics/asr-preprocess-benchmark/2026-10-02-08-35-39-thermal/variants/speed115.wav: 1 file pushed, 0 skipped. 29.0 MB/s (10761396 bytes in 0.354s)
-==> Rodada 1 | ordem 3 | speed115 | 336.291188s
-==> Resfriando 90s
+BUILD SUCCESSFUL in 11s
+36 actionable tasks: 1 executed, 35 up-to-date
+==> Procurando áudios reais nas pastas públicas do WhatsApp/Business
+ERRO: nenhum áudio encontrado pôde ser medido
