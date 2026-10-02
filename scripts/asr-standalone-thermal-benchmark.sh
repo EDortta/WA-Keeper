@@ -62,9 +62,10 @@ STAGE="instalação do aplicativo de benchmark"
 "${ADB[@]}" shell run-as "$BENCHMARK_APP_ID" id >/dev/null 2>&1 || fail "run-as indisponível no app de benchmark"
 
 STAGE="seleção autônoma de áudio"
-log "Procurando áudios reais nas pastas públicas do WhatsApp/Business"
-"${ADB[@]}" shell sh -c 'find "/sdcard/Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Voice Notes" "/sdcard/Android/media/com.whatsapp.w4b/WhatsApp Business/Media/WhatsApp Business Voice Notes" -type f \( -name "*.opus" -o -name "*.ogg" -o -name "*.m4a" \) 2>/dev/null' | tr -d '\r' | tail -n 80 > "$WORK/candidates.txt" || true
-[[ -s "$WORK/candidates.txt" ]] || fail "não encontrei áudios públicos do WhatsApp"
+log "Procurando áudios reais nas áreas públicas de mídia do Android"
+"${ADB[@]}" shell sh -c 'find /sdcard/Android/media /sdcard/WhatsApp /sdcard/Download -type f 2>/dev/null | grep -Ei "\\.(opus|ogg|m4a|aac|mp3|wav)$"' | tr -d '\r' | tail -n 200 > "$WORK/candidates.txt" || true
+[[ -s "$WORK/candidates.txt" ]] || fail "não encontrei arquivos de áudio públicos acessíveis por ADB"
+log "Candidatos encontrados: $(wc -l < "$WORK/candidates.txt")"
 
 : > "$WORK/measured.tsv"
 idx=0
@@ -72,13 +73,17 @@ while IFS= read -r remote; do
   [[ -n "$remote" ]] || continue
   idx=$((idx + 1))
   local_file="$WORK/candidate-$idx"
-  "${ADB[@]}" pull "$remote" "$local_file" >/dev/null 2>&1 || continue
+  "${ADB[@]}" exec-out sh -c "cat \"$remote\"" > "$local_file" 2>/dev/null || continue
   [[ -s "$local_file" ]] || continue
   duration="$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$local_file" 2>/dev/null || true)"
   [[ "$duration" =~ ^[0-9]+([.][0-9]+)?$ ]] || continue
   printf '%s\t%s\t%s\n' "$duration" "$local_file" "$remote" >> "$WORK/measured.tsv"
 done < "$WORK/candidates.txt"
-[[ -s "$WORK/measured.tsv" ]] || fail "nenhum áudio encontrado pôde ser medido"
+if [[ ! -s "$WORK/measured.tsv" ]]; then
+  log "Nenhum candidato pôde ser lido/medido. Primeiros caminhos encontrados:"
+  head -n 10 "$WORK/candidates.txt" | sed "s/^/    /"
+  fail "nenhum áudio público pôde ser copiado e medido pelo ADB"
+fi
 
 python3 - "$WORK/measured.tsv" "$WORK/chosen.tsv" "$TARGET_SECONDS" <<'PY'
 import sys
