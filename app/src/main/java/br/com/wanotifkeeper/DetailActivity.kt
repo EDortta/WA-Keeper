@@ -1,9 +1,13 @@
 package br.com.wanotifkeeper
 
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
+import android.webkit.MimeTypeMap
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import br.com.wanotifkeeper.databinding.ActivityDetailBinding
 import kotlinx.coroutines.launch
@@ -49,14 +53,20 @@ class DetailActivity : AppCompatActivity() {
                 )
             }
 
-            val file = item.imagePath?.let(::File)
-            val bmp = file?.takeIf { it.exists() && it.length() > 0L }?.let(::decodeSampled)
+            val file = item.imagePath?.let(::File)?.takeIf { it.exists() && it.length() > 0L }
+            val bmp = file?.let(::decodeSampled)
             when {
                 bmp != null -> {
                     binding.imgAttachment.setImageBitmap(bmp)
                     binding.imgAttachment.visibility = View.VISIBLE
                 }
                 looksLikeMedia(item.text) -> binding.tvNoImage.visibility = View.VISIBLE
+            }
+
+            val shareableFile = file ?: originalAudio
+            binding.btnShareAttachment.visibility = if (shareableFile != null) View.VISIBLE else View.GONE
+            binding.btnShareAttachment.setOnClickListener {
+                shareableFile?.let(::shareFile)
             }
 
             if (originalAudio != null) {
@@ -125,6 +135,34 @@ class DetailActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun shareFile(file: File) {
+        runCatching {
+            val uri = FileProvider.getUriForFile(
+                this,
+                "${BuildConfig.APPLICATION_ID}.files",
+                file
+            )
+            val mime = mimeTypeFor(file)
+            val send = Intent(Intent.ACTION_SEND).apply {
+                type = mime
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(send, "Compartilhar arquivo"))
+        }.onFailure {
+            Toast.makeText(this, "Não foi possível compartilhar este arquivo.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun mimeTypeFor(file: File): String {
+        val ext = file.extension.lowercase(Locale.ROOT)
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
+            ?: when (ext) {
+                "opus" -> "audio/ogg"
+                else -> "application/octet-stream"
+            }
     }
 
     private fun decodeSampled(file: File): android.graphics.Bitmap? = runCatching {
