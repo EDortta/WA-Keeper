@@ -22,3 +22,6 @@ keystore.properties
 .credentials/
 .env
 gradle.properties
+
+# Backups locais podem conter dados pessoais e nunca devem ser versionados
+local-backup/
