@@ -96,35 +96,63 @@ def timestamp_name(epoch_ms: int) -> str:
     return ts.strftime("%Y-%m-%d-%H-%M-%S")
 
 
+SQLITE_HEADER = b"SQLite format 3\\x00"
+
+
+def is_sqlite_bytes(data: bytes) -> bool:
+    return len(data) >= len(SQLITE_HEADER) and data.startswith(SQLITE_HEADER)
+
+
 def copy_db_from_adb(serial: str, dest: Path) -> None:
-    remote = f"/data/data/{APP_ID}/databases/{DB_NAME}"
+    remote_abs = f"/data/data/{APP_ID}/databases/{DB_NAME}"
+    attempts: list[str] = []
 
-    # Caminho principal: run-as. Funciona apenas quando o pacote permite run-as.
+    # Caminho principal: run-as com caminho relativo ao data dir do app.
     cp = subprocess.run(
-        adb_base(serial) + ["exec-out", "run-as", APP_ID, "cat", remote],
+        adb_base(serial) + ["exec-out", "run-as", APP_ID, "cat", f"databases/{DB_NAME}"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    if cp.returncode == 0 and cp.stdout:
+    if cp.returncode == 0 and is_sqlite_bytes(cp.stdout):
         dest.write_bytes(cp.stdout)
         return
+    attempts.append(
+        "run-as: " +
+        ((cp.stderr or cp.stdout or b"sem saída").decode("utf-8", errors="replace").strip()[:300])
+    )
 
-    # Fallback para aparelho/emulador com adb root.
+    # Segunda tentativa: caminho absoluto sob run-as.
     cp = subprocess.run(
-        adb_base(serial) + ["exec-out", "su", "-c", f"cat {remote}"],
+        adb_base(serial) + ["exec-out", "run-as", APP_ID, "cat", remote_abs],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    if cp.returncode == 0 and cp.stdout:
+    if cp.returncode == 0 and is_sqlite_bytes(cp.stdout):
         dest.write_bytes(cp.stdout)
         return
+    attempts.append(
+        "run-as(abs): " +
+        ((cp.stderr or cp.stdout or b"sem saída").decode("utf-8", errors="replace").strip()[:300])
+    )
 
-    err = (cp.stderr or b"").decode("utf-8", errors="replace").strip()
+    # Fallback para aparelho/emulador com root.
+    cp = subprocess.run(
+        adb_base(serial) + ["exec-out", "su", "-c", f"cat {remote_abs}"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if cp.returncode == 0 and is_sqlite_bytes(cp.stdout):
+        dest.write_bytes(cp.stdout)
+        return
+    attempts.append(
+        "su: " +
+        ((cp.stderr or cp.stdout or b"sem saída").decode("utf-8", errors="replace").strip()[:300])
+    )
+
     raise SystemExit(
-        "Não consegui ler o banco do WA-Keeper via adb. "
-        "Esse APK é normalmente não-debuggable, então run-as pode falhar. "
-        "Passe --db /caminho/wanotif.db ou use adb root. "
-        + (f"Detalhe: {err}" if err else "")
+        "Não consegui obter um SQLite válido do WA-Keeper via adb.\\n"
+        + "\\n".join("  - " + a for a in attempts)
+        + "\\nUse --db /caminho/wanotif.db se você já tiver uma cópia local do banco."
     )
 
 
@@ -266,6 +294,14 @@ def main() -> int:
             copy_db_from_adb(serial, db_path)
         elif not db_path.is_file():
             raise SystemExit(f"Banco não encontrado: {db_path}")
+
+        header = db_path.read_bytes()[:16]
+        if header != SQLITE_HEADER:
+            preview = db_path.read_bytes()[:200].decode("utf-8", errors="replace")
+            raise SystemExit(
+                f"O arquivo obtido não é um banco SQLite válido: {db_path}\\n"
+                f"Primeiros bytes: {preview!r}"
+            )
 
         conn = sqlite3.connect(str(db_path))
         conn.row_factory = sqlite3.Row
