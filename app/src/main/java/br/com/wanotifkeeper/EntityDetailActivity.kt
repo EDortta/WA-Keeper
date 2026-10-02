@@ -39,6 +39,21 @@ class EntityDetailActivity : AppCompatActivity() {
         binding.swAutoTranscribeEntity.setOnCheckedChangeListener { _, checked ->
             Prefs.setAutoTranscribeEntity(this, entityId, checked)
         }
+        refreshDriveBackupButton()
+        binding.btnDriveBackupEntity.setOnClickListener {
+            if (DriveBackupPolicy.rootUri(this) == null) {
+                startActivity(Intent(this, DriveBackupSettingsActivity::class.java))
+            } else {
+                val next = DriveBackupPolicy.next(DriveBackupPolicy.entityMode(this, entityId))
+                DriveBackupPolicy.setEntityMode(this, entityId, next)
+                refreshDriveBackupButton()
+                if (next == DriveBackupMode.ENABLED) {
+                    lifecycleScope.launch {
+                        DriveBackupStore.backupEntity(this@EntityDetailActivity, entityId)
+                    }
+                }
+            }
+        }
         binding.btnLinkConversation.setOnClickListener { showLinkConversationDialog() }
         binding.btnRenameEntity.setOnClickListener { renameEntity() }
         binding.btnMergeEntity.setOnClickListener { mergeEntity() }
@@ -87,6 +102,15 @@ class EntityDetailActivity : AppCompatActivity() {
                     "• $label — $source"
                 }
             }
+    }
+
+    private fun refreshDriveBackupButton() {
+        val mode = DriveBackupPolicy.entityMode(this, entityId)
+        binding.btnDriveBackupEntity.text = "Google Drive: " + when (mode) {
+            DriveBackupMode.INHERIT -> "herdar"
+            DriveBackupMode.ENABLED -> "salvar"
+            DriveBackupMode.DISABLED -> "não salvar"
+        }
     }
 
     private fun showLinkConversationDialog() {
