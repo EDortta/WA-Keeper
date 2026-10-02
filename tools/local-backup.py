@@ -177,6 +177,7 @@ def package_debuggable(serial: str) -> bool:
 
 def ensure_debug_bridge(serial: str) -> bool:
     """Retorna True se instalou debug temporariamente."""
+    global DEBUG_BRIDGE_INSTALLED
     if package_debuggable(serial):
         evidence("debug_bridge=already_available")
         return False
@@ -184,6 +185,8 @@ def ensure_debug_bridge(serial: str) -> bool:
     evidence("debug_bridge=required")
     gradle("assembleDebug")
     adb_install(serial, DEBUG_APK, "debug")
+    DEBUG_BRIDGE_INSTALLED = True
+    evidence("debug_bridge_installed_flag=true")
     if not package_debuggable(serial):
         raise SystemExit("A build debug foi instalada, mas run-as continua indisponível.")
     evidence("debug_bridge=installed")
@@ -477,6 +480,10 @@ if __name__ == "__main__":
         exit_code = main()
     except SystemExit as exc:
         exit_code = exc.code if isinstance(exc.code, int) else 1
+        message = "" if isinstance(exc.code, int) else str(exc.code)
+        if message:
+            print(message, file=sys.stderr)
+            evidence(f"failure_message={message}")
         evidence(f"exit_code={exit_code}")
         evidence(f"finished_at={dt.datetime.now().astimezone().isoformat(timespec='seconds')}")
     except Exception as exc:
@@ -489,6 +496,7 @@ if __name__ == "__main__":
         if DEBUG_BRIDGE_INSTALLED and ACTIVE_SERIAL:
             try:
                 restore_release(ACTIVE_SERIAL)
+                DEBUG_BRIDGE_INSTALLED = False
             except BaseException as exc:
                 evidence(f"restore_release_failure={type(exc).__name__}:{exc}")
                 print(
