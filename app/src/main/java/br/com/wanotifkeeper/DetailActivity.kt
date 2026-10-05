@@ -239,7 +239,7 @@ class DetailActivity : AppCompatActivity() {
         runCatching {
             val uri = FileProvider.getUriForFile(
                 this,
-                "${BuildConfig.APPLICATION_ID}.files",
+                "${packageName}.files",
                 file
             )
             val mime = mimeTypeFor(file)
