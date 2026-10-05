@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 APP_ID="br.com.wanotifkeeper.benchmark"
 TARGET_SECONDS="${ASR_TARGET_SECONDS:-180}"
-REPEATS="${ASR_THERMAL_REPEATS:-3}"
+REPEATS="${ASR_PERSISTENT_REPEATS:-6}"
 COOLDOWN="${ASR_COOLDOWN_SECONDS:-120}"
 
 fail() { printf 'ERRO: %s\n' "$*" >&2; exit 1; }
@@ -70,10 +70,6 @@ log "Origem: $source"
 ffmpeg -hide_banner -loglevel error -y -i "$source" \
   -ac 1 -ar 16000 -c:a pcm_s16le "$WORK/original.wav"
 
-ffmpeg -hide_banner -loglevel error -y -i "$source" \
-  -af "silenceremove=start_periods=1:start_duration=0.15:start_threshold=-42dB:stop_periods=-1:stop_duration=0.45:stop_threshold=-42dB,atempo=1.15" \
-  -ac 1 -ar 16000 -c:a pcm_s16le "$WORK/silence_speed115.wav"
-
 log "Compilando aplicativo de benchmark"
 ./gradlew --console=plain :benchmark:assembleDebug
 APK="benchmark/build/outputs/apk/debug/benchmark-debug.apk"
@@ -86,12 +82,11 @@ log "Instalando aplicativo de benchmark separado"
 sleep 1
 
 "${ADB[@]}" shell run-as "$APP_ID" mkdir -p files/benchmark/input
-for variant in original silence_speed115; do
-  remote="/data/local/tmp/$variant.wav"
-  "${ADB[@]}" push "$WORK/$variant.wav" "$remote" >/dev/null
-  "${ADB[@]}" shell run-as "$APP_ID" cp "$remote" "files/benchmark/input/$variant.wav"
-  "${ADB[@]}" shell rm -f "$remote" >/dev/null 2>&1 || true
-done
+variant="original"
+remote="/data/local/tmp/$variant.wav"
+"${ADB[@]}" push "$WORK/$variant.wav" "$remote" >/dev/null
+"${ADB[@]}" shell run-as "$APP_ID" cp "$remote" "files/benchmark/input/$variant.wav"
+"${ADB[@]}" shell rm -f "$remote" >/dev/null 2>&1 || true
 
 printf '%s\n' "$(basename "$source")" > "$WORK/source-name.txt"
 "${ADB[@]}" push "$WORK/source-name.txt" /data/local/tmp/source-name.txt >/dev/null
@@ -101,8 +96,6 @@ printf '%s\n' "$(basename "$source")" > "$WORK/source-name.txt"
 log "Verificando arquivos preparados dentro do app de benchmark"
 "${ADB[@]}" shell run-as "$APP_ID" test -s files/benchmark/input/original.wav ||
   fail "original.wav não foi copiado para o aplicativo"
-"${ADB[@]}" shell run-as "$APP_ID" test -s files/benchmark/input/silence_speed115.wav ||
-  fail "silence_speed115.wav não foi copiado para o aplicativo"
 
 log "Iniciando benchmark autônomo"
 "${ADB[@]}" shell am start -W \
