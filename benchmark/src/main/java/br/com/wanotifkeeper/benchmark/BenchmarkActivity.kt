@@ -42,8 +42,8 @@ class BenchmarkActivity : Activity() {
                     intent.getIntExtra("cooldownSeconds", 120)
                 )
                 putExtra(
-                    BenchmarkRunnerService.EXTRA_MODEL,
-                    intent.getStringExtra("model").orEmpty().ifBlank { "small" }
+                    BenchmarkRunnerService.EXTRA_MODELS,
+                    intent.getStringExtra("models").orEmpty().ifBlank { "base,small" }
                 )
             }
             ContextCompat.startForegroundService(this, serviceIntent)
@@ -90,6 +90,7 @@ class BenchmarkActivity : Activity() {
             val source = json.optString("sourceFileName", "")
             val input = json.optString("inputFileName", "")
             val variant = json.optString("variant", "")
+            val model = json.optString("model", variant)
             val round = json.optInt("round", 0)
             val order = json.optInt("order", 0)
             val completed = json.optInt("completedRuns", 0)
@@ -110,8 +111,8 @@ class BenchmarkActivity : Activity() {
                 if (input.isNotBlank()) {
                     append("Arquivo processado: ").append(input).append('\n')
                 }
-                if (variant.isNotBlank()) {
-                    append("Variante: ").append(variant).append('\n')
+                if (model.isNotBlank()) {
+                    append("Modelo: ").append(model).append('\n')
                 }
                 if (round > 0) {
                     append("Rodada: ").append(round)
