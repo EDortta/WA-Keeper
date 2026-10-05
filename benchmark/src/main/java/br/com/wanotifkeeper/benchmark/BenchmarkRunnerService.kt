@@ -137,6 +137,8 @@ class BenchmarkRunnerService : Service() {
             writeTranscribingStatus(
                 root = root,
                 item = item,
+                inputFileName = input.name,
+                sourceFileName = sourceFileName(root),
                 durationSeconds = duration,
                 startedAt = startedAt,
                 startedWallMs = startedWallMs,
@@ -150,6 +152,8 @@ class BenchmarkRunnerService : Service() {
                     writeTranscribingStatus(
                         root = root,
                         item = item,
+                        inputFileName = input.name,
+                        sourceFileName = sourceFileName(root),
                         durationSeconds = duration,
                         startedAt = startedAt,
                         startedWallMs = startedWallMs,
@@ -252,6 +256,8 @@ class BenchmarkRunnerService : Service() {
     private fun writeTranscribingStatus(
         root: File,
         item: PlanItem,
+        inputFileName: String,
+        sourceFileName: String,
         durationSeconds: Double,
         startedAt: String,
         startedWallMs: Long,
@@ -269,6 +275,8 @@ class BenchmarkRunnerService : Service() {
             .put("round", item.round)
             .put("order", item.order)
             .put("variant", item.variant)
+            .put("inputFileName", inputFileName)
+            .put("sourceFileName", sourceFileName)
             .put("audioDurationSeconds", durationSeconds)
             .put("elapsedSeconds", elapsedSeconds)
             .put("currentRtf", currentRtf)
@@ -279,6 +287,11 @@ class BenchmarkRunnerService : Service() {
             .put("thermalStatus", thermalStatus())
 
         writeStatusJson(root, json)
+    }
+
+    private fun sourceFileName(root: File): String {
+        val file = File(root, "source-name.txt")
+        return if (file.isFile) file.readText(Charsets.UTF_8).trim() else ""
     }
 
     private fun writeStatusJson(root: File, json: JSONObject) {
