@@ -222,7 +222,6 @@ object AndroidAudioDecoder {
         check(trackIndex >= 0 && inputFormat != null) { "nenhuma faixa de áudio encontrada" }
 
         val selectedFormat = inputFormat
-            ?: error("formato de áudio ausente")
         extractor.selectTrack(trackIndex)
 
         val mime = selectedFormat.getString(MediaFormat.KEY_MIME)
