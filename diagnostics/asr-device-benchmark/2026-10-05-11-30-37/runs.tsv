@@ -1,0 +1,7 @@
+rodada	ordem	variante	duracao_s	elapsed_ms	battery_temp_before_c	battery_temp_after_c	thermal_before	thermal_after	started_at	finished_at	transcript
+1	1	original	159.554	260104	31.5	31.5	0	1	2026-10-05T13:46:51.801245Z	2026-10-05T13:51:32.478814Z	transcripts/round-1-1-original.txt
+1	2	silence_speed115	127.822	267986	31.5	32.6	1	1	2026-10-05T13:53:32.538526Z	2026-10-05T13:58:00.632803Z	transcripts/round-1-2-silence_speed115.txt
+2	1	silence_speed115	127.822	263895	32.6	32.8	1	1	2026-10-05T14:00:00.687855Z	2026-10-05T14:04:24.636759Z	transcripts/round-2-1-silence_speed115.txt
+2	2	original	159.554	262425	32.8	33.0	1	1	2026-10-05T14:06:24.665558Z	2026-10-05T14:10:47.182900Z	transcripts/round-2-2-original.txt
+3	1	original	159.554	258120	33.0	33.0	1	1	2026-10-05T14:12:47.205717Z	2026-10-05T14:17:05.405853Z	transcripts/round-3-1-original.txt
+3	2	silence_speed115	127.822	269673	33.0	32.9	1	1	2026-10-05T14:19:05.610154Z	2026-10-05T14:23:35.351449Z	transcripts/round-3-2-silence_speed115.txt

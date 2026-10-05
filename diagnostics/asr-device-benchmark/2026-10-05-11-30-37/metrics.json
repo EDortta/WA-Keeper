@@ -1,0 +1,27 @@
+{
+  "stats": {
+    "original": {
+      "runs": 3,
+      "mean_elapsed": 260.21633333333335,
+      "median_elapsed": 260.104,
+      "min_elapsed": 258.12,
+      "max_elapsed": 262.425,
+      "mean_rtf_vs_original": 1.6308982120995608,
+      "duration_ratio": 1.0,
+      "mean_temp_after_c": 32.5,
+      "max_thermal_after": 1
+    },
+    "silence_speed115": {
+      "runs": 3,
+      "mean_elapsed": 267.18466666666666,
+      "median_elapsed": 267.986,
+      "min_elapsed": 263.895,
+      "max_elapsed": 269.673,
+      "mean_rtf_vs_original": 1.674572036217623,
+      "duration_ratio": 0.8011206237386715,
+      "mean_temp_after_c": 32.766666666666666,
+      "max_thermal_after": 1
+    }
+  },
+  "recommended": "original"
+}
