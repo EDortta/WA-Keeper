@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.webkit.MimeTypeMap
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
@@ -86,8 +87,22 @@ class DetailActivity : AppCompatActivity() {
                 }
 
                 renderTranscript(item)
+                renderFeedback(item.id)
                 binding.btnTranscribeAudio.setOnClickListener {
-                    transcribe(item.id)
+                    chooseTranscriptionMethod(item.id)
+                }
+
+                binding.btnTranscriptIncomprehensible.setOnClickListener {
+                    rateTranscript(item.id, "INCOMPREHENSIBLE")
+                }
+                binding.btnTranscriptAcceptable.setOnClickListener {
+                    rateTranscript(item.id, "ACCEPTABLE")
+                }
+                binding.btnTranscriptGood.setOnClickListener {
+                    rateTranscript(item.id, "GOOD")
+                }
+                binding.btnTranscriptExcellent.setOnClickListener {
+                    rateTranscript(item.id, "EXCELLENT")
                 }
             }
         }
@@ -112,28 +127,111 @@ class DetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun transcribe(id: Long) {
+    private fun chooseTranscriptionMethod(id: Long) {
+        val methods = arrayOf(
+            TranscriptionMethod.BASE_INT8,
+            TranscriptionMethod.SMALL_INT8
+        )
+        AlertDialog.Builder(this)
+            .setTitle("Método de transcrição")
+            .setItems(methods.map { it.label }.toTypedArray()) { _, which ->
+                transcribe(id, methods[which])
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun transcribe(id: Long, method: TranscriptionMethod) {
         binding.progressTranscription.visibility = View.VISIBLE
         binding.btnTranscribeAudio.isEnabled = false
         lifecycleScope.launch {
             val result = AudioTranscriptionManager.transcribe(
                 context = applicationContext,
                 notificationId = id,
-                force = true
+                force = true,
+                method = method
             )
             binding.progressTranscription.visibility = View.GONE
             binding.btnTranscribeAudio.isEnabled = true
 
             val refreshed = NotifDatabase.get(this@DetailActivity).dao().byId(id)
             if (refreshed != null) renderTranscript(refreshed)
+            renderFeedback(id)
 
             result.exceptionOrNull()?.let { error ->
                 if (refreshed?.transcript.isNullOrBlank()) {
                     binding.tvTranscript.visibility = View.VISIBLE
                     binding.tvTranscript.text =
-                        "Falha na transcrição: ${error.message ?: error.javaClass.simpleName}"
+                        "Falha na transcrição: " + (error.message ?: error.javaClass.simpleName)
                 }
             }
+        }
+    }
+
+    private fun renderFeedback(notificationId: Long) {
+        lifecycleScope.launch {
+            val run = NotifDatabase.get(this@DetailActivity)
+                .transcriptionRuns()
+                .latestForNotification(notificationId)
+
+            val visible = run?.status == "DONE"
+            binding.tvTranscriptMethod.visibility = if (visible) View.VISIBLE else View.GONE
+            binding.tvTranscriptFeedbackTitle.visibility = if (visible) View.VISIBLE else View.GONE
+            binding.transcriptFeedbackRow1.visibility = if (visible) View.VISIBLE else View.GONE
+            binding.transcriptFeedbackRow2.visibility = if (visible) View.VISIBLE else View.GONE
+
+            if (!visible || run == null) return@launch
+
+            val method = TranscriptionMethod.fromCode(run.method)
+            val seconds = run.elapsedMs / 1000.0
+            val rtf = if (run.audioDurationMs > 0L) {
+                run.inferenceMs.toDouble() / run.audioDurationMs.toDouble()
+            } else null
+
+            binding.tvTranscriptMethod.text = buildString {
+                append(method.label)
+                append(" · ")
+                append(String.format(Locale.getDefault(), "%.1f s", seconds))
+                if (rtf != null) {
+                    append(" · RTF ")
+                    append(String.format(Locale.getDefault(), "%.2fx", rtf))
+                }
+            }
+
+            markSelectedRating(run.rating)
+        }
+    }
+
+    private fun rateTranscript(notificationId: Long, rating: String) {
+        lifecycleScope.launch {
+            val saved = AudioTranscriptionManager.rateLatest(
+                context = applicationContext,
+                notificationId = notificationId,
+                rating = rating
+            )
+            if (saved) {
+                markSelectedRating(rating)
+                Toast.makeText(
+                    this@DetailActivity,
+                    "Avaliação registrada.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    private fun markSelectedRating(rating: String?) {
+        val buttons = listOf(
+            binding.btnTranscriptIncomprehensible to "INCOMPREHENSIBLE",
+            binding.btnTranscriptAcceptable to "ACCEPTABLE",
+            binding.btnTranscriptGood to "GOOD",
+            binding.btnTranscriptExcellent to "EXCELLENT"
+        )
+
+        buttons.forEach { (button, value) ->
+            val selected = rating == value
+            button.alpha = if (selected) 1f else 0.72f
+            button.strokeWidth = if (selected) 3 else 1
         }
     }
 
