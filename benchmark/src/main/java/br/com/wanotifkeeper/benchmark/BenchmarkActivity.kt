@@ -136,6 +136,12 @@ class BenchmarkActivity : Activity() {
                         .append(String.format(Locale.US, "%.2fx", rtf))
                         .append('\n')
                 }
+                val modelLoadMs = json.optLong("modelLoadMs", 0L)
+                if (modelLoadMs > 0L) {
+                    append("Carga do modelo: ")
+                        .append(String.format(Locale.US, "%.1f s", modelLoadMs / 1000.0))
+                        .append('\n')
+                }
                 if (!temp.isNaN()) {
                     append("Bateria: ")
                         .append(String.format(Locale.US, "%.1f °C", temp))
@@ -167,7 +173,7 @@ class BenchmarkActivity : Activity() {
                 require(input.isFile && input.length() > 0L) {
                     "áudio não encontrado: " + inputName
                 }
-                BenchmarkTranscriber.transcribe(filesDir, input, model, language)
+                BenchmarkTranscriber.create(filesDir, model, language).use { it.transcribe(input) }
             }
         }
 
@@ -176,10 +182,10 @@ class BenchmarkActivity : Activity() {
         result.fold(
             onSuccess = {
                 json.put("ok", true)
-                json.put("elapsedMs", it.elapsedMs)
+                json.put("elapsedMs", it.inferenceMs)
                 json.put("text", it.text)
                 statusView.text =
-                    "Concluído\nModelo: " + model + "\nTempo: " + it.elapsedMs + " ms"
+                    "Concluído\nModelo: " + model + "\nTempo: " + it.inferenceMs + " ms"
             },
             onFailure = {
                 json.put("ok", false)
