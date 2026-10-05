@@ -93,7 +93,11 @@ for variant in original silence_speed115; do
   "${ADB[@]}" shell rm -f "$remote" >/dev/null 2>&1 || true
 done
 
-printf '%s\n' "$source" | "${ADB[@]}" shell run-as "$APP_ID" sh -c 'cat > files/benchmark/source.txt'
+log "Verificando arquivos preparados dentro do app de benchmark"
+"${ADB[@]}" shell run-as "$APP_ID" test -s files/benchmark/input/original.wav ||
+  fail "original.wav não foi copiado para o aplicativo"
+"${ADB[@]}" shell run-as "$APP_ID" test -s files/benchmark/input/silence_speed115.wav ||
+  fail "silence_speed115.wav não foi copiado para o aplicativo"
 
 log "Iniciando benchmark autônomo"
 "${ADB[@]}" shell am start -W \
