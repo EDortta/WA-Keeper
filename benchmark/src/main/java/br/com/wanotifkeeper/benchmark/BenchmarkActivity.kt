@@ -9,10 +9,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.File
+import java.util.Locale
 
 class BenchmarkActivity : Activity() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -23,7 +26,7 @@ class BenchmarkActivity : Activity() {
         statusView = TextView(this).apply {
             textSize = 18f
             setPadding(32, 48, 32, 32)
-            text = "WA-Keeper ASR Benchmark\nPronto."
+            text = "WA-Keeper ASR Benchmark\nCarregando estado..."
         }
         setContentView(statusView)
 
@@ -44,14 +47,15 @@ class BenchmarkActivity : Activity() {
                 )
             }
             ContextCompat.startForegroundService(this, serviceIntent)
-            statusView.text =
-                "Benchmark autônomo iniciado.\nPode desconectar o celular.\n" +
-                "O WA-Keeper continua independente."
+            startStatusMonitor()
             return
         }
 
         val inputName = intent.getStringExtra("input").orEmpty()
-        if (inputName.isBlank()) return
+        if (inputName.isBlank()) {
+            startStatusMonitor()
+            return
+        }
 
         val model = intent.getStringExtra("model").orEmpty().ifBlank { "small" }
         val language = intent.getStringExtra("language").orEmpty()
@@ -61,6 +65,94 @@ class BenchmarkActivity : Activity() {
     override fun onDestroy() {
         scope.cancel()
         super.onDestroy()
+    }
+
+    private fun startStatusMonitor() {
+        scope.launch {
+            while (isActive) {
+                val text = withContext(Dispatchers.IO) {
+                    renderStatus(File(filesDir, "benchmark/status.json"))
+                }
+                statusView.text = text
+                delay(1_000L)
+            }
+        }
+    }
+
+    private fun renderStatus(file: File): String {
+        if (!file.isFile) {
+            return "WA-Keeper ASR Benchmark\n\nAguardando início do benchmark."
+        }
+
+        return runCatching {
+            val json = JSONObject(file.readText(Charsets.UTF_8))
+            val state = json.optString("state", "unknown")
+            val source = json.optString("sourceFileName", "")
+            val input = json.optString("inputFileName", "")
+            val variant = json.optString("variant", "")
+            val round = json.optInt("round", 0)
+            val order = json.optInt("order", 0)
+            val completed = json.optInt("completedRuns", 0)
+            val total = json.optInt("totalRuns", 0)
+            val duration = json.optDouble("audioDurationSeconds", Double.NaN)
+            val elapsed = json.optDouble("elapsedSeconds", Double.NaN)
+            val rtf = json.optDouble("currentRtf", Double.NaN)
+            val temp = json.optDouble("batteryTempC", Double.NaN)
+            val thermal = json.optInt("thermalStatus", -1)
+
+            buildString {
+                append("WA-Keeper ASR Benchmark\n\n")
+                append("Estado: ").append(state.uppercase()).append('\n')
+
+                if (source.isNotBlank()) {
+                    append("Arquivo original: ").append(source).append('\n')
+                }
+                if (input.isNotBlank()) {
+                    append("Arquivo processado: ").append(input).append('\n')
+                }
+                if (variant.isNotBlank()) {
+                    append("Variante: ").append(variant).append('\n')
+                }
+                if (round > 0) {
+                    append("Rodada: ").append(round)
+                    if (order > 0) append(" | ordem ").append(order)
+                    append('\n')
+                }
+                if (total > 0) {
+                    append("Execuções: ").append(completed).append('/').append(total).append('\n')
+                }
+                if (!duration.isNaN()) {
+                    append("Áudio: ")
+                        .append(String.format(Locale.US, "%.1f s", duration))
+                        .append('\n')
+                }
+                if (!elapsed.isNaN()) {
+                    append("Tempo gasto: ")
+                        .append(String.format(Locale.US, "%.1f s", elapsed))
+                        .append('\n')
+                }
+                if (!rtf.isNaN()) {
+                    append("RTF atual: ")
+                        .append(String.format(Locale.US, "%.2fx", rtf))
+                        .append('\n')
+                }
+                if (!temp.isNaN()) {
+                    append("Bateria: ")
+                        .append(String.format(Locale.US, "%.1f °C", temp))
+                        .append('\n')
+                }
+                if (thermal >= 0) {
+                    append("Thermal: ").append(thermal).append('\n')
+                }
+
+                val message = json.optString("message", "")
+                if (message.isNotBlank()) {
+                    append('\n').append(message)
+                }
+            }
+        }.getOrElse {
+            "WA-Keeper ASR Benchmark\n\nLendo estado..."
+        }
     }
 
     private suspend fun runSingle(inputName: String, model: String, language: String) {
