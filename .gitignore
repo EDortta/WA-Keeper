@@ -4,6 +4,8 @@ app/build/
 .gradle/
 .claude*
 
+.gk/
+
 # Android Studio / IntelliJ
 .idea/
 *.iml
