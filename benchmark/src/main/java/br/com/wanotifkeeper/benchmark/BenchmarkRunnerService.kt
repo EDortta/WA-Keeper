@@ -16,11 +16,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.File
 import java.time.Instant
+import java.util.Locale
 
 class BenchmarkRunnerService : Service() {
     companion object {
@@ -127,8 +130,40 @@ class BenchmarkRunnerService : Service() {
             val thermalBefore = thermalStatus()
             val startedAt = Instant.now().toString()
 
-            writeStatus(root, "transcribing", "transcrevendo " + item.variant, item)
-            val result = BenchmarkTranscriber.transcribe(filesDir, input, model)
+            val startedWallMs = System.currentTimeMillis()
+            val totalRuns = plan.size
+            val completedRunsBefore = completedKeys(runsFile).size
+
+            writeTranscribingStatus(
+                root = root,
+                item = item,
+                durationSeconds = duration,
+                startedAt = startedAt,
+                startedWallMs = startedWallMs,
+                completedRuns = completedRunsBefore,
+                totalRuns = totalRuns
+            )
+
+            val heartbeat = scope.launch {
+                while (isActive) {
+                    delay(10_000L)
+                    writeTranscribingStatus(
+                        root = root,
+                        item = item,
+                        durationSeconds = duration,
+                        startedAt = startedAt,
+                        startedWallMs = startedWallMs,
+                        completedRuns = completedRunsBefore,
+                        totalRuns = totalRuns
+                    )
+                }
+            }
+
+            val result = try {
+                BenchmarkTranscriber.transcribe(filesDir, input, model)
+            } finally {
+                heartbeat.cancelAndJoin()
+            }
             val finishedAt = Instant.now().toString()
             val tempAfter = batteryTempC()
             val thermalAfter = thermalStatus()
@@ -144,10 +179,10 @@ class BenchmarkRunnerService : Service() {
                     item.round,
                     item.order,
                     item.variant,
-                    "%.3f".format(duration),
+                    String.format(Locale.US, "%.3f", duration),
                     result.elapsedMs,
-                    tempBefore?.let { "%.1f".format(it) }.orEmpty(),
-                    tempAfter?.let { "%.1f".format(it) }.orEmpty(),
+                    tempBefore?.let { String.format(Locale.US, "%.1f", it) }.orEmpty(),
+                    tempAfter?.let { String.format(Locale.US, "%.1f", it) }.orEmpty(),
                     thermalBefore,
                     thermalAfter,
                     startedAt,
@@ -203,13 +238,57 @@ class BenchmarkRunnerService : Service() {
             .put("state", state)
             .put("message", message)
             .put("updatedAt", Instant.now().toString())
+            .put("batteryTempC", batteryTempC())
+            .put("thermalStatus", thermalStatus())
 
         if (item != null) {
             json.put("round", item.round)
             json.put("order", item.order)
             json.put("variant", item.variant)
         }
-        File(root, "status.json").writeText(json.toString(2) + "\n", Charsets.UTF_8)
+        writeStatusJson(root, json)
+    }
+
+    private fun writeTranscribingStatus(
+        root: File,
+        item: PlanItem,
+        durationSeconds: Double,
+        startedAt: String,
+        startedWallMs: Long,
+        completedRuns: Int,
+        totalRuns: Int
+    ) {
+        val elapsedSeconds = (System.currentTimeMillis() - startedWallMs) / 1000.0
+        val currentRtf = if (durationSeconds > 0.0) elapsedSeconds / durationSeconds else 0.0
+
+        val json = JSONObject()
+            .put("state", "transcribing")
+            .put("message", "transcrevendo " + item.variant)
+            .put("updatedAt", Instant.now().toString())
+            .put("startedAt", startedAt)
+            .put("round", item.round)
+            .put("order", item.order)
+            .put("variant", item.variant)
+            .put("audioDurationSeconds", durationSeconds)
+            .put("elapsedSeconds", elapsedSeconds)
+            .put("currentRtf", currentRtf)
+            .put("realtimeRatio", if (elapsedSeconds > 0.0) durationSeconds / elapsedSeconds else 0.0)
+            .put("completedRuns", completedRuns)
+            .put("totalRuns", totalRuns)
+            .put("batteryTempC", batteryTempC())
+            .put("thermalStatus", thermalStatus())
+
+        writeStatusJson(root, json)
+    }
+
+    private fun writeStatusJson(root: File, json: JSONObject) {
+        val status = File(root, "status.json")
+        val temp = File(root, "status.json.tmp")
+        temp.writeText(json.toString(2) + "\n", Charsets.UTF_8)
+        if (!temp.renameTo(status)) {
+            status.writeText(json.toString(2) + "\n", Charsets.UTF_8)
+            temp.delete()
+        }
     }
 
     private fun batteryTempC(): Double? {
