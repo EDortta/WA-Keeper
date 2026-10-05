@@ -31,6 +31,43 @@ data class NotifEntity(
     val transcriptError: String? = null
 )
 
+
+@Entity(
+    tableName = "transcription_runs",
+    indices = [
+        Index(value = ["notificationId"]),
+        Index(value = ["method"]),
+        Index(value = ["rating"])
+    ]
+)
+data class TranscriptionRunEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val notificationId: Long,
+    val method: String,
+    val startedAt: Long,
+    val elapsedMs: Long,
+    val inferenceMs: Long,
+    val audioDurationMs: Long,
+    val transcriptChars: Int,
+    val status: String,
+    val error: String? = null,
+    val rating: String? = null,
+    val ratedAt: Long? = null
+)
+
+data class TranscriptionMethodStats(
+    val method: String,
+    val total: Int,
+    val rated: Int,
+    val incomprehensible: Int,
+    val acceptable: Int,
+    val good: Int,
+    val excellent: Int,
+    val meanElapsedMs: Double?,
+    val meanInferenceMs: Double?,
+    val meanRtf: Double?
+)
+
 @Entity(tableName = "memory_entities")
 data class MemoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -205,6 +242,40 @@ interface MemoryDao {
     suspend fun moveAllLinks(sourceEntityId: Long, targetEntityId: Long)
 }
 
+
+@Dao
+interface TranscriptionRunDao {
+    @Insert
+    suspend fun insert(run: TranscriptionRunEntity): Long
+
+    @Query("SELECT * FROM transcription_runs WHERE notificationId = :notificationId ORDER BY id DESC LIMIT 1")
+    suspend fun latestForNotification(notificationId: Long): TranscriptionRunEntity?
+
+    @Query("UPDATE transcription_runs SET rating = :rating, ratedAt = :ratedAt WHERE id = :runId")
+    suspend fun rate(runId: Long, rating: String, ratedAt: Long = System.currentTimeMillis())
+
+    @Query(
+        """SELECT method AS method,
+                  COUNT(*) AS total,
+                  SUM(CASE WHEN rating IS NOT NULL THEN 1 ELSE 0 END) AS rated,
+                  SUM(CASE WHEN rating = 'INCOMPREHENSIBLE' THEN 1 ELSE 0 END) AS incomprehensible,
+                  SUM(CASE WHEN rating = 'ACCEPTABLE' THEN 1 ELSE 0 END) AS acceptable,
+                  SUM(CASE WHEN rating = 'GOOD' THEN 1 ELSE 0 END) AS good,
+                  SUM(CASE WHEN rating = 'EXCELLENT' THEN 1 ELSE 0 END) AS excellent,
+                  AVG(elapsedMs) AS meanElapsedMs,
+                  AVG(inferenceMs) AS meanInferenceMs,
+                  AVG(CASE WHEN audioDurationMs > 0 THEN CAST(inferenceMs AS REAL) / audioDurationMs ELSE NULL END) AS meanRtf
+           FROM transcription_runs
+           WHERE status = 'DONE'
+           GROUP BY method
+           ORDER BY method"""
+    )
+    suspend fun statsByMethod(): List<TranscriptionMethodStats>
+
+    @Query("SELECT * FROM transcription_runs ORDER BY id DESC")
+    suspend fun all(): List<TranscriptionRunEntity>
+}
+
 @Dao
 interface SettingsDao {
     @Query("SELECT * FROM conversation_settings WHERE sender = :sender")
@@ -229,9 +300,10 @@ interface SettingsDao {
         ConversationSettings::class,
         ScheduledMessageEntity::class,
         MemoryEntity::class,
-        EntityLinkEntity::class
+        EntityLinkEntity::class,
+        TranscriptionRunEntity::class
     ],
-    version = 10,
+    version = 11,
     exportSchema = false
 )
 abstract class NotifDatabase : RoomDatabase() {
@@ -239,6 +311,7 @@ abstract class NotifDatabase : RoomDatabase() {
     abstract fun memory(): MemoryDao
     abstract fun settings(): SettingsDao
     abstract fun scheduled(): ScheduledMessageDao
+    abstract fun transcriptionRuns(): TranscriptionRunDao
 
     companion object {
         @Volatile private var INSTANCE: NotifDatabase? = null
@@ -367,6 +440,39 @@ abstract class NotifDatabase : RoomDatabase() {
             }
         }
 
+
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS transcription_runs (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "notificationId INTEGER NOT NULL, " +
+                        "method TEXT NOT NULL, " +
+                        "startedAt INTEGER NOT NULL, " +
+                        "elapsedMs INTEGER NOT NULL, " +
+                        "inferenceMs INTEGER NOT NULL, " +
+                        "audioDurationMs INTEGER NOT NULL, " +
+                        "transcriptChars INTEGER NOT NULL, " +
+                        "status TEXT NOT NULL, " +
+                        "error TEXT, " +
+                        "rating TEXT, " +
+                        "ratedAt INTEGER)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_transcription_runs_notificationId " +
+                        "ON transcription_runs (notificationId)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_transcription_runs_method " +
+                        "ON transcription_runs (method)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_transcription_runs_rating " +
+                        "ON transcription_runs (rating)"
+                )
+            }
+        }
+
         fun get(ctx: Context): NotifDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(
                 ctx.applicationContext,
@@ -381,7 +487,8 @@ abstract class NotifDatabase : RoomDatabase() {
                 MIGRATION_6_7,
                 MIGRATION_7_8,
                 MIGRATION_8_9,
-                MIGRATION_9_10
+                MIGRATION_9_10,
+                MIGRATION_10_11
             ).build().also { INSTANCE = it }
         }
     }
