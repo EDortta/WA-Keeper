@@ -31,6 +31,7 @@ class BenchmarkRunnerService : Service() {
         const val EXTRA_REPEATS = "repeats"
         const val EXTRA_COOLDOWN_SECONDS = "cooldownSeconds"
         const val EXTRA_MODEL = "model"
+        const val EXTRA_MODELS = "models"
         const val CHANNEL_ID = "asr-benchmark"
         const val NOTIFICATION_ID = 24031
     }
@@ -53,7 +54,11 @@ class BenchmarkRunnerService : Service() {
 
         val repeats = intent.getIntExtra(EXTRA_REPEATS, 3).coerceIn(1, 10)
         val cooldownSeconds = intent.getIntExtra(EXTRA_COOLDOWN_SECONDS, 120).coerceIn(0, 3600)
-        val model = intent.getStringExtra(EXTRA_MODEL).orEmpty().ifBlank { "small" }
+        val models = intent.getStringExtra(EXTRA_MODELS).orEmpty()
+            .split(",")
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .ifEmpty { listOf("base", "small") }
 
         startForeground(
             NOTIFICATION_ID,
@@ -63,7 +68,7 @@ class BenchmarkRunnerService : Service() {
         runningJob = scope.launch {
             if (!wakeLock.isHeld) wakeLock.acquire()
             try {
-                runBenchmark(repeats, cooldownSeconds, model)
+                runBenchmark(repeats, cooldownSeconds, models)
             } catch (error: Throwable) {
                 val root = File(filesDir, "benchmark").apply { mkdirs() }
                 writeStatus(root, "failed", error.message ?: error.javaClass.simpleName, null)
@@ -84,38 +89,62 @@ class BenchmarkRunnerService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private suspend fun runBenchmark(repeats: Int, cooldownSeconds: Int, model: String) {
+    private suspend fun runBenchmark(
+        repeats: Int,
+        cooldownSeconds: Int,
+        models: List<String>
+    ) {
         val root = File(filesDir, "benchmark").apply { mkdirs() }
         val inputDir = File(root, "input")
         val original = File(inputDir, "original.wav")
 
         check(original.isFile && original.length() > 0L) { "original.wav ausente" }
 
-        val plan = ensurePlan(root, repeats)
+        val plan = ensurePlan(root, repeats, models)
         val runsFile = File(root, "runs.tsv")
         if (!runsFile.exists()) {
             runsFile.writeText(
-                "rodada\tordem\tvariante\tduracao_s\tinference_ms\tbattery_temp_before_c\tbattery_temp_after_c\tthermal_before\tthermal_after\tstarted_at\tfinished_at\ttranscript\n",
+                "rodada\tordem\tmodelo\tduracao_s\tinference_ms\tbattery_temp_before_c\tbattery_temp_after_c\tthermal_before\tthermal_after\tstarted_at\tfinished_at\ttranscript\n",
                 Charsets.UTF_8
             )
         }
 
         val completed = completedKeys(runsFile)
-
-        writeStatus(root, "loading_model", "carregando recognizer persistente", null)
-        val transcriber = BenchmarkTranscriber.create(filesDir, model)
-        File(root, "model-load-ms.txt").writeText(transcriber.modelLoadMs.toString() + "\n", Charsets.UTF_8)
+        val loadsFile = File(root, "model-loads.tsv")
+        if (!loadsFile.exists()) {
+            loadsFile.writeText("modelo\tload_ms\n", Charsets.UTF_8)
+        }
 
         writeStatus(root, "running", "benchmark em andamento", null)
+
+        var transcriber: BenchmarkTranscriber? = null
+        var activeModel = ""
 
         try {
         for ((index, item) in plan.withIndex()) {
             val key = item.round.toString() + ":" + item.order + ":" + item.variant
             if (key in completed) continue
 
+            if (activeModel != item.variant) {
+                transcriber?.close()
+                writeStatus(
+                    root,
+                    "loading_model",
+                    "carregando recognizer persistente " + item.variant,
+                    item
+                )
+                val loaded = BenchmarkTranscriber.create(filesDir, item.variant)
+                transcriber = loaded
+                activeModel = item.variant
+                loadsFile.appendText(
+                    item.variant + "\t" + loaded.modelLoadMs + "\n",
+                    Charsets.UTF_8
+                )
+            }
+
             updateNotification(
-                "Rodada " + item.round + "/" + repeats,
-                item.variant + " (" + (index + 1) + "/" + plan.size + ")"
+                "Modelo " + item.variant,
+                "Rodada " + item.round + "/" + repeats + " (" + (index + 1) + "/" + plan.size + ")"
             )
 
             if (index > 0 && cooldownSeconds > 0) {
@@ -164,7 +193,7 @@ class BenchmarkRunnerService : Service() {
             }
 
             val result = try {
-                transcriber.transcribe(input)
+                checkNotNull(transcriber).transcribe(input)
             } finally {
                 heartbeat.cancelAndJoin()
             }
@@ -197,7 +226,7 @@ class BenchmarkRunnerService : Service() {
             )
         }
         } finally {
-            transcriber.close()
+            transcriber?.close()
         }
 
         writeStatus(root, "completed", "benchmark concluído", null)
@@ -206,7 +235,7 @@ class BenchmarkRunnerService : Service() {
 
     private data class PlanItem(val round: Int, val order: Int, val variant: String)
 
-    private fun ensurePlan(root: File, repeats: Int): List<PlanItem> {
+    private fun ensurePlan(root: File, repeats: Int, models: List<String>): List<PlanItem> {
         val planFile = File(root, "plan.tsv")
         if (planFile.isFile && planFile.length() > 0L) {
             return planFile.readLines().drop(1).mapNotNull { line ->
@@ -216,8 +245,13 @@ class BenchmarkRunnerService : Service() {
         }
 
         val items = mutableListOf<PlanItem>()
-        repeat(repeats) { r ->
-            items += PlanItem(r + 1, 1, "original")
+        val orderedModels = models.distinct().shuffled()
+        var globalOrder = 0
+        for (model in orderedModels) {
+            repeat(repeats) { r ->
+                globalOrder += 1
+                items += PlanItem(r + 1, globalOrder, model)
+            }
         }
 
         planFile.writeText(
@@ -283,16 +317,24 @@ class BenchmarkRunnerService : Service() {
             .put("realtimeRatio", if (elapsedSeconds > 0.0) durationSeconds / elapsedSeconds else 0.0)
             .put("completedRuns", completedRuns)
             .put("totalRuns", totalRuns)
-            .put("modelLoadMs", modelLoadMs(root))
+            .put("modelLoadMs", modelLoadMs(root, item.variant))
+            .put("model", item.variant)
             .put("batteryTempC", batteryTempC())
             .put("thermalStatus", thermalStatus())
 
         writeStatusJson(root, json)
     }
 
-    private fun modelLoadMs(root: File): Long {
-        val file = File(root, "model-load-ms.txt")
-        return file.takeIf { it.isFile }?.readText(Charsets.UTF_8)?.trim()?.toLongOrNull() ?: 0L
+    private fun modelLoadMs(root: File, model: String): Long {
+        val file = File(root, "model-loads.tsv")
+        if (!file.isFile) return 0L
+        return file.readLines()
+            .drop(1)
+            .mapNotNull { line ->
+                val p = line.split('\t')
+                if (p.size >= 2 && p[0] == model) p[1].toLongOrNull() else null
+            }
+            .lastOrNull() ?: 0L
     }
 
     private fun sourceFileName(root: File): String {
