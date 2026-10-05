@@ -13,9 +13,13 @@ LABELS = {
 }
 
 
+def parse_float(value):
+    return float(value.strip().replace(",", "."))
+
+
 def parse_optional_float(value):
     value = value.strip()
-    return None if not value else float(value)
+    return None if not value else parse_float(value)
 
 
 def main():
@@ -36,8 +40,8 @@ def main():
                     "round": int(round_no),
                     "order": int(order_no),
                     "variant": variant,
-                    "duration": float(duration),
-                    "elapsed": float(elapsed_ms) / 1000.0,
+                    "duration": parse_float(duration),
+                    "elapsed": parse_float(elapsed_ms) / 1000.0,
                     "temp_before": None,
                     "temp_after": None,
                     "thermal_before": None,
@@ -48,8 +52,8 @@ def main():
                     "round": int(p[0]),
                     "order": int(p[1]),
                     "variant": p[2],
-                    "duration": float(p[3]),
-                    "elapsed": float(p[4]) / 1000.0,
+                    "duration": parse_float(p[3]),
+                    "elapsed": parse_float(p[4]) / 1000.0,
                     "temp_before": parse_optional_float(p[5]),
                     "temp_after": parse_optional_float(p[6]),
                     "thermal_before": int(p[7]),
