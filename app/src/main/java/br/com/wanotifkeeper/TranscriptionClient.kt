@@ -12,7 +12,6 @@ import com.k2fsa.sherpa.onnx.OfflineWhisperModelConfig
 import com.k2fsa.sherpa.onnx.FeatureConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
@@ -33,7 +32,7 @@ enum class TranscriptionMethod(
 
     companion object {
         fun fromCode(value: String?): TranscriptionMethod =
-            entries.firstOrNull { it.code == value } ?: BASE_INT8
+            values().firstOrNull { it.code == value } ?: BASE_INT8
     }
 }
 
@@ -398,31 +397,36 @@ private object SherpaRecognizerPool {
         context: Context,
         file: File,
         method: TranscriptionMethod
-    ): Result = mutex.withLock {
-        val current = ensureRecognizer(context, method)
-        val started = System.nanoTime()
-        val parts = mutableListOf<String>()
+    ): Result {
+        mutex.lock()
+        try {
+            val current = ensureRecognizer(context, method)
+            val started = System.nanoTime()
+            val parts = mutableListOf<String>()
 
-        AndroidAudioDecoder.forEachMono16kChunk(file) { audio ->
-            val stream = current.createStream()
-            try {
-                stream.acceptWaveform(audio.samples, audio.sampleRate)
-                current.decode(stream)
-                current.getResult(stream).text.trim()
-                    .takeIf { it.isNotBlank() }
-                    ?.let(parts::add)
-            } finally {
-                stream.release()
+            AndroidAudioDecoder.forEachMono16kChunk(file) { audio ->
+                val stream = current.createStream()
+                try {
+                    stream.acceptWaveform(audio.samples, audio.sampleRate)
+                    current.decode(stream)
+                    current.getResult(stream).text.trim()
+                        .takeIf { it.isNotBlank() }
+                        ?.let(parts::add)
+                } finally {
+                    stream.release()
+                }
             }
+
+            val text = parts.joinToString(" ").trim()
+            check(text.isNotBlank()) { "nenhuma fala detectada" }
+
+            return Result(
+                text = text,
+                inferenceMs = (System.nanoTime() - started) / 1_000_000L
+            )
+        } finally {
+            mutex.unlock()
         }
-
-        val text = parts.joinToString(" ").trim()
-        check(text.isNotBlank()) { "nenhuma fala detectada" }
-
-        Result(
-            text = text,
-            inferenceMs = (System.nanoTime() - started) / 1_000_000L
-        )
     }
 
     private suspend fun ensureRecognizer(
