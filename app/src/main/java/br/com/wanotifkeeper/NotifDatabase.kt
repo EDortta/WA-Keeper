@@ -252,7 +252,7 @@ interface TranscriptionRunDao {
     suspend fun latestForNotification(notificationId: Long): TranscriptionRunEntity?
 
     @Query("UPDATE transcription_runs SET rating = :rating, ratedAt = :ratedAt WHERE id = :runId")
-    suspend fun rate(runId: Long, rating: String, ratedAt: Long = System.currentTimeMillis())
+    suspend fun rate(runId: Long, rating: String, ratedAt: Long)
 
     @Query(
         """SELECT method AS method,
