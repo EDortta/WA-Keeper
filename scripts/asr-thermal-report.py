@@ -10,6 +10,8 @@ LABELS = {
     "speed115": "1,15x",
     "speed125": "1,25x",
     "silence_speed115": "Silêncio removido + 1,15x",
+    "base": "Whisper base INT8",
+    "small": "Whisper small INT8",
 }
 
 
@@ -64,7 +66,8 @@ def main():
         raise SystemExit("Nenhum resultado para analisar.")
 
     variants = sorted({r["variant"] for r in rows})
-    original_duration = max(r["duration"] for r in rows if r["variant"] == "original")
+    original_rows = [r["duration"] for r in rows if r["variant"] == "original"]
+    original_duration = max(original_rows) if original_rows else max(r["duration"] for r in rows)
 
     stats = {}
     for variant in variants:
@@ -92,7 +95,7 @@ def main():
     )
 
     lines = [
-        "# Benchmark térmico ASR — desempenho",
+        "# Benchmark ASR — desempenho",
         "",
         f"- Android: {args.device}",
         "- Modelo: sherpa-onnx Whisper small INT8.",
