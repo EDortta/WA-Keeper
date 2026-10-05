@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 APP_ID="br.com.wanotifkeeper.benchmark"
 TARGET_SECONDS="${ASR_TARGET_SECONDS:-180}"
-REPEATS="${ASR_PERSISTENT_REPEATS:-6}"
+REPEATS="${ASR_MODEL_COMPARE_REPEATS:-3}"
 COOLDOWN="${ASR_COOLDOWN_SECONDS:-120}"
 
 fail() { printf 'ERRO: %s\n' "$*" >&2; exit 1; }
@@ -103,7 +103,7 @@ log "Iniciando benchmark autônomo"
   --ez autonomous true \
   --ei repeats "$REPEATS" \
   --ei cooldownSeconds "$COOLDOWN" \
-  --es model small >/dev/null
+  --es models base,small >/dev/null
 
 sleep 2
 log "Estado inicial:"
