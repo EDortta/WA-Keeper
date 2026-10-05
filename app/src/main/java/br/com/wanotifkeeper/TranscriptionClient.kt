@@ -27,8 +27,8 @@ enum class TranscriptionMethod(
     val modelName: String,
     val label: String
 ) {
-    BASE_INT8("BASE_INT8", "base", "Rápido · Whisper base INT8"),
-    SMALL_INT8("SMALL_INT8", "small", "Qualidade · Whisper small INT8");
+    BASE_INT8("BASE_INT8", "base", "Whisper base INT8"),
+    SMALL_INT8("SMALL_INT8", "small", "Whisper small INT8");
 
     companion object {
         fun fromCode(value: String?): TranscriptionMethod =
