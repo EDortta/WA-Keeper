@@ -583,7 +583,7 @@ object AudioTranscriptionManager {
         val dao = NotifDatabase.get(context).transcriptionRuns()
         val latest = dao.latestForNotification(notificationId) ?: return false
         if (latest.status != "DONE") return false
-        dao.rate(latest.id, rating)
+        dao.rate(latest.id, rating, System.currentTimeMillis())
         return true
     }
 
