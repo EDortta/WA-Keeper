@@ -13,7 +13,7 @@
         android:background="@color/wa_surface"
         app:navigationIcon="@android:drawable/ic_menu_revert"
         app:title="Ajustes"
-        app:titleTextColor="#1C1C1E" />
+        app:titleTextColor="@color/wa_text_primary" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -26,6 +26,56 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:text="Aparência"
+                android:textColor="@color/wa_text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="Escolha o tema do WA Keeper. Automático acompanha a configuração clara/escura do Android."
+                android:textColor="@color/wa_text_secondary"
+                android:textSize="13sp" />
+
+            <RadioGroup
+                android:id="@+id/rgTheme"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="28dp"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rbThemeDark"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Escuro"
+                    android:textColor="@color/wa_text_primary" />
+
+                <RadioButton
+                    android:id="@+id/rbThemeLight"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Claro"
+                    android:textColor="@color/wa_text_primary" />
+
+                <RadioButton
+                    android:id="@+id/rbThemeAuto"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Auto"
+                    android:textColor="@color/wa_text_primary" />
+
+            </RadioGroup>
 
             <TextView
                 android:layout_width="match_parent"
