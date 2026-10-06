@@ -39,6 +39,9 @@ class SettingsActivity : AppCompatActivity() {
         binding.btnDriveBackup.setOnClickListener {
             startActivity(Intent(this, DriveBackupSettingsActivity::class.java))
         }
+        binding.btnTranscriptionHistory.setOnClickListener {
+            startActivity(Intent(this, TranscriptionHistoryActivity::class.java))
+        }
 
         // --- Leitura em voz alta (TTS) por conta ---
         binding.swWhatsapp.isChecked = Prefs.isTtsEnabled(this, Prefs.PKG_WHATSAPP)
