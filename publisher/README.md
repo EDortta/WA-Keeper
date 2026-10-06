@@ -11,12 +11,17 @@ Tudo relacionado à publicação deve ficar aqui: processo, critérios, riscos, 
 ## Estrutura
 
 - `PROCESS.md`: processo completo e critérios de passagem.
+- `BRANCHING.md`: estratégia permanente de branches.
+- `RELEASE.md`: promoção de candidate para produção.
 - `TARGET.md`: alvo técnico/comercial da variante Play.
 - `RISKS.md`: permissões e funcionalidades sob revisão.
 - `STORE-LISTING.md`: textos e narrativa da ficha da loja.
 - `SCREENSHOTS.md`: roteiro e requisitos das telas.
 - `PRIVACY.md`: matriz de dados e declarações a validar.
 - `scripts/check-play-readiness.sh`: auditoria automática antes de publicar.
+- `scripts/build-play.sh`: build condicionado da variante Play.
+- `scripts/verify-release.sh`: versão, commit, tag e hash do artefato.
+- `variants/`: contrato das variantes experimental e Play.
 - `screenshots/`: originais e finais usados na Play Console.
 - `assets/`: ícone, feature graphic e demais peças.
 - `evidence/`: saídas de auditoria, builds e evidências de revisão.
