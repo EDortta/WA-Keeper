@@ -1,12 +1,13 @@
 package br.com.wanotifkeeper
 
 import android.content.Context
+import android.net.Uri
 
 enum class DriveBackupMode { INHERIT, ENABLED, DISABLED }
 
 object DriveBackupPolicy {
     private const val FILE = "wa_keeper_drive_backup"
-    private const val KEY_ACCOUNT_EMAIL = "account_email"
+    private const val KEY_ROOT_URI = "root_uri"
     private const val KEY_GLOBAL = "global_enabled"
     private const val KEY_PACKAGE_PREFIX = "package_"
     private const val KEY_ENTITY_PREFIX = "entity_"
@@ -15,20 +16,14 @@ object DriveBackupPolicy {
     private fun prefs(context: Context) =
         context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
 
-    fun accountEmail(context: Context): String? =
-        prefs(context).getString(KEY_ACCOUNT_EMAIL, null)?.takeIf { it.isNotBlank() }
+    fun rootUri(context: Context): Uri? =
+        prefs(context).getString(KEY_ROOT_URI, null)?.let(Uri::parse)
 
-    fun setAccountEmail(context: Context, email: String?) {
+    fun setRootUri(context: Context, uri: Uri?) {
         prefs(context).edit().apply {
-            if (email.isNullOrBlank()) remove(KEY_ACCOUNT_EMAIL)
-            else putString(KEY_ACCOUNT_EMAIL, email)
+            if (uri == null) remove(KEY_ROOT_URI)
+            else putString(KEY_ROOT_URI, uri.toString())
         }.apply()
-    }
-
-    fun isConfigured(context: Context): Boolean {
-        val signed = DriveAuth.account(context) ?: return false
-        val saved = accountEmail(context)
-        return saved == null || saved.equals(signed.email, ignoreCase = true)
     }
 
     fun globalEnabled(context: Context): Boolean =
@@ -65,8 +60,6 @@ object DriveBackupPolicy {
         packageName: String,
         sender: String
     ): Boolean {
-        if (!isConfigured(context)) return false
-
         modeValue(conversationMode(context, packageName, sender))?.let { return it }
 
         val entityId = NotifDatabase.get(context)
