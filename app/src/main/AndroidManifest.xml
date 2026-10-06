@@ -37,6 +37,7 @@
          terceiros). Backup/transfer desabilitados para impedir extração via
          auto-backup Google Drive, migração device-to-device e adb backup. -->
     <application
+        android:name=".WaKeeperApplication"
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
