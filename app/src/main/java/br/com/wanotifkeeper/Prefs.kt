@@ -2,6 +2,8 @@ package br.com.wanotifkeeper
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.app.Application
+import androidx.appcompat.app.AppCompatDelegate
 
 /**
  * Preferências simples do app (SharedPreferences).
@@ -221,5 +223,27 @@ object Prefs {
 
     fun unregisterChangeListener(context: Context, listener: SharedPreferences.OnSharedPreferenceChangeListener) {
         prefs(context).unregisterOnSharedPreferenceChangeListener(listener)
+    }
+}
+
+
+/** Aplica a aparência salva antes de qualquer Activity ser criada. */
+class WaKeeperApplication : Application() {
+
+    override fun onCreate() {
+        super.onCreate()
+        applyThemeMode(Prefs.themeMode(this))
+    }
+
+    companion object {
+        fun applyThemeMode(mode: Prefs.ThemeMode) {
+            AppCompatDelegate.setDefaultNightMode(
+                when (mode) {
+                    Prefs.ThemeMode.DARK -> AppCompatDelegate.MODE_NIGHT_YES
+                    Prefs.ThemeMode.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
+                    Prefs.ThemeMode.AUTO -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                }
+            )
+        }
     }
 }
