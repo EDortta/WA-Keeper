@@ -139,6 +139,11 @@
             android:parentActivityName=".MainActivity" />
 
         <activity
+            android:name=".TranscriptionHistoryActivity"
+            android:exported="false"
+            android:parentActivityName=".SettingsActivity" />
+
+        <activity
             android:name=".BankModeActivity"
             android:exported="false"
             android:parentActivityName=".SettingsActivity" />
