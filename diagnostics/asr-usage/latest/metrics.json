@@ -1,0 +1,63 @@
+{
+  "device": "SM-A175F",
+  "android": "16",
+  "appVersion": "1.0.9",
+  "privacy": "Sem áudio, remetente, texto ou transcrição. notificationId anonimizado.",
+  "summary": {
+    "BASE_INT8": {
+      "runs": 2,
+      "done": 2,
+      "errors": 0,
+      "rated": 2,
+      "ratings": {
+        "INCOMPREHENSIBLE": 0,
+        "ACCEPTABLE": 1,
+        "GOOD": 0,
+        "EXCELLENT": 1
+      },
+      "good_or_excellent": 1,
+      "mean_elapsed_ms": 15801,
+      "mean_inference_ms": 7115,
+      "mean_rtf": 0.46279124707168384
+    },
+    "SMALL_INT8": {
+      "runs": 3,
+      "done": 2,
+      "errors": 1,
+      "rated": 2,
+      "ratings": {
+        "INCOMPREHENSIBLE": 0,
+        "ACCEPTABLE": 0,
+        "GOOD": 0,
+        "EXCELLENT": 2
+      },
+      "good_or_excellent": 2,
+      "mean_elapsed_ms": 35283.5,
+      "mean_inference_ms": 32179.5,
+      "mean_rtf": 1.8045937654721165
+    }
+  },
+  "pairedAudios": [
+    {
+      "audio": "4c341a77e676",
+      "runs": [
+        {
+          "method": "BASE_INT8",
+          "rating": "ACCEPTABLE",
+          "elapsedMs": 10302,
+          "inferenceMs": 7634,
+          "audioDurationMs": 13980,
+          "rtf": 0.5460658082975679
+        },
+        {
+          "method": "SMALL_INT8",
+          "rating": "EXCELLENT",
+          "elapsedMs": 28604,
+          "inferenceMs": 22451,
+          "audioDurationMs": 13980,
+          "rtf": 1.605937052932761
+        }
+      ]
+    }
+  ]
+}
