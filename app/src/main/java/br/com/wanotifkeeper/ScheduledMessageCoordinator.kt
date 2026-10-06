@@ -42,9 +42,26 @@ class ScheduledMessageCoordinator(
         }
 
         sweepStaleClaims(at)
-        val candidate = store.nextEligible(packageName, conversationSender, at)
-            ?: return TriggerOutcome.NothingArmed
-        return deliver(candidate, at, triggerNotificationKey)
+
+        var firstOutcome: TriggerOutcome? = null
+        while (true) {
+            val candidate = store.nextEligible(packageName, conversationSender, at)
+                ?: return firstOutcome ?: TriggerOutcome.NothingArmed
+
+            val outcome = deliver(candidate, at, triggerNotificationKey)
+            if (firstOutcome == null) firstOutcome = outcome
+
+            when (outcome) {
+                is TriggerOutcome.Sent -> {
+                    log("sequência de $key: #${candidate.id} enviada; procurando próxima mensagem armada")
+                }
+                else -> {
+                    // Não ultrapassa uma mensagem que falhou/perdeu o claim: preservar a ordem
+                    // é mais importante do que tentar entregar as seguintes fora de sequência.
+                    return outcome
+                }
+            }
+        }
     }
 
     suspend fun onTimedMessage(id: Long): TriggerOutcome {
