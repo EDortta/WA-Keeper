@@ -33,6 +33,8 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.toolbar.setNavigationOnClickListener { finish() }
 
+        setupTheme()
+
         binding.btnBankMode.setOnClickListener {
             startActivity(Intent(this, BankModeActivity::class.java))
         }
@@ -72,6 +74,26 @@ class SettingsActivity : AppCompatActivity() {
         binding.tvAudioPermission.setOnClickListener { requestAllFilesAccess() }
 
         setupVoiceCommands()
+    }
+
+    private fun setupTheme() {
+        val selectedId = when (Prefs.themeMode(this)) {
+            Prefs.ThemeMode.DARK -> binding.rbThemeDark.id
+            Prefs.ThemeMode.LIGHT -> binding.rbThemeLight.id
+            Prefs.ThemeMode.AUTO -> binding.rbThemeAuto.id
+        }
+        binding.rgTheme.check(selectedId)
+        binding.rgTheme.setOnCheckedChangeListener { _, checkedId ->
+            val mode = when (checkedId) {
+                binding.rbThemeLight.id -> Prefs.ThemeMode.LIGHT
+                binding.rbThemeAuto.id -> Prefs.ThemeMode.AUTO
+                else -> Prefs.ThemeMode.DARK
+            }
+            if (mode != Prefs.themeMode(this)) {
+                Prefs.setThemeMode(this, mode)
+                WaKeeperApplication.applyThemeMode(mode)
+            }
+        }
     }
 
     override fun onResume() {
