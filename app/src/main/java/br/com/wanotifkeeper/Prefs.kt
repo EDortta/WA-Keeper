@@ -31,11 +31,25 @@ object Prefs {
     const val KEY_DIRECT_COMMAND_UNTIL = "voice_direct_command_until"
     private const val KEY_MANUAL_DURATION_MINUTES = "voice_manual_duration_minutes"
     private const val KEY_MANUAL_TIMER_MOTION_SEEN = "voice_manual_timer_motion_seen"
+    private const val KEY_THEME_MODE = "theme_mode"
     private const val KEY_SPEECH_PACK_MISSING = "voice_speech_pack_missing"
     const val KEY_BANK_MODE_ENABLED = "bank_mode_enabled"
 
     const val PKG_WHATSAPP = "com.whatsapp"
     const val PKG_BUSINESS = "com.whatsapp.w4b"
+
+    enum class ThemeMode { DARK, LIGHT, AUTO }
+
+    /** Aparência do aplicativo. DARK preserva o comportamento existente até o usuário escolher outro modo. */
+    fun themeMode(context: Context): ThemeMode {
+        val raw = prefs(context).getString(KEY_THEME_MODE, ThemeMode.DARK.name)
+        return runCatching { ThemeMode.valueOf(raw ?: ThemeMode.DARK.name) }
+            .getOrDefault(ThemeMode.DARK)
+    }
+
+    fun setThemeMode(context: Context, mode: ThemeMode) {
+        prefs(context).edit().putString(KEY_THEME_MODE, mode.name).apply()
+    }
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
