@@ -1,0 +1,11 @@
+BLOCK  targetSdk ainda está em 34
+BLOCK  release ainda usa signingConfigs.debug
+WARN   permissão/recurso requer revisão: MANAGE_EXTERNAL_STORAGE
+WARN   permissão/recurso requer revisão: BIND_ACCESSIBILITY_SERVICE
+WARN   permissão/recurso requer revisão: SCHEDULE_EXACT_ALARM
+WARN   permissão/recurso requer revisão: RECORD_AUDIO
+WARN   permissão/recurso requer revisão: READ_CONTACTS
+WARN   permissão/recurso requer revisão: INTERNET
+BLOCK  docs/index.html ainda contém posicionamento anti-Play Store
+
+Resumo: 3 bloqueador(es), 6 aviso(s).
