@@ -372,24 +372,45 @@ class ScheduledMessageCoordinatorTest {
     // ---- ordem ---------------------------------------------------------------
 
     @Test
-    fun `duas armadas saem uma por gatilho na ordem em que foram armadas`() = runBlocking {
+    fun `varias armadas saem no mesmo gatilho na ordem em que foram armadas`() = runBlocking {
         val store = FakeStore()
         val sender = RecordingSender { ReplyResult.Accepted }
-        store.arm("com.whatsapp", "Ana", "primeira", createdAt = 1L)
-        store.arm("com.whatsapp", "Ana", "segunda", createdAt = 2L)
-        var agora = 1_000L
-        val c = ScheduledMessageCoordinator(
-            store = store, sender = sender, clock = { agora },
-            maxAttempts = 3, retryBackoffMs = 60_000L, staleClaimMs = 300_000L,
-            echoWindowMs = 20_000L
-        )
+        val first = store.arm("com.whatsapp", "Ana", "primeira", createdAt = 1L)
+        val second = store.arm("com.whatsapp", "Ana", "segunda", createdAt = 2L)
+        val third = store.arm("com.whatsapp", "Ana", "terceira", createdAt = 3L)
 
-        c.onConversationActivity("com.whatsapp", "Ana", false, "key-1")
-        assertEquals("um gatilho entrega no máximo uma mensagem", 1, sender.sent.size)
+        val outcome = coordinator(store, sender)
+            .onConversationActivity("com.whatsapp", "Ana", false, "key-1")
 
-        agora += 30_000L   // passada a janela de eco, é contato de verdade
-        c.onConversationActivity("com.whatsapp", "Ana", false, "key-2")
+        assertEquals(TriggerOutcome.Sent(first), outcome)
+        assertEquals(listOf("primeira", "segunda", "terceira"), sender.sent.map { it.third })
+        assertEquals(ScheduledState.SENT, store.rows[first]!!.scheduledState)
+        assertEquals(ScheduledState.SENT, store.rows[second]!!.scheduledState)
+        assertEquals(ScheduledState.SENT, store.rows[third]!!.scheduledState)
+        assertEquals("key-1", store.rows[first]!!.triggerNotificationKey)
+        assertEquals("key-1", store.rows[second]!!.triggerNotificationKey)
+        assertEquals("key-1", store.rows[third]!!.triggerNotificationKey)
+    }
+
+    @Test
+    fun `falha interrompe a sequencia e nao ultrapassa mensagem pendente`() = runBlocking {
+        val store = FakeStore()
+        val sender = RecordingSender { text ->
+            if (text == "segunda") ReplyResult.Rejected("PendingIntent recusado")
+            else ReplyResult.Accepted
+        }
+        val first = store.arm("com.whatsapp", "Ana", "primeira", createdAt = 1L)
+        val second = store.arm("com.whatsapp", "Ana", "segunda", createdAt = 2L)
+        val third = store.arm("com.whatsapp", "Ana", "terceira", createdAt = 3L)
+
+        val outcome = coordinator(store, sender)
+            .onConversationActivity("com.whatsapp", "Ana", false, "key-1")
+
+        assertTrue(outcome is TriggerOutcome.Retrying)
         assertEquals(listOf("primeira", "segunda"), sender.sent.map { it.third })
+        assertEquals(ScheduledState.SENT, store.rows[first]!!.scheduledState)
+        assertEquals(ScheduledState.PENDING, store.rows[second]!!.scheduledState)
+        assertEquals(ScheduledState.PENDING, store.rows[third]!!.scheduledState)
     }
 
     // ---- achados da rodada 1 do concílio -------------------------------------
@@ -486,7 +507,7 @@ class ScheduledMessageCoordinatorTest {
     // ---- achados da rodada 2 do concílio -------------------------------------
 
     @Test
-    fun `repost logo depois da entrega nao dispara a proxima armada`() = runBlocking {
+    fun `repost logo depois da sequencia nao repete mensagens ja entregues`() = runBlocking {
         val store = FakeStore()
         val sender = RecordingSender { ReplyResult.Accepted }
         store.arm("com.whatsapp", "Ana", "primeira", createdAt = 1L)
@@ -499,15 +520,13 @@ class ScheduledMessageCoordinatorTest {
         )
 
         c.onConversationActivity("com.whatsapp", "Ana", false, "key-1")
-        agora += 500L   // o WhatsApp reposta a notificação com a nossa resposta anexada
+        assertEquals(listOf("primeira", "segunda"), sender.sent.map { it.third })
+
+        agora += 500L   // o WhatsApp reposta a notificação com as nossas respostas anexadas
         val eco = c.onConversationActivity("com.whatsapp", "Ana", false, "key-eco")
 
         assertEquals(TriggerOutcome.EchoWindow, eco)
-        assertEquals("o eco da nossa entrega não pode disparar a segunda armada", 1, sender.sent.size)
-
-        agora += 30_000L   // passada a janela, um contato de verdade dispara normalmente
-        c.onConversationActivity("com.whatsapp", "Ana", false, "key-2")
-        assertEquals(listOf("primeira", "segunda"), sender.sent.map { it.third })
+        assertEquals("o eco da nossa entrega não pode repetir a sequência", 2, sender.sent.size)
     }
 
     @Test
