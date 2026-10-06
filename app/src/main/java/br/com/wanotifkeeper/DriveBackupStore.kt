@@ -1,6 +1,7 @@
 package br.com.wanotifkeeper
 
 import android.content.Context
+import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -18,7 +19,7 @@ object DriveBackupStore {
         if (!DriveBackupPolicy.effectiveEnabled(context, item.packageName, item.sender)) {
             return@withContext false
         }
-        runCatching { backupItem(context, item) }.getOrDefault(false)
+        backupItem(context, item)
     }
 
     suspend fun backupConversation(
@@ -30,7 +31,7 @@ object DriveBackupStore {
         var count = 0
         for (item in all) {
             if (item.packageName == packageName && item.sender.equals(sender, ignoreCase = true)) {
-                if (runCatching { backupItem(context, item) }.getOrDefault(false)) count++
+                if (backupItem(context, item)) count++
             }
         }
         count
@@ -49,29 +50,26 @@ object DriveBackupStore {
         var count = 0
         for (item in NotifDatabase.get(context).dao().getAll()) {
             if (DriveBackupPolicy.effectiveEnabled(context, item.packageName, item.sender) &&
-                runCatching { backupItem(context, item) }.getOrDefault(false)
+                backupItem(context, item)
             ) count++
         }
         count
     }
 
     private fun backupItem(context: Context, item: NotifEntity): Boolean {
-        if (!DriveBackupPolicy.isConfigured(context)) return false
+        val rootUri = DriveBackupPolicy.rootUri(context) ?: return false
+        val root = DocumentFile.fromTreeUri(context, rootUri) ?: return false
+        if (!root.canWrite()) return false
 
-        val drive = DriveApi(context.applicationContext)
-        val appFolder = drive.ensureFolder(DriveApi.ROOT, "WA-Keeper")
-        val accountFolder = drive.ensureFolder(appFolder, accountName(item.packageName))
-        val conversationFolder = drive.ensureFolder(accountFolder, safeName(item.sender))
-        val messagesFolder = drive.ensureFolder(conversationFolder, "messages")
-        val mediaFolder = drive.ensureFolder(conversationFolder, "media")
+        val appFolder = childDirectory(root, "WA-Keeper") ?: return false
+        val accountFolder = childDirectory(appFolder, accountName(item.packageName)) ?: return false
+        val conversationFolder = childDirectory(accountFolder, safeName(item.sender)) ?: return false
+        val messagesFolder = childDirectory(conversationFolder, "messages") ?: return false
+        val mediaFolder = childDirectory(conversationFolder, "media") ?: return false
 
         val baseName = stamp.format(Date(item.timestamp)) + "-" + item.id
-        val imageName = item.imagePath?.let {
-            copyMedia(drive, mediaFolder, File(it), baseName + "-image")
-        }
-        val audioName = item.audioPath?.let {
-            copyMedia(drive, mediaFolder, File(it), baseName + "-audio")
-        }
+        val imageName = item.imagePath?.let { copyMedia(context, mediaFolder, File(it), baseName + "-image") }
+        val audioName = item.audioPath?.let { copyMedia(context, mediaFolder, File(it), baseName + "-audio") }
 
         val json = JSONObject()
             .put("id", item.id)
@@ -87,25 +85,38 @@ object DriveBackupStore {
             .put("image", imageName ?: JSONObject.NULL)
             .put("audio", audioName ?: JSONObject.NULL)
 
-        return drive.putText(
-            messagesFolder,
-            "$baseName.json",
-            "application/json",
-            json.toString(2)
-        )
+        val targetName = "$baseName.json"
+        val target = messagesFolder.findFile(targetName)
+            ?: messagesFolder.createFile("application/json", targetName)
+            ?: return false
+
+        context.contentResolver.openOutputStream(target.uri, "wt")?.bufferedWriter().use { writer ->
+            if (writer == null) return false
+            writer.write(json.toString(2))
+        }
+        return true
     }
 
     private fun copyMedia(
-        drive: DriveApi,
-        folderId: String,
+        context: Context,
+        folder: DocumentFile,
         source: File,
         baseName: String
     ): String? {
         if (!source.exists() || source.length() <= 0L) return null
         val ext = source.extension.takeIf { it.isNotBlank() }?.lowercase() ?: "bin"
         val targetName = "$baseName.$ext"
-        return if (drive.putFile(folderId, targetName, mimeFor(ext), source)) targetName else null
+        val target = folder.findFile(targetName)
+            ?: folder.createFile(mimeFor(ext), targetName)
+            ?: return null
+        context.contentResolver.openOutputStream(target.uri, "wt")?.use { output ->
+            source.inputStream().use { input -> input.copyTo(output) }
+        } ?: return null
+        return targetName
     }
+
+    private fun childDirectory(parent: DocumentFile, name: String): DocumentFile? =
+        parent.findFile(name)?.takeIf { it.isDirectory } ?: parent.createDirectory(name)
 
     private fun accountName(packageName: String): String = when (packageName) {
         Prefs.PKG_BUSINESS -> "WhatsApp Business"
