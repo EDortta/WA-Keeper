@@ -29,7 +29,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Pasta de destino"
+                android:text="Conta e destino"
                 android:textColor="@color/wa_text_primary"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -39,7 +39,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Nenhuma pasta escolhida"
+                android:text="Google Drive não conectado"
                 android:textColor="@color/wa_text_secondary"
                 android:textSize="13sp" />
 
@@ -49,14 +49,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="Escolher pasta no Google Drive"
+                android:text="Conectar Google Drive"
                 android:textAllCaps="false" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="O seletor é o do Android. Escolha uma pasta oferecida pelo Google Drive; o WA-Keeper mantém permissão apenas sobre essa árvore."
+                android:text="O WA-Keeper cria e usa Meu Drive / WA-Keeper. O acesso solicitado é limitado aos arquivos criados pelo próprio aplicativo."
                 android:textColor="@color/wa_text_secondary"
                 android:textSize="12sp" />
 
