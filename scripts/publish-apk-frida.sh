@@ -10,7 +10,7 @@ DRY_RUN=0
 
 usage() {
   cat <<'EOF'
-Compila e publica o APK release do WA-Keeper em frida:8443.
+Publica o APK release do WA-Keeper em frida:8443 usando o compilador único.
 
 Uso:
   bash scripts/publish-apk-frida.sh [opções]
@@ -28,7 +28,7 @@ Variáveis opcionais:
 
 O script:
   1. garante development atualizada;
-  2. roda testes e assembleRelease;
+  2. chama scripts/build.sh para testes e release;
   3. descobre o document root real que atende a porta 8443;
   4. comprova o root usando um arquivo-sonda HTTP;
   5. publica APK versionado + WA-Keeper-latest.apk + SHA-256;
@@ -58,7 +58,6 @@ done
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || fail "execute dentro do repositório WA-Keeper"
 cd "$REPO_ROOT"
 
-[[ -x ./gradlew ]] || fail "./gradlew não encontrado ou não executável"
 command -v ssh >/dev/null 2>&1 || fail "ssh não encontrado"
 command -v scp >/dev/null 2>&1 || fail "scp não encontrado"
 command -v curl >/dev/null 2>&1 || fail "curl não encontrado"
@@ -75,11 +74,11 @@ git pull --ff-only origin development
 
 if (( RUN_TESTS )); then
   log "Rodando testes unitários"
-  ./gradlew --console=plain testDebugUnitTest
+  bash scripts/build.sh --lab --debug
 fi
 
 log "Compilando APK release"
-./gradlew --console=plain assembleRelease
+bash scripts/build.sh --lab --release --skip-tests
 
 APK="app/build/outputs/apk/release/app-release.apk"
 [[ -f "$APK" ]] || fail "APK não encontrado em $APK"
