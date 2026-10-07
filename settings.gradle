@@ -16,3 +16,5 @@ dependencyResolutionManagement {
 rootProject.name = "WaNotifKeeper"
 include ':app'
 include ':benchmark'
+
+include ':godofredo-benchmark'

@@ -31,25 +31,26 @@ while (($#)); do
     --only) shift; [[ $# -gt 0 ]] || fail "--only exige lista"; ONLY="$1" ;;
     --app) TARGET="app" ;;
     --benchmark) TARGET="benchmark"; PROFILE="lab"; BUILD_TYPE="debug"; MODE="apk" ;;
+    --godofredo-benchmark) TARGET="godofredo-benchmark"; PROFILE="lab"; BUILD_TYPE="debug"; MODE="apk" ;;
     --debug) BUILD_TYPE="debug"; MODE="apk" ;;
     --release) BUILD_TYPE="release"; MODE="apk" ;;
     --bundle) BUILD_TYPE="release"; MODE="bundle" ;;
     --skip-tests) RUN_TESTS=0 ;;
     --print) PRINT_ONLY=1 ;;
-    -h|--help) echo "uso: bash scripts/build.sh [--lab|--store] [--feature N] [--no-feature N] [--only a,b] [--app|--benchmark] [--debug|--release|--bundle] [--skip-tests] [--print]"; exit 0 ;;
+    -h|--help) echo "uso: bash scripts/build.sh [--lab|--store] [--feature N] [--no-feature N] [--only a,b] [--app|--benchmark|--godofredo-benchmark] [--debug|--release|--bundle] [--skip-tests] [--print]"; exit 0 ;;
     *) fail "opção desconhecida: $1" ;;
   esac
   shift
 done
 
-if [[ "$TARGET" == "benchmark" ]]; then
+if [[ "$TARGET" == "benchmark" || "$TARGET" == "godofredo-benchmark" ]]; then
   [[ "$PROFILE" != "store" ]] || fail "benchmark não é artefato de loja"
   echo "WA Keeper build"
-  echo "  target=benchmark"
+  echo "  target=$TARGET"
   echo "  profile=lab"
   echo "  type=debug"
   (( PRINT_ONLY )) && exit 0
-  ./gradlew --console=plain :benchmark:assembleDebug
+  ./gradlew --console=plain ":$TARGET:assembleDebug"
   exit 0
 fi
 

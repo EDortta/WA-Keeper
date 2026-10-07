@@ -41,3 +41,6 @@ release.properties
 
 # Raw ADB diagnostic captures may contain private data
 wa-keeper-diagnose-*/
+
+# Godofredo benchmark: transcrições brutas são somente locais
+diagnostics/godofredo-device-benchmark/**/raw/
