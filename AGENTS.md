@@ -88,3 +88,15 @@ Se uma mudança causar perda de comportamento previamente aprovado:
 2. restaurar o comportamento anterior primeiro;
 3. só então reaplicar a mudança nova de forma compatível;
 4. registrar a causa e criar/ajustar teste ou trava para impedir recorrência.
+
+## Build profiles e feature flags
+
+Toda feature nova deve ser registrada em `publisher/features.properties` antes de ser implementada.
+
+Regra inicial: `storeAllowed=false`.
+
+Somente após revisão explícita para Google Play a feature pode mudar para `storeAllowed=true`.
+
+Builds devem usar `scripts/build.sh`. O perfil `--store` não pode habilitar features não autorizadas para loja.
+
+Features condicionais devem obedecer aos macros `BuildConfig.WA_FEATURE_*`. Não basta esconder UI: código, permissões, serviços e dependências exclusivos devem ser isolados quando necessário.
