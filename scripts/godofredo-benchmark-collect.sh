@@ -47,6 +47,8 @@ alt_counts=[]
 ratings=collections.Counter()
 rated_sessions=set()
 wake_word_forms=collections.Counter()
+session_rating={}
+session_speech_duration={}
 for e in events:
     t=e.get("type")
     d=e.get("details") or {}
@@ -59,6 +61,10 @@ for e in events:
         ready.append(d["readyLatencyMs"])
     if t=="beginning_of_speech" and isinstance(d.get("speechStartLatencyMs"), (int,float)) and d["speechStartLatencyMs"] >= 0:
         speech.append(d["speechStartLatencyMs"])
+    if t=="end_of_speech" and sid:
+        duration=d.get("detectedSpeechDurationMs")
+        if isinstance(duration, (int,float)) and duration >= 0:
+            session_speech_duration[sid]=duration
     if t=="final_results":
         results += 1
         alt_counts.append(len(d.get("alternatives") or []))
@@ -80,10 +86,23 @@ for e in events:
             ratings[rating] += 1
         if sid:
             rated_sessions.add(sid)
+            if rating:
+                session_rating[sid]=rating
 def stats(v):
     if not v: return None
     return {"count":len(v),"minMs":min(v),"medianMs":statistics.median(v),
             "maxMs":max(v),"meanMs":round(statistics.mean(v),1)}
+all_speech_durations=list(session_speech_duration.values())
+incomplete_durations=[
+    session_speech_duration[sid]
+    for sid, rating in session_rating.items()
+    if rating=="Incompleta" and sid in session_speech_duration
+]
+non_incomplete_durations=[
+    session_speech_duration[sid]
+    for sid, rating in session_rating.items()
+    if rating!="Incompleta" and sid in session_speech_duration
+]
 out={
     "schema":1,
     "kind":"godofredo-benchmark-phase-1",
@@ -97,6 +116,9 @@ out={
     "errorCounts":dict(sorted(errors.items())),
     "readyLatency":stats(ready),
     "speechStartLatency":stats(speech),
+    "detectedSpeechDuration":stats(all_speech_durations),
+    "detectedSpeechDurationIncomplete":stats(incomplete_durations),
+    "detectedSpeechDurationOtherRatings":stats(non_incomplete_durations),
     "alternativesPerFinalResult":stats(alt_counts),
     "ratingCounts":dict(sorted(ratings.items())),
     "ratedSessionCount":len(rated_sessions),
