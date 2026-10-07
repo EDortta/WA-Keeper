@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 APP_ID="br.com.wanotifkeeper"
 VARIANT="release"
+PROFILE="auto"
 RUN_TESTS=1
 LAUNCH_APP=1
 TARGET_BRANCH=""
@@ -28,6 +29,8 @@ Aliases:
 Opções:
   --release      compila/instala release (padrão; preserva a assinatura esperada do app)
   --debug        compila/instala debug
+  --lab          usa perfil experimental
+  --store        usa perfil Google Play
   --skip-tests   não roda testes unitários antes do build
   --no-launch    instala mas não abre o app
   -h, --help     mostra esta ajuda
@@ -213,6 +216,8 @@ while (($#)); do
   case "$1" in
     --release) VARIANT="release" ;;
     --debug) VARIANT="debug" ;;
+    --lab) PROFILE="lab" ;;
+    --store) PROFILE="store" ;;
     --skip-tests) RUN_TESTS=0 ;;
     --no-launch) LAUNCH_APP=0 ;;
     -h|--help) usage; exit 0 ;;
@@ -229,7 +234,7 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || fail "execute dentro
 cd "$REPO_ROOT"
 LOG_FILE="$(mktemp "${TMPDIR:-/tmp}/wa-keeper-android-deploy.XXXXXX.log")"
 
-[[ -x ./gradlew ]] || fail "./gradlew não encontrado ou não executável"
+[[ -x scripts/build.sh ]] || fail "scripts/build.sh não encontrado ou não executável"
 command -v adb >/dev/null 2>&1 || fail "adb não encontrado no PATH"
 
 if [[ -n "$(git status --porcelain)" ]]; then
@@ -245,6 +250,17 @@ case "$TARGET_BRANCH" in
 esac
 
 [[ -n "$TARGET_BRANCH" ]] || fail "não consegui determinar a branch atual"
+
+if [[ "$PROFILE" == "auto" ]]; then
+  case "$TARGET_BRANCH" in
+    play|main) PROFILE="store" ;;
+    *) PROFILE="lab" ;;
+  esac
+fi
+
+if [[ "$PROFILE" == "store" && "$TARGET_BRANCH" != "play" && "$TARGET_BRANCH" != "main" ]]; then
+  fail "perfil store só pode ser usado nas branches play ou main"
+fi
 
 log_line "==> Atualizando origin/$TARGET_BRANCH"
 git fetch origin "$TARGET_BRANCH"
@@ -284,16 +300,17 @@ DEVICE="$(${ADB[@]} shell getprop ro.product.model | tr -d '\r')"
 log_line "==> Android: ${DEVICE:-desconhecido}"
 log_line "==> Branch: $TARGET_BRANCH"
 log_line "==> Variante: $VARIANT"
+log_line "==> Perfil: $PROFILE"
 
-if (( RUN_TESTS )); then
-  run_logged "Testes unitários" ./gradlew --console=plain testDebugUnitTest
-fi
+BUILD_ARGS=( "--$PROFILE" )
+[[ "$VARIANT" == "release" ]] && BUILD_ARGS+=( --release ) || BUILD_ARGS+=( --debug )
+(( RUN_TESTS )) || BUILD_ARGS+=( --skip-tests )
+
+run_logged "Compilação via scripts/build.sh" bash scripts/build.sh "${BUILD_ARGS[@]}"
 
 if [[ "$VARIANT" == "release" ]]; then
-  run_logged "Compilando release" ./gradlew --console=plain assembleRelease
   APK="app/build/outputs/apk/release/app-release.apk"
 else
-  run_logged "Compilando debug" ./gradlew --console=plain assembleDebug
   APK="app/build/outputs/apk/debug/app-debug.apk"
 fi
 
