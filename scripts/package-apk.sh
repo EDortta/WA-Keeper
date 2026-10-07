@@ -7,7 +7,6 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
 }
 cd "$REPO_ROOT"
 
-[[ -x ./gradlew ]] || {
   echo "ERRO: ./gradlew não encontrado ou não executável" >&2
   exit 1
 }
@@ -22,11 +21,8 @@ APK_DEST="$RELEASE_DIR/WA-Keeper-latest.apk"
 ZIP_DEST="$RELEASE_DIR/WA-Keeper-latest.zip"
 SHA_DEST="$RELEASE_DIR/WA-Keeper-latest.sha256"
 
-echo "==> Testes unitários"
-./gradlew --console=plain testDebugUnitTest
-
-echo "==> Compilando APK release"
-./gradlew --console=plain assembleRelease
+echo "==> Compilando APK release pelo compilador único"
+bash scripts/build.sh --lab --release --skip-tests
 
 [[ -f "$APK_SOURCE" ]] || {
   echo "ERRO: APK não encontrado em $APK_SOURCE" >&2
