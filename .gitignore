@@ -27,3 +27,14 @@ gradle.properties
 
 # Backups locais podem conter dados pessoais e nunca devem ser versionados
 local-backup/
+
+# Local signing material and private diagnostics
+release.properties
+*.keystore
+*.jks
+**/private/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
