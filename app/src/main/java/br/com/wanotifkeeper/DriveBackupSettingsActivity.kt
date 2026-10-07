@@ -91,50 +91,48 @@ class DriveBackupSettingsActivity : AppCompatActivity() {
     }
 
     private fun openDriveFolderPicker() {
-        val current = DriveBackupPolicy.rootUri(this)
-        val initial = current ?: googleDriveRootUri()
-
-        if (initial == null) {
-            Toast.makeText(
-                this,
-                "Google Drive não está disponível neste aparelho. Instale ou ative o app Google Drive.",
-                Toast.LENGTH_LONG
-            ).show()
-            return
-        }
-
+        // If a Drive tree was already granted, reopen there. Otherwise use the
+        // Google Drive DocumentsProvider as the initial location. Do not block
+        // on PackageManager discovery: Android 11+ can filter provider queries.
+        val initial = DriveBackupPolicy.rootUri(this) ?: googleDriveRootUri()
         chooseFolder.launch(initial)
     }
 
-    private fun googleDriveRootUri(): Uri? {
-        for (authority in googleDriveAuthorities()) {
-            val root = runCatching {
-                val rootsUri = DocumentsContract.buildRootsUri(authority)
-                contentResolver.query(
-                    rootsUri,
-                    arrayOf(DocumentsContract.Root.COLUMN_ROOT_ID),
-                    null,
-                    null,
-                    null
-                )?.use { cursor ->
-                    if (!cursor.moveToFirst()) return@use null
-                    val rootId = cursor.getString(0)
-                    DocumentsContract.buildRootUri(authority, rootId)
-                }
-            }.getOrNull()
+    private fun googleDriveRootUri(): Uri {
+        // Prefer the real root id reported by the provider.
+        queryGoogleDriveRootUri()?.let { return it }
 
-            if (root != null) return root
-        }
-        return null
+        // Samsung/Android builds may hide DocumentsProvider discovery even while
+        // the provider is fully usable by DocumentsUI. The canonical authority
+        // and root id still give OpenDocumentTree a valid initial hint.
+        return DocumentsContract.buildRootUri(GOOGLE_DRIVE_AUTHORITY, GOOGLE_DRIVE_ROOT_ID)
     }
 
-    private fun isGoogleDriveUri(uri: Uri): Boolean {
-        val authority = uri.authority ?: return false
-        return authority in googleDriveAuthorities()
+    private fun queryGoogleDriveRootUri(): Uri? {
+        return runCatching {
+            val rootsUri = DocumentsContract.buildRootsUri(GOOGLE_DRIVE_AUTHORITY)
+            contentResolver.query(
+                rootsUri,
+                arrayOf(DocumentsContract.Root.COLUMN_ROOT_ID),
+                null,
+                null,
+                null
+            )?.use { cursor ->
+                if (!cursor.moveToFirst()) return@use null
+                DocumentsContract.buildRootUri(
+                    GOOGLE_DRIVE_AUTHORITY,
+                    cursor.getString(0)
+                )
+            }
+        }.getOrNull()
     }
+
+    private fun isGoogleDriveUri(uri: Uri): Boolean =
+        uri.authority == GOOGLE_DRIVE_AUTHORITY ||
+            uri.authority in googleDriveAuthorities()
 
     private fun googleDriveAuthorities(): Set<String> {
-        val result = linkedSetOf<String>()
+        val result = linkedSetOf(GOOGLE_DRIVE_AUTHORITY)
 
         runCatching {
             val providers = packageManager.queryIntentContentProviders(
@@ -147,10 +145,6 @@ class DriveBackupSettingsActivity : AppCompatActivity() {
                     info.authority?.let(result::add)
                 }
             }
-        }
-
-        if (packageManager.resolveContentProvider(GOOGLE_DRIVE_AUTHORITY, 0) != null) {
-            result += GOOGLE_DRIVE_AUTHORITY
         }
 
         return result
@@ -182,5 +176,6 @@ class DriveBackupSettingsActivity : AppCompatActivity() {
     companion object {
         private const val GOOGLE_DRIVE_PACKAGE = "com.google.android.apps.docs"
         private const val GOOGLE_DRIVE_AUTHORITY = "com.google.android.apps.docs.storage"
+        private const val GOOGLE_DRIVE_ROOT_ID = "root"
     }
 }
