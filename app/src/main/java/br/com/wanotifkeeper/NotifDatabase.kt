@@ -164,6 +164,9 @@ interface NotifDao {
     @Query("SELECT * FROM notifications WHERE id = :id")
     suspend fun byId(id: Long): NotifEntity?
 
+    @Query("SELECT * FROM notifications WHERE id = :id")
+    fun byIdFlow(id: Long): Flow<NotifEntity?>
+
     @Query("SELECT * FROM notifications")
     suspend fun getAll(): List<NotifEntity>
 
