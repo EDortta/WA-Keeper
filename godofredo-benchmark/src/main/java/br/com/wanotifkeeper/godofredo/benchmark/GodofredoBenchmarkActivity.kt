@@ -181,12 +181,24 @@ class GodofredoBenchmarkActivity : Activity() {
         }
 
         activeRecognizer.setRecognitionListener(listener)
+        val possibleSilenceMs = 1500
+        val completeSilenceMs = 2500
+        val minimumSessionMs = 1200
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "pt-BR")
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, possibleSilenceMs)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, completeSilenceMs)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, minimumSessionMs)
         }
+
+        logEvent("recognizer_config", JSONObject()
+            .put("sessionId", sessionId)
+            .put("possibleCompleteSilenceMs", possibleSilenceMs)
+            .put("completeSilenceMs", completeSilenceMs)
+            .put("minimumSessionMs", minimumSessionMs))
 
         updateStatus("Abrindo microfone...")
         runCatching { activeRecognizer.startListening(intent) }
