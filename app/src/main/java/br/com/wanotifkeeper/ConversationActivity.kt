@@ -12,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
+import com.google.android.material.button.MaterialButton
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -95,7 +96,23 @@ class ConversationActivity : AppCompatActivity() {
                 )
             },
             onSpeak = { item -> audio.speakText(item.text) },
-            onPlayAudio = { item -> item.audioPath?.let(audio::play) }
+            onPlayAudio = { item -> item.audioPath?.let(audio::play) },
+            onTranscribe = { item ->
+                lifecycleScope.launch {
+                    val result = AudioTranscriptionManager.transcribe(
+                        context = applicationContext,
+                        notificationId = item.id,
+                        force = true,
+                        method = TranscriptionMethod.BASE_INT8
+                    )
+                    val message = if (result.isSuccess) {
+                        "Transcrição concluída."
+                    } else {
+                        "Falha na transcrição."
+                    }
+                    Toast.makeText(this@ConversationActivity, message, Toast.LENGTH_SHORT).show()
+                }
+            }
         )
 
         binding.recycler.layoutManager = LinearLayoutManager(this).apply {
@@ -197,13 +214,15 @@ private class ConversationMessageAdapter(
     private val fmt: SimpleDateFormat,
     private val onOpen: (NotifEntity) -> Unit,
     private val onSpeak: (NotifEntity) -> Unit,
-    private val onPlayAudio: (NotifEntity) -> Unit
+    private val onPlayAudio: (NotifEntity) -> Unit,
+    private val onTranscribe: (NotifEntity) -> Unit
 ) : ListAdapter<NotifEntity, ConversationMessageAdapter.VH>(DIFF) {
 
     inner class VH(val card: CardView) : RecyclerView.ViewHolder(card) {
         val text: TextView = card.findViewById(R.id.tvText)
         val time: TextView = card.findViewById(R.id.tvTime)
         val image: ImageView = card.findViewById(R.id.imgAttachment)
+        val transcribe: MaterialButton = card.findViewById(R.id.btnTranscribe)
         val play: ImageView = card.findViewById(R.id.btnPlay)
     }
 
@@ -229,6 +248,12 @@ private class ConversationMessageAdapter(
         }
 
         val isAudio = item.audioPath?.let(::File)?.exists() == true
+        holder.transcribe.visibility = if (isAudio) View.VISIBLE else View.GONE
+        holder.transcribe.text = if (item.transcript.isNullOrBlank()) "Transcrever" else "Transcrever novamente"
+        holder.transcribe.setOnClickListener {
+            onTranscribe(item)
+        }
+
         holder.play.visibility = View.VISIBLE
         holder.play.contentDescription = if (isAudio) "Tocar áudio" else "Ouvir mensagem"
         holder.play.setOnClickListener {
