@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "kind": "godofredo-benchmark-phase-1",
+  "deviceModel": "SM-A175F",
+  "androidSdk": 36,
+  "eventCount": 154,
+  "sessionCount": 6,
+  "finalResultCount": 6,
+  "sessionSuccessRate": 1.0,
+  "eventCounts": {
+    "app_open": 1,
+    "beginning_of_speech": 6,
+    "end_of_speech": 12,
+    "final_results": 6,
+    "partial_results": 90,
+    "permission_result": 1,
+    "ready_for_speech": 6,
+    "recognizer_destroy": 6,
+    "rms_sample": 2,
+    "session_end": 6,
+    "session_start": 6,
+    "start_listening_ok": 6,
+    "transcript_rating": 6
+  },
+  "errorCounts": {},
+  "readyLatency": {
+    "count": 6,
+    "minMs": 334,
+    "medianMs": 360.5,
+    "maxMs": 846,
+    "meanMs": 437
+  },
+  "speechStartLatency": {
+    "count": 6,
+    "minMs": 908,
+    "medianMs": 1623.0,
+    "maxMs": 2131,
+    "meanMs": 1585.8
+  },
+  "alternativesPerFinalResult": {
+    "count": 6,
+    "minMs": 1,
+    "medianMs": 2.0,
+    "maxMs": 3,
+    "meanMs": 2
+  },
+  "ratingCounts": {
+    "Aceitável": 1,
+    "Incompreensível": 5
+  },
+  "ratedSessionCount": 6,
+  "ratingCoverage": 1.0,
+  "wakeWordFirstTokenCounts": {
+    "e": 6
+  },
+  "privacy": "raw transcripts and per-session transcript ratings remain local under diagnostics/**/raw and are gitignored; versioned evidence keeps aggregate counts only"
+}
