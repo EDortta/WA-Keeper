@@ -1,0 +1,2 @@
+# Copy to release.properties (ignored by Git) or use RELEASE_* environment variables.
+# Never commit the real file.
