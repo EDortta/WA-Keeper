@@ -22,3 +22,27 @@ New features start with `storeAllowed=false` until explicitly reviewed and appro
 The shell validates first and Gradle validates again. Direct Gradle invocation cannot bypass store policy.
 
 Existing features must be wired to their respective `BuildConfig.WA_FEATURE_*` guards. A feature is not truly excluded until code, UI, manifest entries and dependencies are gated or isolated.
+
+
+## Interactive selector
+
+Run:
+
+    bash scripts/features.sh
+
+The terminal selector shows four columns:
+
+    [X] LAB   [ ] LOJA   feature_slug   short description
+
+Controls:
+
+- Up/Down: select feature
+- Left/Right: select LAB or LOJA
+- Space: toggle selected profile
+- q or Esc: exit
+
+Changes are written immediately to `publisher/features.properties`.
+
+LAB toggles `labDefault`.
+
+LOJA toggles `storeDefault`. Turning LOJA on also sets `storeAllowed=true`, because a store build is forbidden from enabling a feature that is not store-approved. Turning LOJA off removes the feature from the default store build but keeps `storeAllowed` unchanged.
