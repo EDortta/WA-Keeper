@@ -23,7 +23,7 @@ Somente PLAY-SAFE entra em play.
 Na branch play:
 
 1. executar publisher/scripts/check-play-readiness.sh;
-2. executar publisher/scripts/build-play.sh;
+2. executar scripts/build.sh --store --bundle;
 3. validar artefato;
 4. registrar evidências em publisher/evidence/;
 5. subir para Internal Testing;
