@@ -11,13 +11,7 @@ if [[ "$branch" != "play" && "$branch" != "main" ]]; then
 fi
 
 bash publisher/scripts/check-play-readiness.sh
-
-if [[ -x ./gradlew ]]; then
-  ./gradlew clean bundleRelease
-else
-  echo "ERRO: gradlew não encontrado ou não executável." >&2
-  exit 1
-fi
+bash scripts/build.sh --store --bundle
 
 echo
 echo "AAB gerado em:"
