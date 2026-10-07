@@ -4,6 +4,38 @@ plugins {
     id 'com.google.devtools.ksp'
 }
 
+
+// WA Keeper feature-gated build. Source of truth: publisher/features.properties
+def waFeatureRegistryFile = rootProject.file('publisher/features.properties')
+if (!waFeatureRegistryFile.exists()) {
+    throw new GradleException('Missing publisher/features.properties')
+}
+def waFeatureRegistry = new Properties()
+waFeatureRegistryFile.withInputStream { waFeatureRegistry.load(it) }
+def waKnownFeatures = waFeatureRegistry.getProperty('features', '').split(',').findAll { !it.isBlank() } as List
+def waStoreBuild = (project.findProperty('waStore') ?: 'false').toString().toBoolean()
+def waFeaturesPropertyPresent = project.hasProperty('waFeatures')
+def waRequestedFeatures = [] as Set
+if (waFeaturesPropertyPresent) {
+    waRequestedFeatures.addAll(project.property('waFeatures').toString().split(',').findAll { !it.isBlank() })
+} else {
+    waKnownFeatures.each { f ->
+        def key = waStoreBuild ? "feature.${f}.storeDefault" : "feature.${f}.labDefault"
+        if (waFeatureRegistry.getProperty(key, 'false').toBoolean()) waRequestedFeatures.add(f)
+    }
+}
+def waUnknownFeatures = waRequestedFeatures.findAll { !waKnownFeatures.contains(it) }
+if (!waUnknownFeatures.isEmpty()) {
+    throw new GradleException("Unknown WA Keeper feature(s): ${waUnknownFeatures.join(',')}")
+}
+if (waStoreBuild) {
+    waRequestedFeatures.each { f ->
+        if (!waFeatureRegistry.getProperty("feature.${f}.storeAllowed", 'false').toBoolean()) {
+            throw new GradleException("STORE build cannot enable feature '${f}': storeAllowed=false")
+        }
+    }
+}
+
 android {
     namespace 'br.com.wanotifkeeper'
     compileSdk 34
@@ -14,6 +46,12 @@ android {
         targetSdk 34
         versionCode 9
         versionName "1.0.9"
+
+        buildConfigField "boolean", "WA_STORE_BUILD", waStoreBuild.toString()
+        waKnownFeatures.each { f ->
+            def macro = "WA_FEATURE_" + f.toUpperCase().replaceAll("[^A-Z0-9]+", "_")
+            buildConfigField "boolean", macro, waRequestedFeatures.contains(f).toString()
+        }
     }
 
     buildTypes {
@@ -41,6 +79,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 }
 
