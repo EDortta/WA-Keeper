@@ -53,7 +53,7 @@ log "Android: $DEVICE"
 log "Rodadas: $REPEATS | resfriamento entre execuções: ${COOLDOWN}s"
 
 STAGE="compilação e instalação debug"
-./gradlew --console=plain assembleDebug
+bash scripts/build.sh --lab --debug --skip-tests
 "${ADB[@]}" install -r app/build/outputs/apk/debug/app-debug.apk
 "${ADB[@]}" shell am force-stop "$APP_ID" >/dev/null 2>&1 || true
 "${ADB[@]}" shell run-as "$APP_ID" id >/dev/null 2>&1 || fail "run-as indisponível"
@@ -172,7 +172,7 @@ log "Limpando temporários do benchmark no celular"
 "${ADB[@]}" shell run-as "$APP_ID" rm -rf files/asr-benchmark >/dev/null 2>&1 || true
 
 STAGE="restauração da release"
-./gradlew --console=plain assembleRelease
+bash scripts/build.sh --lab --release --skip-tests
 "${ADB[@]}" install -r app/build/outputs/apk/release/app-release.apk >/dev/null ||
   fail "benchmark terminou, mas falhou ao reinstalar release"
 
