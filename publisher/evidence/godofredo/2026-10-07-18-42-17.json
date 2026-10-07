@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "kind": "godofredo-benchmark-phase-1",
+  "deviceModel": "SM-A175F",
+  "androidSdk": 36,
+  "eventCount": 176,
+  "sessionCount": 8,
+  "finalResultCount": 6,
+  "sessionSuccessRate": 0.75,
+  "eventCounts": {
+    "app_open": 1,
+    "beginning_of_speech": 8,
+    "end_of_speech": 15,
+    "final_results": 6,
+    "partial_results": 94,
+    "permission_result": 1,
+    "ready_for_speech": 8,
+    "recognition_error": 2,
+    "recognizer_destroy": 8,
+    "rms_sample": 3,
+    "session_end": 8,
+    "session_start": 8,
+    "start_listening_ok": 8,
+    "transcript_rating": 6
+  },
+  "errorCounts": {
+    "NO_MATCH": 2
+  },
+  "readyLatency": {
+    "count": 8,
+    "minMs": 335,
+    "medianMs": 372.0,
+    "maxMs": 793,
+    "meanMs": 418.2
+  },
+  "speechStartLatency": {
+    "count": 8,
+    "minMs": 1372,
+    "medianMs": 1639.0,
+    "maxMs": 1666,
+    "meanMs": 1601.9
+  },
+  "detectedSpeechDuration": {
+    "count": 7,
+    "minMs": 2570,
+    "medianMs": 4479,
+    "maxMs": 7690,
+    "meanMs": 4855.1
+  },
+  "detectedSpeechDurationIncomplete": {
+    "count": 1,
+    "minMs": 5132,
+    "medianMs": 5132,
+    "maxMs": 5132,
+    "meanMs": 5132
+  },
+  "detectedSpeechDurationOtherRatings": {
+    "count": 4,
+    "minMs": 2570,
+    "medianMs": 3217.0,
+    "maxMs": 4479,
+    "meanMs": 3370.8
+  },
+  "lastPartialToEndOfSpeech": {
+    "count": 3,
+    "minMs": 2,
+    "medianMs": 8,
+    "maxMs": 623,
+    "meanMs": 211
+  },
+  "lastPartialToEndOfSpeechIncomplete": null,
+  "lastPartialToEndOfSpeechOtherRatings": {
+    "count": 3,
+    "minMs": 2,
+    "medianMs": 8,
+    "maxMs": 623,
+    "meanMs": 211
+  },
+  "sessionsWithDuplicateEndOfSpeech": 7,
+  "maxEndOfSpeechCallbacksPerSession": 2,
+  "alternativesPerFinalResult": {
+    "count": 6,
+    "minMs": 1,
+    "medianMs": 1.5,
+    "maxMs": 2,
+    "meanMs": 1.5
+  },
+  "ratingCounts": {
+    "Aceitável": 1,
+    "Errada": 3,
+    "Excelente": 1,
+    "Incompleta": 1
+  },
+  "ratedSessionCount": 6,
+  "ratingCoverage": 1.0,
+  "wakeWordRecognitionCounts": {
+    "godofredo": 3,
+    "outro": 3
+  },
+  "privacy": "raw transcripts and per-session transcript ratings remain local under diagnostics/**/raw and are gitignored; versioned evidence keeps aggregate counts only"
+}
