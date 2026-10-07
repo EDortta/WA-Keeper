@@ -23,9 +23,9 @@ jobs:
           java-version: '17'
 
       - name: Verify sources only
-        run: ./gradlew test assembleDebug
+        run: bash scripts/build.sh --lab --debug
 
       - name: Explain publishing path
         run: |
           echo "APK publishing is intentionally done on devel3:"
-          echo "  bash scripts/build-devel3.sh"
+          echo "  bash scripts/build.sh --lab --release"
