@@ -44,6 +44,9 @@ ready=[]
 speech=[]
 results=0
 alt_counts=[]
+ratings=collections.Counter()
+rated_sessions=set()
+wake_word_forms=collections.Counter()
 for e in events:
     t=e.get("type")
     d=e.get("details") or {}
@@ -59,6 +62,18 @@ for e in events:
     if t=="final_results":
         results += 1
         alt_counts.append(len(d.get("alternatives") or []))
+        alts=d.get("alternatives") or []
+        if alts:
+            first=(alts[0] or "").strip().lower()
+            token=first.split()[0] if first else ""
+            if token:
+                wake_word_forms[token] += 1
+    if t=="transcript_rating":
+        rating=d.get("rating")
+        if rating:
+            ratings[rating] += 1
+        if sid:
+            rated_sessions.add(sid)
 def stats(v):
     if not v: return None
     return {"count":len(v),"minMs":min(v),"medianMs":statistics.median(v),
@@ -77,7 +92,11 @@ out={
     "readyLatency":stats(ready),
     "speechStartLatency":stats(speech),
     "alternativesPerFinalResult":stats(alt_counts),
-    "privacy":"raw transcripts remain local under diagnostics/**/raw and are gitignored"
+    "ratingCounts":dict(sorted(ratings.items())),
+    "ratedSessionCount":len(rated_sessions),
+    "ratingCoverage":round(len(rated_sessions)/results,4) if results else None,
+    "wakeWordFirstTokenCounts":dict(sorted(wake_word_forms.items())),
+    "privacy":"raw transcripts and per-session transcript ratings remain local under diagnostics/**/raw and are gitignored; versioned evidence keeps aggregate counts only"
 }
 open(dst,"w",encoding="utf-8").write(json.dumps(out,ensure_ascii=False,indent=2)+"\n")
 print(json.dumps(out,ensure_ascii=False,indent=2))
