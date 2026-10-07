@@ -71,7 +71,7 @@ ffmpeg -hide_banner -loglevel error -y -i "$source" \
   -ac 1 -ar 16000 -c:a pcm_s16le "$WORK/original.wav"
 
 log "Compilando aplicativo de benchmark"
-./gradlew --console=plain :benchmark:assembleDebug
+bash scripts/build.sh --benchmark
 APK="benchmark/build/outputs/apk/debug/benchmark-debug.apk"
 [[ -f "$APK" ]] || fail "APK não encontrado: $APK"
 
