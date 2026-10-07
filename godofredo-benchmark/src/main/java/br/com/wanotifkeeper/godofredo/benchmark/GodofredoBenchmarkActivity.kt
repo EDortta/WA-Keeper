@@ -38,6 +38,7 @@ class GodofredoBenchmarkActivity : Activity() {
     private var sessionStartedElapsed = 0L
     private var readyElapsed = 0L
     private var speechStartElapsed = 0L
+    private var speechEndElapsed = 0L
     private var sequence = 0L
     private var pendingRatingSessionId: String? = null
     private var pendingRatingTranscript: String? = null
@@ -97,7 +98,7 @@ class GodofredoBenchmarkActivity : Activity() {
             setPadding(0, 24, 0, 8)
         }
         ratingContainer.addView(ratingTitle)
-        listOf("Incompreensível", "Errada", "Aceitável", "Boa", "Excelente").forEach { label ->
+        listOf("Incompreensível", "Errada", "Incompleta", "Aceitável", "Boa", "Excelente").forEach { label ->
             ratingContainer.addView(Button(this).apply {
                 text = label
                 setOnClickListener { recordRating(label) }
@@ -149,6 +150,7 @@ class GodofredoBenchmarkActivity : Activity() {
         sessionStartedElapsed = SystemClock.elapsedRealtime()
         readyElapsed = 0L
         speechStartElapsed = 0L
+        speechEndElapsed = 0L
         transcript.text = ""
         ratingContainer.visibility = android.view.View.GONE
         pendingRatingSessionId = null
@@ -224,6 +226,7 @@ class GodofredoBenchmarkActivity : Activity() {
         }
 
         override fun onEndOfSpeech() {
+            speechEndElapsed = SystemClock.elapsedRealtime()
             logEvent("end_of_speech", timingJson())
             updateStatus("Processando...")
         }
@@ -308,6 +311,11 @@ class GodofredoBenchmarkActivity : Activity() {
             .put("elapsedFromStartMs", if (sessionStartedElapsed > 0L) now - sessionStartedElapsed else -1L)
             .put("readyLatencyMs", if (readyElapsed > 0L) readyElapsed - sessionStartedElapsed else -1L)
             .put("speechStartLatencyMs", if (speechStartElapsed > 0L) speechStartElapsed - sessionStartedElapsed else -1L)
+            .put("speechEndLatencyMs", if (speechEndElapsed > 0L) speechEndElapsed - sessionStartedElapsed else -1L)
+            .put("detectedSpeechDurationMs",
+                if (speechStartElapsed > 0L && speechEndElapsed >= speechStartElapsed)
+                    speechEndElapsed - speechStartElapsed
+                else -1L)
     }
 
     @Synchronized
