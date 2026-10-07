@@ -51,7 +51,10 @@ session_rating={}
 session_speech_duration={}
 session_end_counts=collections.Counter()
 session_last_partial_elapsed={}
+session_first_end_elapsed={}
 session_end_elapsed={}
+session_final_elapsed={}
+session_partial_after_first_end=collections.Counter()
 for e in events:
     t=e.get("type")
     d=e.get("details") or {}
@@ -68,6 +71,8 @@ for e in events:
         elapsed=d.get("elapsedFromStartMs")
         if isinstance(elapsed, (int,float)) and elapsed >= 0:
             session_last_partial_elapsed[sid]=elapsed
+            if sid in session_first_end_elapsed and elapsed > session_first_end_elapsed[sid]:
+                session_partial_after_first_end[sid] += 1
     if t=="end_of_speech" and sid:
         session_end_counts[sid] += 1
         duration=d.get("detectedSpeechDurationMs")
@@ -75,9 +80,14 @@ for e in events:
         if isinstance(duration, (int,float)) and duration >= 0:
             session_speech_duration[sid]=duration
         if isinstance(elapsed, (int,float)) and elapsed >= 0:
+            session_first_end_elapsed.setdefault(sid, elapsed)
             session_end_elapsed[sid]=elapsed
     if t=="final_results":
         results += 1
+        if sid:
+            elapsed=d.get("elapsedFromStartMs")
+            if isinstance(elapsed, (int,float)) and elapsed >= 0:
+                session_final_elapsed[sid]=elapsed
         alt_counts.append(len(d.get("alternatives") or []))
         alts=d.get("alternatives") or []
         if alts:
@@ -129,6 +139,23 @@ other_last_partial_to_end=[
 ]
 duplicate_end_sessions=sum(1 for count in session_end_counts.values() if count > 1)
 max_end_callbacks=max(session_end_counts.values()) if session_end_counts else 0
+partial_after_end_sessions=sum(1 for count in session_partial_after_first_end.values() if count > 0)
+partial_after_end_total=sum(session_partial_after_first_end.values())
+incomplete_partial_after_end=sum(
+    session_partial_after_first_end.get(sid, 0)
+    for sid, rating in session_rating.items()
+    if rating=="Incompleta"
+)
+final_after_first_end=[
+    session_final_elapsed[sid]-session_first_end_elapsed[sid]
+    for sid in session_final_elapsed
+    if sid in session_first_end_elapsed and session_final_elapsed[sid] >= session_first_end_elapsed[sid]
+]
+final_after_last_end=[
+    session_final_elapsed[sid]-session_end_elapsed[sid]
+    for sid in session_final_elapsed
+    if sid in session_end_elapsed and session_final_elapsed[sid] >= session_end_elapsed[sid]
+]
 out={
     "schema":1,
     "kind":"godofredo-benchmark-phase-1",
@@ -150,6 +177,11 @@ out={
     "lastPartialToEndOfSpeechOtherRatings":stats(other_last_partial_to_end),
     "sessionsWithDuplicateEndOfSpeech":duplicate_end_sessions,
     "maxEndOfSpeechCallbacksPerSession":max_end_callbacks,
+    "sessionsWithPartialAfterFirstEndOfSpeech":partial_after_end_sessions,
+    "partialResultsAfterFirstEndOfSpeech":partial_after_end_total,
+    "partialResultsAfterFirstEndOfSpeechIncomplete":incomplete_partial_after_end,
+    "finalResultAfterFirstEndOfSpeech":stats(final_after_first_end),
+    "finalResultAfterLastEndOfSpeech":stats(final_after_last_end),
     "alternativesPerFinalResult":stats(alt_counts),
     "ratingCounts":dict(sorted(ratings.items())),
     "ratedSessionCount":len(rated_sessions),
