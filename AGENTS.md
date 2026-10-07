@@ -45,6 +45,29 @@ Alterações em qualquer um destes pontos exigem atenção especial porque podem
 
 Ao tocar nesses pontos, executar smoke tests das features PROTECTED relacionadas.
 
+
+## Ciclo obrigatório de evidências
+
+Toda feature nova nasce em estado **EM VALIDAÇÃO**.
+
+Enquanto estiver EM VALIDAÇÃO:
+
+- deve gerar evidências de uso suficientes para diagnosticar comportamento real;
+- essas evidências precisam ser recolhíveis por script, sem depender de inspeção manual;
+- o script deve produzir saída segura para versionamento, sem áudio bruto, textos privados, remetentes, credenciais ou outros dados sensíveis;
+- registrar, quando aplicável: tentativa, sucesso/erro, tempos, parâmetros relevantes, estado anterior/posterior e contexto técnico necessário para reproduzir o problema;
+- a coleta deve ser abundante o suficiente para comparar versões e detectar regressões;
+- uma feature sem evidência coletável não pode ser considerada pronta para aprovação.
+
+Depois que o usuário aprovar explicitamente a feature:
+
+- ela passa a PROTECTED;
+- a telemetria abundante pode ser reduzida;
+- deve permanecer um log operacional mínimo e coletável por script para diagnóstico futuro;
+- o histórico necessário para provar regressões não deve ser apagado sem autorização explícita.
+
+Regra prática: antes de implementar uma feature nova, definir também como sua evidência será registrada e qual script a recolherá.
+
 ## Evidência
 
 Não declarar "corrigido", "pronto", "funcionando" ou equivalente sem evidência.
