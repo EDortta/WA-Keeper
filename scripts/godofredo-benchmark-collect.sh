@@ -49,6 +49,9 @@ rated_sessions=set()
 wake_word_forms=collections.Counter()
 session_rating={}
 session_speech_duration={}
+session_end_counts=collections.Counter()
+session_last_partial_elapsed={}
+session_end_elapsed={}
 for e in events:
     t=e.get("type")
     d=e.get("details") or {}
@@ -61,10 +64,18 @@ for e in events:
         ready.append(d["readyLatencyMs"])
     if t=="beginning_of_speech" and isinstance(d.get("speechStartLatencyMs"), (int,float)) and d["speechStartLatencyMs"] >= 0:
         speech.append(d["speechStartLatencyMs"])
+    if t=="partial_results" and sid:
+        elapsed=d.get("elapsedFromStartMs")
+        if isinstance(elapsed, (int,float)) and elapsed >= 0:
+            session_last_partial_elapsed[sid]=elapsed
     if t=="end_of_speech" and sid:
+        session_end_counts[sid] += 1
         duration=d.get("detectedSpeechDurationMs")
+        elapsed=d.get("elapsedFromStartMs")
         if isinstance(duration, (int,float)) and duration >= 0:
             session_speech_duration[sid]=duration
+        if isinstance(elapsed, (int,float)) and elapsed >= 0:
+            session_end_elapsed[sid]=elapsed
     if t=="final_results":
         results += 1
         alt_counts.append(len(d.get("alternatives") or []))
@@ -103,6 +114,21 @@ non_incomplete_durations=[
     for sid, rating in session_rating.items()
     if rating!="Incompleta" and sid in session_speech_duration
 ]
+last_partial_to_end={
+    sid: session_end_elapsed[sid] - session_last_partial_elapsed[sid]
+    for sid in session_end_elapsed
+    if sid in session_last_partial_elapsed and session_end_elapsed[sid] >= session_last_partial_elapsed[sid]
+}
+incomplete_last_partial_to_end=[
+    gap for sid, gap in last_partial_to_end.items()
+    if session_rating.get(sid)=="Incompleta"
+]
+other_last_partial_to_end=[
+    gap for sid, gap in last_partial_to_end.items()
+    if session_rating.get(sid) not in (None, "Incompleta")
+]
+duplicate_end_sessions=sum(1 for count in session_end_counts.values() if count > 1)
+max_end_callbacks=max(session_end_counts.values()) if session_end_counts else 0
 out={
     "schema":1,
     "kind":"godofredo-benchmark-phase-1",
@@ -119,6 +145,11 @@ out={
     "detectedSpeechDuration":stats(all_speech_durations),
     "detectedSpeechDurationIncomplete":stats(incomplete_durations),
     "detectedSpeechDurationOtherRatings":stats(non_incomplete_durations),
+    "lastPartialToEndOfSpeech":stats(list(last_partial_to_end.values())),
+    "lastPartialToEndOfSpeechIncomplete":stats(incomplete_last_partial_to_end),
+    "lastPartialToEndOfSpeechOtherRatings":stats(other_last_partial_to_end),
+    "sessionsWithDuplicateEndOfSpeech":duplicate_end_sessions,
+    "maxEndOfSpeechCallbacksPerSession":max_end_callbacks,
     "alternativesPerFinalResult":stats(alt_counts),
     "ratingCounts":dict(sorted(ratings.items())),
     "ratedSessionCount":len(rated_sessions),
