@@ -38,3 +38,6 @@ release.properties
 *.db-wal
 *.sqlite
 *.sqlite3
+
+# Raw ADB diagnostic captures may contain private data
+wa-keeper-diagnose-*/
