@@ -95,7 +95,7 @@ Esse snapshot registra, no mínimo:
 
 Snapshots de versões anteriores são somente leitura.
 
-O `features.sh` deve evoluir para exibir a versão atual e permitir consulta de versões antigas, sem permitir alterações nelas.
+O `features.py` deve evoluir para exibir a versão atual e permitir consulta de versões antigas, sem permitir alterações nelas.
 
 ## 8. Hotfix
 
