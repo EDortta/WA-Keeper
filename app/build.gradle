@@ -85,10 +85,9 @@ android {
     buildTypes {
         release {
             def cfg = signingConfigs.release
-            if (cfg.storeFile == null || cfg.storePassword == null || cfg.keyAlias == null || cfg.keyPassword == null) {
-                throw new GradleException('Release signing not configured. Use untracked release.properties or RELEASE_* environment variables.')
+            if (cfg.storeFile != null && cfg.storePassword != null && cfg.keyAlias != null && cfg.keyPassword != null) {
+                signingConfig cfg
             }
-            signingConfig cfg
             debuggable false
             minifyEnabled false
         }
@@ -135,4 +134,14 @@ dependencies {
     // Testes unitários locais (JVM puro, sem instrumentação) — ver
     // VoiceGateDecisionTest, MediaHintsTest, ScheduledMessageCoordinatorTest.
     testImplementation 'junit:junit:4.13.2'
+}
+
+gradle.taskGraph.whenReady { graph ->
+    def needsReleaseSigning = graph.allTasks.any { it.name.toLowerCase().contains('release') && (it.name.toLowerCase().contains('assemble') || it.name.toLowerCase().contains('bundle') || it.name.toLowerCase().contains('package')) }
+    if (needsReleaseSigning) {
+        def cfg = android.signingConfigs.release
+        if (cfg.storeFile == null || cfg.storePassword == null || cfg.keyAlias == null || cfg.keyPassword == null) {
+            throw new GradleException('Release signing not configured. Use untracked release.properties or RELEASE_* environment variables.')
+        }
+    }
 }
