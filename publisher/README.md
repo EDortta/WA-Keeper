@@ -19,7 +19,6 @@ Tudo relacionado à publicação deve ficar aqui: processo, critérios, riscos, 
 - `SCREENSHOTS.md`: roteiro e requisitos das telas.
 - `PRIVACY.md`: matriz de dados e declarações a validar.
 - `scripts/check-play-readiness.sh`: auditoria automática antes de publicar.
-- `scripts/build-play.sh`: build condicionado da variante Play.
 - `scripts/verify-release.sh`: versão, commit, tag e hash do artefato.
 - `variants/`: contrato das variantes experimental e Play.
 - `screenshots/`: originais e finais usados na Play Console.
