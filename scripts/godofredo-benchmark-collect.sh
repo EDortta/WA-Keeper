@@ -65,9 +65,15 @@ for e in events:
         alts=d.get("alternatives") or []
         if alts:
             first=(alts[0] or "").strip().lower()
-            token=first.split()[0] if first else ""
-            if token:
-                wake_word_forms[token] += 1
+            tokens=[token.strip(".,!?;:()[]{}") for token in first.split()]
+            if "godofredo" in tokens:
+                wake_word_forms["godofredo"] += 1
+            elif "alfredo" in tokens:
+                wake_word_forms["alfredo"] += 1
+            elif "dodofredo" in tokens:
+                wake_word_forms["dodofredo"] += 1
+            else:
+                wake_word_forms["outro"] += 1
     if t=="transcript_rating":
         rating=d.get("rating")
         if rating:
@@ -95,7 +101,7 @@ out={
     "ratingCounts":dict(sorted(ratings.items())),
     "ratedSessionCount":len(rated_sessions),
     "ratingCoverage":round(len(rated_sessions)/results,4) if results else None,
-    "wakeWordFirstTokenCounts":dict(sorted(wake_word_forms.items())),
+    "wakeWordRecognitionCounts":dict(sorted(wake_word_forms.items())),
     "privacy":"raw transcripts and per-session transcript ratings remain local under diagnostics/**/raw and are gitignored; versioned evidence keeps aggregate counts only"
 }
 open(dst,"w",encoding="utf-8").write(json.dumps(out,ensure_ascii=False,indent=2)+"\n")
