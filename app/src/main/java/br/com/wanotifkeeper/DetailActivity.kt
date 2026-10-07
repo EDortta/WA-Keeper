@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.View
 import android.webkit.MimeTypeMap
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
@@ -89,7 +88,7 @@ class DetailActivity : AppCompatActivity() {
                 renderTranscript(item)
                 renderFeedback(item.id)
                 binding.btnTranscribeAudio.setOnClickListener {
-                    chooseTranscriptionMethod(item.id)
+                    transcribe(item.id, ACTIVE_TRANSCRIPTION_METHOD)
                 }
 
                 binding.btnTranscriptIncomprehensible.setOnClickListener {
@@ -125,20 +124,6 @@ class DetailActivity : AppCompatActivity() {
                 binding.btnTranscribeAudio.text = "Transcrever áudio"
             }
         }
-    }
-
-    private fun chooseTranscriptionMethod(id: Long) {
-        val methods = arrayOf(
-            TranscriptionMethod.BASE_INT8,
-            TranscriptionMethod.SMALL_INT8
-        )
-        AlertDialog.Builder(this)
-            .setTitle("Método de transcrição")
-            .setItems(methods.map { it.label }.toTypedArray()) { _, which ->
-                transcribe(id, methods[which])
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
     }
 
     private fun transcribe(id: Long, method: TranscriptionMethod) {
@@ -280,5 +265,6 @@ class DetailActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_ID = "notif_id"
         private const val MAX_IMAGE_PX = 2048
+        private val ACTIVE_TRANSCRIPTION_METHOD = TranscriptionMethod.BASE_INT8
     }
 }
