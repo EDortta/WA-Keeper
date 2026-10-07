@@ -11,14 +11,16 @@ Status: PROTECTED
 Contrato:
 
 - transcrição acontece offline no Android;
-- suporte aos métodos Whisper Base INT8 e Whisper Small INT8 durante a fase de decisão;
+- método ativo definido: Whisper Base INT8;
+- o usuário não deve ser solicitado a escolher o método a cada transcrição;
+- suporte ao Whisper Small INT8 pode permanecer internamente para diagnóstico, comparação futura ou uso autorizado, sem aparecer no fluxo normal;
 - o método usado precisa ficar visível;
 - registrar duração original do áudio;
 - registrar tempo gasto;
 - registrar RTF quando disponível;
 - usuário pode avaliar a qualidade como Incompreensível, Aceitável, Boa ou Excelente;
-- histórico de transcrições deve permanecer visível até definição final do modelo;
-- não remover um método nem trocar o modelo padrão sem autorização explícita;
+- histórico de transcrições deve permanecer visível;
+- não trocar o modelo ativo sem autorização explícita;
 - não apagar histórico nem métricas durante atualização normal.
 
 ### Guarda e reprodução de áudio recebido
