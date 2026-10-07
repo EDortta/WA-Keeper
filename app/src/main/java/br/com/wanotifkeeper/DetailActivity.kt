@@ -10,18 +10,23 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import br.com.wanotifkeeper.databinding.ActivityDetailBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/** Mostra a mensagem inteira — texto sem corte e imagem, quando a notificação trouxe uma. */
+/** Mostra a mensagem inteira — texto sem corte e mídia, quando disponível. */
 class DetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailBinding
     private val fmt = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
     private val audio by lazy { AudioArbiter.get(applicationContext) }
+    private val audioRecoveryAttempted = mutableSetOf<Long>()
+    private val audioRecoveryFailed = mutableSetOf<Long>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,80 +35,152 @@ class DetailActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { finish() }
 
         val id = intent.getLongExtra(EXTRA_ID, -1L)
-        if (id < 0) { finish(); return }
+        if (id < 0) {
+            finish()
+            return
+        }
 
         lifecycleScope.launch {
-            val item = NotifDatabase.get(this@DetailActivity).dao().byId(id)
-            if (item == null) { finish(); return@launch }
+            NotifDatabase.get(this@DetailActivity)
+                .dao()
+                .byIdFlow(id)
+                .collectLatest { item ->
+                    if (item == null) {
+                        finish()
+                        return@collectLatest
+                    }
 
-            binding.tvSender.text = item.sender
-            binding.tvTime.text = fmt.format(Date(item.timestamp))
-            binding.tvText.text = item.text
+                    renderItem(item)
 
-            val originalAudio = item.audioPath?.let(::File)?.takeIf { it.exists() }
-            val isVoiceMessage = originalAudio != null || MediaHints.looksLikeVoiceMessage(item.text)
-            binding.btnPlayText.visibility = if (isVoiceMessage) View.GONE else View.VISIBLE
-            if (!isVoiceMessage) {
-                binding.btnPlayText.setOnClickListener { audio.speakText(item.text) }
-            }
+                    val isVoiceMessage =
+                        item.audioPath != null || MediaHints.looksLikeVoiceMessage(item.text)
 
-            binding.btnSchedule.setOnClickListener {
-                startActivity(
-                    ScheduledMessagesActivity.intent(this@DetailActivity, item.packageName, item.sender)
-                )
-            }
-
-            val file = item.imagePath?.let(::File)?.takeIf { it.exists() && it.length() > 0L }
-            val bmp = file?.let(::decodeSampled)
-            when {
-                bmp != null -> {
-                    binding.imgAttachment.setImageBitmap(bmp)
-                    binding.imgAttachment.visibility = View.VISIBLE
-                }
-                looksLikeMedia(item.text) -> binding.tvNoImage.visibility = View.VISIBLE
-            }
-
-            val shareableFile = file ?: originalAudio
-            binding.btnShareAttachment.visibility = if (shareableFile != null) View.VISIBLE else View.GONE
-            binding.btnShareAttachment.setOnClickListener {
-                shareableFile?.let(::shareFile)
-            }
-
-            if (originalAudio != null) {
-                binding.audioControls.visibility = View.VISIBLE
-                binding.btnTranscribeAudio.visibility = View.VISIBLE
-
-                binding.btnPlayAudio.setOnClickListener {
-                    if (!audio.resumeFile()) {
-                        audio.play(originalAudio.absolutePath)
+                    if (isVoiceMessage &&
+                        item.audioPath?.let(::File)?.takeIf { it.exists() } == null &&
+                        audioRecoveryAttempted.add(item.id)
+                    ) {
+                        recoverAudio(item)
                     }
                 }
-                binding.btnPauseAudio.setOnClickListener {
-                    audio.pauseFile()
-                }
-                binding.btnStopAudio.setOnClickListener {
-                    audio.stopFile()
-                }
+        }
+    }
 
-                renderTranscript(item)
-                renderFeedback(item.id)
+    private fun renderItem(item: NotifEntity) {
+        binding.tvSender.text = item.sender
+        binding.tvTime.text = fmt.format(Date(item.timestamp))
+        binding.tvText.text = item.text
+
+        val originalAudio = item.audioPath?.let(::File)?.takeIf { it.exists() }
+        val isVoiceMessage = originalAudio != null || MediaHints.looksLikeVoiceMessage(item.text)
+
+        binding.btnPlayText.visibility = if (isVoiceMessage) View.GONE else View.VISIBLE
+        binding.btnPlayText.setOnClickListener(
+            if (isVoiceMessage) null else View.OnClickListener { audio.speakText(item.text) }
+        )
+
+        binding.btnSchedule.setOnClickListener {
+            startActivity(
+                ScheduledMessagesActivity.intent(this, item.packageName, item.sender)
+            )
+        }
+
+        val imageFile = item.imagePath?.let(::File)?.takeIf { it.exists() && it.length() > 0L }
+        val bmp = imageFile?.let(::decodeSampled)
+        binding.imgAttachment.visibility = if (bmp != null) View.VISIBLE else View.GONE
+        if (bmp != null) binding.imgAttachment.setImageBitmap(bmp)
+
+        val expectsImage = MediaHints.looksLikeImageMessage(item.text, isGroup = true)
+        binding.tvNoImage.visibility =
+            if (bmp == null && expectsImage) View.VISIBLE else View.GONE
+
+        val shareableFile = imageFile ?: originalAudio
+        binding.btnShareAttachment.visibility =
+            if (shareableFile != null) View.VISIBLE else View.GONE
+        binding.btnShareAttachment.setOnClickListener {
+            shareableFile?.let(::shareFile)
+        }
+
+        if (isVoiceMessage) {
+            binding.audioControls.visibility = View.VISIBLE
+            binding.btnTranscribeAudio.visibility = View.VISIBLE
+
+            val hasAudio = originalAudio != null
+            binding.btnPlayAudio.isEnabled = hasAudio
+            binding.btnPauseAudio.isEnabled = hasAudio
+            binding.btnStopAudio.isEnabled = hasAudio
+            binding.btnTranscribeAudio.isEnabled = hasAudio
+
+            if (hasAudio) {
+                binding.btnPlayAudio.setOnClickListener {
+                    if (!audio.resumeFile()) {
+                        audio.play(originalAudio!!.absolutePath)
+                    }
+                }
+                binding.btnPauseAudio.setOnClickListener { audio.pauseFile() }
+                binding.btnStopAudio.setOnClickListener { audio.stopFile() }
+
                 binding.btnTranscribeAudio.setOnClickListener {
                     transcribe(item.id, ACTIVE_TRANSCRIPTION_METHOD)
                 }
-
-                binding.btnTranscriptIncomprehensible.setOnClickListener {
-                    rateTranscript(item.id, "INCOMPREHENSIBLE")
-                }
-                binding.btnTranscriptAcceptable.setOnClickListener {
-                    rateTranscript(item.id, "ACCEPTABLE")
-                }
-                binding.btnTranscriptGood.setOnClickListener {
-                    rateTranscript(item.id, "GOOD")
-                }
-                binding.btnTranscriptExcellent.setOnClickListener {
-                    rateTranscript(item.id, "EXCELLENT")
-                }
+            } else {
+                binding.btnPlayAudio.setOnClickListener(null)
+                binding.btnPauseAudio.setOnClickListener(null)
+                binding.btnStopAudio.setOnClickListener(null)
+                binding.btnTranscribeAudio.setOnClickListener(null)
             }
+
+            renderTranscript(item)
+
+            if (!hasAudio) {
+                binding.btnTranscribeAudio.text =
+                    if (audioRecoveryFailed.contains(item.id)) {
+                        "Áudio não disponível"
+                    } else {
+                        "Localizando áudio..."
+                    }
+            }
+
+            renderFeedback(item.id)
+
+            binding.btnTranscriptIncomprehensible.setOnClickListener {
+                rateTranscript(item.id, "INCOMPREHENSIBLE")
+            }
+            binding.btnTranscriptAcceptable.setOnClickListener {
+                rateTranscript(item.id, "ACCEPTABLE")
+            }
+            binding.btnTranscriptGood.setOnClickListener {
+                rateTranscript(item.id, "GOOD")
+            }
+            binding.btnTranscriptExcellent.setOnClickListener {
+                rateTranscript(item.id, "EXCELLENT")
+            }
+        } else {
+            binding.audioControls.visibility = View.GONE
+            binding.btnTranscribeAudio.visibility = View.GONE
+            binding.tvTranscript.visibility = View.GONE
+            binding.tvTranscriptMethod.visibility = View.GONE
+            binding.tvTranscriptFeedbackTitle.visibility = View.GONE
+            binding.transcriptFeedbackRow1.visibility = View.GONE
+            binding.transcriptFeedbackRow2.visibility = View.GONE
+        }
+    }
+
+    private suspend fun recoverAudio(item: NotifEntity) {
+        val recovered = withContext(Dispatchers.IO) {
+            MediaVault.captureLatest(
+                applicationContext,
+                item.packageName,
+                item.timestamp
+            )
+        }
+
+        if (recovered != null) {
+            NotifDatabase.get(this)
+                .dao()
+                .setAudioPath(item.id, recovered)
+        } else {
+            audioRecoveryFailed.add(item.id)
+            renderItem(item)
         }
     }
 
@@ -116,7 +193,8 @@ class DetailActivity : AppCompatActivity() {
             }
             item.transcriptStatus == "ERROR" -> {
                 binding.tvTranscript.visibility = View.VISIBLE
-                binding.tvTranscript.text = "Falha na transcrição: ${item.transcriptError ?: "sem detalhe"}"
+                binding.tvTranscript.text =
+                    "Falha na transcrição: ${item.transcriptError ?: "sem detalhe"}"
                 binding.btnTranscribeAudio.text = "Tentar novamente"
             }
             else -> {
@@ -235,7 +313,11 @@ class DetailActivity : AppCompatActivity() {
             }
             startActivity(Intent.createChooser(send, "Compartilhar arquivo"))
         }.onFailure {
-            Toast.makeText(this, "Não foi possível compartilhar este arquivo.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Não foi possível compartilhar este arquivo.",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -252,15 +334,17 @@ class DetailActivity : AppCompatActivity() {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(file.absolutePath, bounds)
         var sample = 1
-        while (bounds.outWidth / sample > MAX_IMAGE_PX || bounds.outHeight / sample > MAX_IMAGE_PX) {
+        while (
+            bounds.outWidth / sample > MAX_IMAGE_PX ||
+            bounds.outHeight / sample > MAX_IMAGE_PX
+        ) {
             sample *= 2
         }
-        BitmapFactory.decodeFile(file.absolutePath, BitmapFactory.Options().apply { inSampleSize = sample })
+        BitmapFactory.decodeFile(
+            file.absolutePath,
+            BitmapFactory.Options().apply { inSampleSize = sample }
+        )
     }.getOrNull()
-
-    private fun looksLikeMedia(text: String) =
-        MediaHints.looksLikeImageMessage(text, isGroup = true) ||
-            MediaHints.looksLikeVoiceMessage(text)
 
     companion object {
         const val EXTRA_ID = "notif_id"
