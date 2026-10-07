@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 REGISTRY = ROOT / "publisher" / "features.properties"
+BUILD_GRADLE = ROOT / "app" / "build.gradle"
 
 TRUE = {"1", "true", "yes", "on"}
 
@@ -64,6 +65,35 @@ def features(props: dict[str, str]) -> list[str]:
     return [x.strip() for x in props.get("features", "").split(",") if x.strip()]
 
 
+def current_branch() -> str:
+    import subprocess
+    try:
+        cp = subprocess.run(
+            ["git", "branch", "--show-current"],
+            cwd=ROOT,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+        return cp.stdout.strip() or "(detached)"
+    except Exception:
+        return "(desconhecida)"
+
+
+def current_version() -> tuple[str, str]:
+    try:
+        text = BUILD_GRADLE.read_text(encoding="utf-8")
+        name = re.search(r'versionName\s+"([^"]+)"', text)
+        code = re.search(r'versionCode\s+(\d+)', text)
+        return (
+            name.group(1) if name else "?",
+            code.group(1) if code else "?",
+        )
+    except Exception:
+        return ("?", "?")
+
+
 def checkbox(on: bool) -> str:
     return "[X]" if on else "[ ]"
 
@@ -72,7 +102,9 @@ def draw(stdscr, props: dict[str, str], rows: list[str], selected: int, column: 
     stdscr.erase()
     h, w = stdscr.getmaxyx()
 
-    title = " WA-KEEPER FEATURE CONTROL "
+    branch = current_branch()
+    version_name, version_code = current_version()
+    title = f" WA-KEEPER FEATURE CONTROL  |  branch: {branch}  |  v{version_name} ({version_code}) "
     stdscr.attron(curses.A_REVERSE | curses.A_BOLD)
     stdscr.addnstr(0, 0, title.ljust(max(1, w - 1)), max(1, w - 1))
     stdscr.attroff(curses.A_REVERSE | curses.A_BOLD)
