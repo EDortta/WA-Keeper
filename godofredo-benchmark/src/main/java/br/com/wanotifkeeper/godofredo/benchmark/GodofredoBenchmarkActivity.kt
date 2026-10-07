@@ -31,6 +31,7 @@ class GodofredoBenchmarkActivity : Activity() {
     private lateinit var transcript: TextView
     private lateinit var startButton: Button
     private lateinit var stopButton: Button
+    private lateinit var ratingContainer: LinearLayout
 
     private var recognizer: SpeechRecognizer? = null
     private var sessionId: String? = null
@@ -38,6 +39,8 @@ class GodofredoBenchmarkActivity : Activity() {
     private var readyElapsed = 0L
     private var speechStartElapsed = 0L
     private var sequence = 0L
+    private var pendingRatingSessionId: String? = null
+    private var pendingRatingTranscript: String? = null
 
     private val evidenceDir by lazy {
         File(filesDir, "godofredo-benchmark").apply { mkdirs() }
@@ -84,11 +87,29 @@ class GodofredoBenchmarkActivity : Activity() {
             isEnabled = false
             setOnClickListener { stopListening("user_stop") }
         }
+        ratingContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            visibility = android.view.View.GONE
+        }
+        val ratingTitle = TextView(this).apply {
+            text = "Qualidade da transcrição:"
+            textSize = 18f
+            setPadding(0, 24, 0, 8)
+        }
+        ratingContainer.addView(ratingTitle)
+        listOf("Incompreensível", "Aceitável", "Boa", "Excelente").forEach { label ->
+            ratingContainer.addView(Button(this).apply {
+                text = label
+                setOnClickListener { recordRating(label) }
+            })
+        }
+
         root.addView(title)
         root.addView(status)
         root.addView(startButton)
         root.addView(stopButton)
         root.addView(transcript)
+        root.addView(ratingContainer)
         return ScrollView(this).apply { addView(root) }
     }
 
@@ -129,6 +150,9 @@ class GodofredoBenchmarkActivity : Activity() {
         readyElapsed = 0L
         speechStartElapsed = 0L
         transcript.text = ""
+        ratingContainer.visibility = android.view.View.GONE
+        pendingRatingSessionId = null
+        pendingRatingTranscript = null
         startButton.isEnabled = false
         stopButton.isEnabled = true
 
@@ -214,10 +238,17 @@ class GodofredoBenchmarkActivity : Activity() {
         override fun onResults(results: Bundle?) {
             val alternatives = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty()
             val confidences = results?.getFloatArray(SpeechRecognizer.CONFIDENCE_SCORES)
+            val best = alternatives.firstOrNull()
+            val completedSessionId = sessionId
             logEvent("final_results", timingJson()
                 .put("alternatives", JSONArray(alternatives))
                 .put("confidenceScores", JSONArray(confidences?.toList() ?: emptyList<Float>())))
-            transcript.text = alternatives.firstOrNull()?.let { "Transcrição:\n" + it } ?: "Sem transcrição."
+            transcript.text = best?.let { "Transcrição:\n" + it } ?: "Sem transcrição."
+            if (!best.isNullOrBlank() && completedSessionId != null) {
+                pendingRatingSessionId = completedSessionId
+                pendingRatingTranscript = best
+                ratingContainer.visibility = android.view.View.VISIBLE
+            }
             finishSessionUi("Concluído.")
         }
 
@@ -231,6 +262,19 @@ class GodofredoBenchmarkActivity : Activity() {
         override fun onEvent(eventType: Int, params: Bundle?) {
             logEvent("recognizer_event", timingJson().put("eventType", eventType))
         }
+    }
+
+    private fun recordRating(label: String) {
+        val ratedSessionId = pendingRatingSessionId ?: return
+        val ratedTranscript = pendingRatingTranscript ?: return
+        logEvent("transcript_rating", JSONObject()
+            .put("sessionId", ratedSessionId)
+            .put("rating", label)
+            .put("transcript", ratedTranscript))
+        ratingContainer.visibility = android.view.View.GONE
+        pendingRatingSessionId = null
+        pendingRatingTranscript = null
+        updateStatus("Classificação registrada: " + label)
     }
 
     private fun stopListening(reason: String) {
