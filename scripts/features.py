@@ -130,7 +130,7 @@ def draw(stdscr, props: dict[str, str], rows: list[str], selected: int, column: 
         if idx == selected:
             marker_x = 1 if column == 0 else 7
             try:
-                stdscr.chgat(screen_row, marker_x, 3, attr)
+                stdscr.chgat(screen_row, marker_x, 3, attr | curses.A_BOLD)
             except curses.error:
                 pass
 
