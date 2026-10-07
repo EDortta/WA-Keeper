@@ -34,7 +34,6 @@ cd "$REPO_ROOT"
 for cmd in adb python3 ffprobe tar; do
   command -v "$cmd" >/dev/null 2>&1 || fail "$cmd não encontrado"
 done
-[[ -x ./gradlew ]] || fail "./gradlew não encontrado"
 [[ -f "$MY_TRANSCRIVER/transcribe.py" ]] ||
   fail "transcribe.py não encontrado em $MY_TRANSCRIVER"
 
@@ -58,7 +57,7 @@ log "Relatório: $OUT_DIR"
 
 STAGE="compilação da build debug"
 log "Compilando build debug"
-./gradlew --console=plain assembleDebug
+bash scripts/build.sh --lab --debug --skip-tests
 DEBUG_APK="app/build/outputs/apk/debug/app-debug.apk"
 [[ -f "$DEBUG_APK" ]] || fail "APK debug não encontrado"
 STAGE="instalação da build debug"
@@ -192,7 +191,7 @@ log "Limpando modelos e áudios temporários do benchmark no celular"
 
 STAGE="restauração da build release"
 log "Reinstalando release sem apagar dados"
-./gradlew --console=plain assembleRelease
+bash scripts/build.sh --lab --release --skip-tests
 RELEASE_APK="app/build/outputs/apk/release/app-release.apk"
 "${ADB[@]}" install -r "$RELEASE_APK" >/dev/null ||
   fail "benchmark terminou, mas falhou ao reinstalar release; NÃO desinstale o app"
