@@ -1,28 +1,32 @@
 # Build profiles and feature flags
 
-There is one compiler entrypoint: `bash scripts/build.sh`.
+There is one compiler entrypoint:
 
-Profiles: `lab` for experimental builds and `store` for Google Play candidate/official builds.
+    bash scripts/build.sh
 
-`WA_STORE_BUILD` is a compile-time boolean. Each registered feature also becomes `BuildConfig.WA_FEATURE_*`.
+## Profiles
 
-A store build may only enable a feature with `feature.<name>.storeAllowed=true`. Contradictions are build errors, never silent exclusions.
+LAB is the default profile used for development and testing.
+
+STORE is the Google Play candidate profile.
+
+Any branch may generate LAB.
+
+Only the `play` branch should be treated as the source of an official STORE candidate.
 
 Examples:
 
     bash scripts/build.sh --lab
-    bash scripts/build.sh --store --bundle
-    bash scripts/build.sh --lab --feature media_share_accessibility
-    bash scripts/build.sh --store --only search,entities,tts,local_transcription
+    bash scripts/build.sh --lab --release
+    bash scripts/build.sh --store
 
-Source of truth: `publisher/features.properties`.
+`WA_STORE_BUILD` is a compile-time boolean.
 
-New features start with `storeAllowed=false` until explicitly reviewed and approved.
+Each registered feature also becomes `BuildConfig.WA_FEATURE_*`.
 
-The shell validates first and Gradle validates again. Direct Gradle invocation cannot bypass store policy.
+A STORE build may only enable a feature with `feature.<name>.storeAllowed=true`.
 
-Existing features must be wired to their respective `BuildConfig.WA_FEATURE_*` guards. A feature is not truly excluded until code, UI, manifest entries and dependencies are gated or isolated.
-
+Contradictions are build errors.
 
 ## Interactive selector
 
@@ -30,7 +34,7 @@ Run:
 
     bash scripts/features.sh
 
-The terminal selector shows four columns:
+The selector shows:
 
     [X] LAB   [ ] LOJA   feature_slug   short description
 
@@ -45,4 +49,58 @@ Changes are written immediately to `publisher/features.properties`.
 
 LAB toggles `labDefault`.
 
-LOJA toggles `storeDefault`. Turning LOJA on also sets `storeAllowed=true`, because a store build is forbidden from enabling a feature that is not store-approved. Turning LOJA off removes the feature from the default store build but keeps `storeAllowed` unchanged.
+LOJA toggles `storeDefault`.
+
+Turning LOJA on also sets `storeAllowed=true`, because a STORE build cannot enable a feature that is not store-approved.
+
+Turning LOJA off removes the feature from the default STORE build but keeps `storeAllowed` unchanged.
+
+## Version awareness
+
+The selector must show the current application version and its lifecycle status.
+
+Planned display:
+
+    WA Keeper 1.0.10   versionCode 10   DEVELOPMENT / WORKING
+
+or:
+
+    WA Keeper 1.0.10   versionCode 10   PLAY / SUBMITTED
+
+Only the current WORKING version may be edited.
+
+Previous versions are read-only.
+
+When a version becomes CANDIDATE, its feature configuration must be snapshotted under:
+
+    publisher/versions/<versionName>.properties
+
+The snapshot records the LAB and LOJA state of every feature, plus version metadata and commit identity.
+
+## Version lifecycle
+
+- WORKING
+- CANDIDATE
+- SUBMITTED
+- APPROVED
+- PUBLISHED
+
+Once a version is SUBMITTED, its feature configuration is frozen.
+
+If the candidate changes after submission, it becomes a new candidate and normally requires a new `versionCode`.
+
+## Source of truth
+
+Current editable configuration:
+
+    publisher/features.properties
+
+Historical immutable configuration:
+
+    publisher/versions/<versionName>.properties
+
+New features start with `storeAllowed=false` until explicitly reviewed and approved.
+
+The shell validates first and Gradle validates again.
+
+Existing features must be wired to their respective `BuildConfig.WA_FEATURE_*` guards. Hiding UI alone is not sufficient; code, manifest entries, permissions, services and dependencies must be isolated when necessary.
