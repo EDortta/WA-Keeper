@@ -234,7 +234,7 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || fail "execute dentro
 cd "$REPO_ROOT"
 LOG_FILE="$(mktemp "${TMPDIR:-/tmp}/wa-keeper-android-deploy.XXXXXX.log")"
 
-[[ -x scripts/build.sh ]] || fail "scripts/build.sh não encontrado ou não executável"
+[[ -f scripts/build.sh ]] || fail "scripts/build.sh não encontrado"
 command -v adb >/dev/null 2>&1 || fail "adb não encontrado no PATH"
 
 if [[ -n "$(git status --porcelain)" ]]; then
