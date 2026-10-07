@@ -94,8 +94,10 @@ def current_version() -> tuple[str, str]:
         return ("?", "?")
 
 
-def checkbox(on: bool) -> str:
-    return "[X]" if on else "[ ]"
+def checkbox(on: bool, denied: bool = False) -> str:
+    if denied:
+        return "[*]"
+    return "[X]" if on else "[-]"
 
 
 def draw(stdscr, props: dict[str, str], rows: list[str], selected: int, column: int, message: str) -> None:
@@ -119,8 +121,9 @@ def draw(stdscr, props: dict[str, str], rows: list[str], selected: int, column: 
         slug = rows[idx]
         lab = bool_prop(props, f"feature.{slug}.labDefault")
         store = bool_prop(props, f"feature.{slug}.storeDefault")
+        store_allowed = bool_prop(props, f"feature.{slug}.storeAllowed")
         desc = props.get(f"feature.{slug}.description", "")
-        line = f" {checkbox(lab):5} {checkbox(store):6} {slug:<31} {desc}"
+        line = f" {checkbox(lab):5} {checkbox(store, denied=not store_allowed):6} {slug:<31} {desc}"
 
         attr = curses.A_REVERSE if idx == selected else curses.A_NORMAL
         stdscr.addnstr(screen_row, 0, line.ljust(max(1, w - 1)), max(1, w - 1), attr)
@@ -128,13 +131,13 @@ def draw(stdscr, props: dict[str, str], rows: list[str], selected: int, column: 
         if idx == selected:
             marker_x = 1 if column == 0 else 7
             try:
-                stdscr.chgat(screen_row, marker_x, 3, attr | curses.A_BOLD)
+                stdscr.chgat(screen_row, marker_x, 3, attr)
             except curses.error:
                 pass
 
     footer_y = max(4, h - 3)
     focus = "LAB" if column == 0 else "LOJA"
-    help_text = f" ↑↓ navega   ←→ coluna   ESPAÇO alterna {focus}   q sai "
+    help_text = f" ↑↓ navega   ←→ coluna   ESPAÇO alterna {focus}   X=ligado  -=desligado  *=negado na loja   q sai "
     stdscr.addnstr(footer_y, 0, help_text.ljust(max(1, w - 1)), max(1, w - 1), curses.A_REVERSE)
 
     if message:
