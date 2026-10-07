@@ -54,7 +54,7 @@ log "Android: $DEVICE"
 log "Instalando somente o aplicativo de benchmark; WA-Keeper não será substituído nem parado"
 
 STAGE="compilação do aplicativo de benchmark"
-./gradlew --console=plain :benchmark:assembleDebug
+bash scripts/build.sh --benchmark
 APK="benchmark/build/outputs/apk/debug/benchmark-debug.apk"
 [[ -f "$APK" ]] || fail "APK de benchmark não encontrado"
 
