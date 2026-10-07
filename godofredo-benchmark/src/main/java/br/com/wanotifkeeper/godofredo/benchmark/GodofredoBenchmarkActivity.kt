@@ -97,7 +97,7 @@ class GodofredoBenchmarkActivity : Activity() {
             setPadding(0, 24, 0, 8)
         }
         ratingContainer.addView(ratingTitle)
-        listOf("Incompreensível", "Aceitável", "Boa", "Excelente").forEach { label ->
+        listOf("Incompreensível", "Errada", "Aceitável", "Boa", "Excelente").forEach { label ->
             ratingContainer.addView(Button(this).apply {
                 text = label
                 setOnClickListener { recordRating(label) }
