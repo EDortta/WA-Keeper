@@ -100,3 +100,10 @@ Somente após revisão explícita para Google Play a feature pode mudar para `st
 Builds devem usar `scripts/build.sh`. O perfil `--store` não pode habilitar features não autorizadas para loja.
 
 Features condicionais devem obedecer aos macros `BuildConfig.WA_FEATURE_*`. Não basta esconder UI: código, permissões, serviços e dependências exclusivos devem ser isolados quando necessário.
+
+## Compilador único
+
+`scripts/build.sh` é o único ponto autorizado para compilação Android.
+
+Nenhum outro script, workflow ou agente pode chamar diretamente tarefas Gradle de assemble/bundle. Scripts de deploy, benchmark, pacote e publicação devem delegar a `scripts/build.sh`.
+
