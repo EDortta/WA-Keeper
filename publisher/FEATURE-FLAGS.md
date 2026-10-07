@@ -32,7 +32,7 @@ Contradictions are build errors.
 
 Run:
 
-    bash scripts/features.sh
+    python3 scripts/features.py
 
 The selector shows:
 
