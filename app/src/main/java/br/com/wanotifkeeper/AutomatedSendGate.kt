@@ -28,8 +28,12 @@ object AutomatedSendGate {
 
     class Lease internal constructor() {
         fun release() {
-            mutex.unlock()
+            AutomatedSendGate.releaseLease()
         }
+    }
+
+    private fun releaseLease() {
+        mutex.unlock()
     }
 
     suspend fun acquire(): Lease? {
