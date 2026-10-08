@@ -39,7 +39,10 @@ class ContactScheduleActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         binding.permissionCard.visibility = if (granted) View.GONE else View.VISIBLE
-        if (granted) loadContacts()
+        if (granted) {
+            ContactDirectory.refreshAsync()
+            loadContacts()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,7 +77,10 @@ class ContactScheduleActivity : AppCompatActivity() {
         ) == PackageManager.PERMISSION_GRANTED
 
         binding.permissionCard.visibility = if (granted) View.GONE else View.VISIBLE
-        if (granted) loadContacts() else permission.launch(Manifest.permission.READ_CONTACTS)
+        if (granted) {
+            ContactDirectory.refreshAsync()
+            loadContacts()
+        } else permission.launch(Manifest.permission.READ_CONTACTS)
     }
 
     private fun loadContacts() {
