@@ -10,10 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import br.com.wanotifkeeper.databinding.ActivityDetailBinding
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -25,8 +23,6 @@ class DetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDetailBinding
     private val fmt = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
     private val audio by lazy { AudioArbiter.get(applicationContext) }
-    private val audioRecoveryAttempted = mutableSetOf<Long>()
-    private val audioRecoveryFailed = mutableSetOf<Long>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,12 +51,6 @@ class DetailActivity : AppCompatActivity() {
                     val isVoiceMessage =
                         item.audioPath != null || MediaHints.looksLikeVoiceMessage(item.text)
 
-                    if (isVoiceMessage &&
-                        item.audioPath?.let(::File)?.takeIf { it.exists() } == null &&
-                        audioRecoveryAttempted.add(item.id)
-                    ) {
-                        recoverAudio(item)
-                    }
                 }
         }
     }
@@ -132,12 +122,7 @@ class DetailActivity : AppCompatActivity() {
             renderTranscript(item)
 
             if (!hasAudio) {
-                binding.btnTranscribeAudio.text =
-                    if (audioRecoveryFailed.contains(item.id)) {
-                        "Áudio não disponível"
-                    } else {
-                        "Localizando áudio..."
-                    }
+                binding.btnTranscribeAudio.text = "Áudio não disponível"
             }
 
             renderFeedback(item.id)
@@ -162,25 +147,6 @@ class DetailActivity : AppCompatActivity() {
             binding.tvTranscriptFeedbackTitle.visibility = View.GONE
             binding.transcriptFeedbackRow1.visibility = View.GONE
             binding.transcriptFeedbackRow2.visibility = View.GONE
-        }
-    }
-
-    private suspend fun recoverAudio(item: NotifEntity) {
-        val recovered = withContext(Dispatchers.IO) {
-            MediaVault.captureLatest(
-                applicationContext,
-                item.packageName,
-                item.timestamp
-            )
-        }
-
-        if (recovered != null) {
-            NotifDatabase.get(this)
-                .dao()
-                .setAudioPath(item.id, recovered)
-        } else {
-            audioRecoveryFailed.add(item.id)
-            renderItem(item)
         }
     }
 
