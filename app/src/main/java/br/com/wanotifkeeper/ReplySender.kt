@@ -88,17 +88,9 @@ class NotificationReplySender(private val context: Context) : ReplySender {
         phone: String,
         text: String
     ): ReplyResult {
-        val cached = ReplyActionRegistry.get(packageName, sender)
-        return if (cached != null) {
-            send(packageName, sender, text)
-        } else {
-            DirectContactAutomation.send(
-                context = context,
-                packageName = packageName,
-                phone = phone,
-                text = text
-            )
-        }
+        // O telefone é metadado de desambiguação, não rota de envio.
+        // O destino canônico é a conversa do WhatsApp identificada pelo título validado.
+        return send(packageName, sender, text)
     }
 
     override suspend fun send(packageName: String, sender: String, text: String): ReplyResult {
