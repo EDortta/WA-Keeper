@@ -60,7 +60,10 @@ data class ScheduledMessageEntity(
             .getOrDefault(ScheduledTrigger.NEXT_INCOMING)
 
     val isEditable: Boolean
-        get() = scheduledState == ScheduledState.PENDING
+        get() = scheduledState == ScheduledState.PENDING || scheduledState == ScheduledState.FAILED
+
+    val canSendNow: Boolean
+        get() = scheduledState == ScheduledState.PENDING || scheduledState == ScheduledState.FAILED
 
     val hasMedia: Boolean
         get() = !mediaUri.isNullOrBlank() && !mediaMimeType.isNullOrBlank()
@@ -152,6 +155,21 @@ interface ScheduledMessageDao {
     suspend fun markRetryableWithoutConsumingAttempt(id: Long, now: Long, error: String, retryAt: Long): Int
 
     @Query(
+        "UPDATE scheduled_messages SET " +
+            "state = 'PENDING', triggerType = 'AT_TIME', scheduledAt = :now, " +
+            "recipientPhone = :recipientPhone, conversationKey = COALESCE(:conversationKey, conversationKey), " +
+            "updatedAt = :now, claimedAt = NULL, sentAt = NULL, attempts = 0, " +
+            "lastError = NULL, nextAttemptAt = 0, triggerNotificationKey = NULL, triggeredAt = NULL " +
+            "WHERE id = :id AND state IN ('PENDING', 'FAILED')"
+    )
+    suspend fun prepareSendNow(
+        id: Long,
+        now: Long,
+        recipientPhone: String?,
+        conversationKey: String?
+    ): Int
+
+    @Query(
         "UPDATE scheduled_messages SET state = 'FAILED', updatedAt = :now, " +
             "lastError = :error WHERE id = :id AND state = 'CLAIMED'"
     )
@@ -174,8 +192,9 @@ interface ScheduledMessageDao {
             "text = :text, conversationKey = :conversationKey, triggerType = :triggerType, scheduledAt = :scheduledAt, " +
             "mediaUri = :mediaUri, mediaMimeType = :mediaMimeType, mediaName = :mediaName, " +
             "recipientPhone = :recipientPhone, " +
-            "updatedAt = :now, lastError = NULL, nextAttemptAt = 0 " +
-            "WHERE id = :id AND state = 'PENDING'"
+            "updatedAt = :now, state = 'PENDING', attempts = 0, claimedAt = NULL, " +
+            "triggerNotificationKey = NULL, triggeredAt = NULL, lastError = NULL, nextAttemptAt = 0 " +
+            "WHERE id = :id AND state IN ('PENDING', 'FAILED')"
     )
     suspend fun updatePending(
         id: Long,
