@@ -120,84 +120,201 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             Toast.makeText(this, "Escolha um horário futuro", Toast.LENGTH_SHORT).show()
             return
         }
+        if (trigger == ScheduledTrigger.AT_TIME && !ensureExactAlarmAccess()) return
+        if (trigger == ScheduledTrigger.AT_TIME && !ensureDirectContactAccess()) return
+        if (selectedMediaUri != null && !ensureMediaAutomationAccess()) return
 
-        if (trigger == ScheduledTrigger.AT_TIME && !ensureExactAlarmAccess()) {
-            return
-        }
-
-        // Se o agendamento nasceu da lista de contatos, preservamos o telefone escolhido.
-        // Se nasceu de uma conversa já conhecida, a conversa é o destino canônico e telefone
-        // não é obrigatório (grupos, por exemplo, não têm telefone de destino).
-        val deliveryPhone = selectedRecipientPhone
-
-        if (trigger == ScheduledTrigger.AT_TIME && !ensureDirectContactAccess()) {
-            return
-        }
-
-        if (selectedMediaUri != null && !ensureMediaAutomationAccess()) {
-            return
-        }
-
-        val now = System.currentTimeMillis()
         lifecycleScope.launch {
-            val id = editingId
-            val changed = if (id == null) {
-                dao.insert(
-                    ScheduledMessageEntity(
-                        packageName = pkg,
-                        sender = sender,
-                        conversationKey = conversationKey,
-                        text = text,
-                        triggerType = trigger.name,
-                        scheduledAt = at,
-                        mediaUri = selectedMediaUri,
-                        mediaMimeType = selectedMediaMimeType,
-                        mediaName = selectedMediaName,
-                        recipientPhone = deliveryPhone,
-                        createdAt = now,
-                        updatedAt = now
+            resolveDestinationBeforeSaving(trigger) { deliveryPhone ->
+                lifecycleScope.launch {
+                    persistSchedule(text, trigger, at, deliveryPhone)
+                }
+            }
+        }
+    }
+
+    private suspend fun resolveDestinationBeforeSaving(
+        trigger: ScheduledTrigger,
+        resolved: (String?) -> Unit
+    ) {
+        if (trigger != ScheduledTrigger.AT_TIME) {
+            resolved(selectedRecipientPhone)
+            return
+        }
+
+        selectedRecipientPhone?.let {
+            resolved(it)
+            return
+        }
+
+        val key = conversationKey
+        if (key == null) {
+            Toast.makeText(
+                this,
+                "Não foi possível identificar a conversa de destino.",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        val bindings = NotifDatabase.get(this).conversationBindings()
+        val binding = bindings.get(pkg, key)
+
+        if (binding?.isGroup == true) {
+            val sameName = bindings.countByDisplayName(pkg, sender)
+            if (sameName > 1) {
+                AlertDialog.Builder(this)
+                    .setTitle("Conversa ambígua")
+                    .setMessage(
+                        "Há mais de uma conversa chamada $sender. O WA Keeper conhece os " +
+                            "identificadores internos, mas o seletor do WhatsApp mostra somente " +
+                            "o nome. Não vou programar um envio que possa cair no grupo errado."
                     )
+                    .setPositiveButton("Entendi", null)
+                    .show()
+                return
+            }
+            resolved(null)
+            return
+        }
+
+        binding?.resolvedPhone?.takeIf { it.isNotBlank() }?.let {
+            selectedRecipientPhone = it
+            resolved(it)
+            return
+        }
+
+        val candidates = ContactDirectory.candidates(sender)
+            .ifEmpty { binding?.phones.orEmpty() }
+            .distinct()
+
+        when (candidates.size) {
+            0 -> {
+                // A conversa continua sendo um destino válido mesmo sem telefone, desde que
+                // o nome seja único entre as conversas conhecidas. O disparo usará o seletor
+                // exato do WhatsApp; nenhuma decisão ficará pendente para o horário futuro.
+                val sameName = bindings.countByDisplayName(pkg, sender)
+                if (sameName <= 1) {
+                    resolved(null)
+                } else {
+                    AlertDialog.Builder(this)
+                        .setTitle("Destino ainda ambíguo")
+                        .setMessage(
+                            "Encontrei mais de uma conversa chamada $sender e nenhum telefone " +
+                                "que permita distingui-las com segurança. Resolva o contato antes " +
+                                "de programar; não deixarei essa decisão para a hora do envio."
+                        )
+                        .setPositiveButton("Entendi", null)
+                        .show()
+                }
+            }
+            1 -> {
+                val phone = candidates.single()
+                rememberResolvedPhone(binding, phone)
+                selectedRecipientPhone = phone
+                resolved(phone)
+            }
+            else -> {
+                val labels = candidates.map(::formatPhoneForDisplay).toTypedArray()
+                AlertDialog.Builder(this)
+                    .setTitle("Qual número é esta conversa?")
+                    .setItems(labels) { _, which ->
+                        val phone = candidates[which]
+                        lifecycleScope.launch {
+                            rememberResolvedPhone(binding, phone)
+                            selectedRecipientPhone = phone
+                            binding.tvConversation.text =
+                                sender + " · " + formatPhoneForDisplay(phone)
+                            resolved(phone)
+                        }
+                    }
+                    .setNegativeButton("Cancelar", null)
+                    .show()
+            }
+        }
+    }
+
+    private suspend fun rememberResolvedPhone(
+        existing: ConversationBindingEntity?,
+        phone: String
+    ) {
+        val key = conversationKey ?: return
+        val bindings = NotifDatabase.get(this).conversationBindings()
+        val current = existing ?: bindings.get(pkg, key)
+        if (current != null) {
+            bindings.upsert(
+                current.copy(
+                    resolvedPhone = ContactPhone.normalizeForWhatsApp(phone),
+                    updatedAt = System.currentTimeMillis()
                 )
-                1
-            } else {
-                dao.updatePending(
-                    id = id,
-                    text = text,
+            )
+        }
+    }
+
+    private suspend fun persistSchedule(
+        text: String,
+        trigger: ScheduledTrigger,
+        at: Long?,
+        deliveryPhone: String?
+    ) {
+        val now = System.currentTimeMillis()
+        val id = editingId
+        val changed = if (id == null) {
+            dao.insert(
+                ScheduledMessageEntity(
+                    packageName = pkg,
+                    sender = sender,
                     conversationKey = conversationKey,
+                    text = text,
                     triggerType = trigger.name,
                     scheduledAt = at,
                     mediaUri = selectedMediaUri,
                     mediaMimeType = selectedMediaMimeType,
                     mediaName = selectedMediaName,
                     recipientPhone = deliveryPhone,
-                    now = now
+                    createdAt = now,
+                    updatedAt = now
                 )
-            }
-
-            if (changed == 0) {
-                Toast.makeText(
-                    this@ScheduledMessagesActivity,
-                    "Essa programação já saiu da fila e não pode mais ser editada.",
-                    Toast.LENGTH_LONG
-                ).show()
-                return@launch
-            }
-
-            ScheduledMessageAlarmScheduler.reschedule(this@ScheduledMessagesActivity)
-            val wasEditing = id != null
-            resetComposer()
-            Toast.makeText(
-                this@ScheduledMessagesActivity,
-                if (wasEditing) {
-                    "Programação atualizada."
-                } else if (trigger == ScheduledTrigger.AT_TIME) {
-                    "Programada para ${fmt.format(Date(at!!))}."
-                } else {
-                    "Programada para a próxima mensagem de $sender."
-                },
-                Toast.LENGTH_SHORT
-            ).show()
+            )
+            1
+        } else {
+            dao.updatePending(
+                id = id,
+                text = text,
+                conversationKey = conversationKey,
+                triggerType = trigger.name,
+                scheduledAt = at,
+                mediaUri = selectedMediaUri,
+                mediaMimeType = selectedMediaMimeType,
+                mediaName = selectedMediaName,
+                recipientPhone = deliveryPhone,
+                now = now
+            )
         }
+
+        if (changed == 0) {
+            Toast.makeText(
+                this,
+                "Essa programação já saiu da fila e não pode mais ser editada.",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        ScheduledMessageAlarmScheduler.reschedule(this)
+        val wasEditing = id != null
+        resetComposer()
+        Toast.makeText(
+            this,
+            if (wasEditing) {
+                "Programação atualizada."
+            } else if (trigger == ScheduledTrigger.AT_TIME) {
+                "Programada para ${fmt.format(Date(at!!))}."
+            } else {
+                "Programada para a próxima mensagem de $sender."
+            },
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     private fun ensureDirectContactAccess(): Boolean {
@@ -469,6 +586,19 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             if (index < 0) null else cursor.getString(index)
         }
     }.getOrNull()
+
+    override fun onStart() {
+        super.onStart()
+        AutomatedSendGate.setUserEditing(true)
+    }
+
+    override fun onStop() {
+        AutomatedSendGate.setUserEditing(false)
+        lifecycleScope.launch {
+            ScheduledMessageAlarmScheduler.reschedule(this@ScheduledMessagesActivity)
+        }
+        super.onStop()
+    }
 
     override fun onDestroy() {
         confirmationDialog?.dismiss()
