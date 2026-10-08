@@ -30,7 +30,7 @@ object ScheduledMessageAlarmScheduler {
         }
 
         val nextAt = NotifDatabase.get(app).scheduled()
-            .nextTimedAt(NotificationReplySender.NO_ACTION) ?: return
+            .nextTimedAt(NotificationReplySender.NO_DESTINATION) ?: return
         val target = max(nextAt, System.currentTimeMillis() + 1_000L)
 
         val exactAllowed =
