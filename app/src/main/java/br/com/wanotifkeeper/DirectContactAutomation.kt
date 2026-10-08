@@ -32,14 +32,10 @@ object ContactPhone {
         }
     }
 
-    /**
-     * Resolve um destino por nome somente quando há exatamente um telefone possível.
-     * Nunca escolhe silenciosamente entre homônimos ou múltiplos números.
-     */
-    fun resolveUniqueForDisplayName(context: Context, displayName: String): String? {
+    fun candidatesForDisplayName(context: Context, displayName: String): List<String> {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) !=
             PackageManager.PERMISSION_GRANTED
-        ) return null
+        ) return emptyList()
 
         val phones = linkedSetOf<String>()
         val projection = arrayOf(
@@ -68,8 +64,15 @@ object ContactPhone {
             }
         }
 
-        return phones.singleOrNull()
+        return phones.toList()
     }
+
+    /**
+     * Atalho para fluxos que realmente exigem um único telefone.
+     * Conversas agendadas não dependem disso; grupos nunca passam por aqui.
+     */
+    fun resolveUniqueForDisplayName(context: Context, displayName: String): String? =
+        candidatesForDisplayName(context, displayName).singleOrNull()
 }
 
 object DirectContactAutomation {
