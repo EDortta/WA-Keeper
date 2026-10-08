@@ -96,6 +96,8 @@ object DirectContactAutomation {
         phone: String,
         text: String
     ): ReplyResult {
+        val lease = AutomatedSendGate.acquire() ?: return AutomatedSendGate.busyResult()
+        try {
         if (!MediaShareAutomation.isEnabled(context)) {
             return ReplyResult.Rejected(
                 "ative a automação de mídia do WA Keeper em Acessibilidade",
@@ -149,6 +151,9 @@ object DirectContactAutomation {
             "o envio para o contato não concluiu em 90 segundos",
             consumesAttempt = false
         )
+        } finally {
+            lease.release()
+        }
     }
 
     fun current(): Pending? = pending
