@@ -36,6 +36,7 @@ class NotifListenerService : NotificationListenerService() {
 
     companion object {
         private const val TAG = "WAK-ReplyAction"
+        private const val TAG_AUDIO_CAPTURE = "WAK-AudioCapture"
         private const val TAG_VOICE_GATE = "WAK-VoiceGate"
         private const val DEDUP_WINDOW_MS = 2000L
 
@@ -403,6 +404,10 @@ class NotifListenerService : NotificationListenerService() {
         for (wait in longArrayOf(300, 1200, 3000, 6000)) {
             delay(wait)
             val path = MediaVault.captureLatest(applicationContext, pkg, postTime) ?: continue
+            android.util.Log.i(
+                TAG_AUDIO_CAPTURE,
+                "associated rowId=$rowId sender=${sender.replace("\n", " ")} pkg=$pkg postTime=$postTime file=${File(path).name}"
+            )
             NotifDatabase.get(applicationContext).dao().setAudioPath(rowId, path)
 
             if (AudioTranscriptionManager.shouldAutoTranscribe(
