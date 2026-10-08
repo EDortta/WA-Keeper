@@ -431,14 +431,19 @@ class ScheduledMessagesActivity : AppCompatActivity() {
 
             val removable = item.scheduledState != ScheduledState.CLAIMED
             row.rowActions.visibility = if (removable) View.VISIBLE else View.GONE
+
             row.btnEdit.visibility = if (item.isEditable) View.VISIBLE else View.GONE
             row.btnEdit.setOnClickListener { edit(item) }
+
+            row.btnSendNow.visibility = if (item.canSendNow) View.VISIBLE else View.GONE
+            row.btnSendNow.setOnClickListener { sendNow(item) }
+
             row.btnCancel.text = "Excluir"
             row.btnCancel.setOnClickListener { remove(item) }
 
-            val ended = item.scheduledState in
-                setOf(ScheduledState.SENT, ScheduledState.FAILED, ScheduledState.CANCELLED)
-            row.btnReuse.visibility = if (ended) View.VISIBLE else View.GONE
+            val reusable = item.scheduledState in
+                setOf(ScheduledState.SENT, ScheduledState.CANCELLED)
+            row.btnReuse.visibility = if (reusable) View.VISIBLE else View.GONE
             row.btnReuse.setOnClickListener { reuse(item) }
             binding.containerArmed.addView(row.root)
         }
@@ -507,6 +512,52 @@ class ScheduledMessagesActivity : AppCompatActivity() {
         binding.etMessage.requestFocus()
         binding.scroller.smoothScrollTo(0, 0)
         Toast.makeText(this, "Conteúdo copiado. Escolha o gatilho e programe novamente.", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun sendNow(item: ScheduledMessageEntity) {
+        lifecycleScope.launch {
+            resolveDestinationBeforeSaving(ScheduledTrigger.AT_TIME) { deliveryPhone ->
+                lifecycleScope.launch {
+                    val prepared = dao.prepareSendNow(
+                        id = item.id,
+                        now = System.currentTimeMillis(),
+                        recipientPhone = deliveryPhone ?: item.recipientPhone,
+                        conversationKey = conversationKey ?: item.conversationKey
+                    )
+                    if (prepared == 0) {
+                        Toast.makeText(
+                            this@ScheduledMessagesActivity,
+                            "Essa mensagem já está sendo enviada ou mudou de estado.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return@launch
+                    }
+
+                    AutomatedSendGate.setUserEditing(false)
+                    val outcome = ScheduledMessageTrigger.sendNow(
+                        this@ScheduledMessagesActivity.applicationContext,
+                        item.id
+                    )
+
+                    if (!isFinishing && !isDestroyed) {
+                        AutomatedSendGate.setUserEditing(true)
+                    }
+
+                    val message = when (outcome) {
+                        is TriggerOutcome.Sent -> "Mensagem enviada ao WhatsApp."
+                        is TriggerOutcome.Retrying -> "Não foi possível enviar agora: ${outcome.reason}"
+                        is TriggerOutcome.Failed -> "Falha no envio: ${outcome.reason}"
+                        else -> "O envio não foi concluído."
+                    }
+                    Toast.makeText(
+                        this@ScheduledMessagesActivity,
+                        message,
+                        Toast.LENGTH_LONG
+                    ).show()
+                    ScheduledMessageAlarmScheduler.reschedule(this@ScheduledMessagesActivity)
+                }
+            }
+        }
     }
 
     private fun remove(item: ScheduledMessageEntity) {
@@ -590,6 +641,13 @@ class ScheduledMessagesActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         AutomatedSendGate.setUserEditing(true)
+        lifecycleScope.launch {
+            val now = System.currentTimeMillis()
+            dao.failStaleClaims(
+                now = now,
+                staleBefore = now - ScheduledMessageCoordinator.DEFAULT_STALE_CLAIM_MS
+            )
+        }
     }
 
     override fun onStop() {
