@@ -95,6 +95,34 @@ data class EntityLinkEntity(
 
 enum class RetentionMode { NEVER, CUSTOM, FOREVER }
 
+@Entity(
+    tableName = "conversation_bindings",
+    primaryKeys = ["packageName", "conversationKey"]
+)
+data class ConversationBindingEntity(
+    val packageName: String,
+    val conversationKey: String,
+    val sender: String,
+    val isGroup: Boolean = false,
+    val candidatePhones: String = "",
+    val updatedAt: Long = System.currentTimeMillis()
+) {
+    val phones: List<String>
+        get() = candidatePhones.split(',').map { it.trim() }.filter { it.isNotBlank() }
+}
+
+@Dao
+interface ConversationBindingDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(binding: ConversationBindingEntity)
+
+    @Query(
+        "SELECT * FROM conversation_bindings " +
+            "WHERE packageName = :packageName AND conversationKey = :conversationKey LIMIT 1"
+    )
+    suspend fun get(packageName: String, conversationKey: String): ConversationBindingEntity?
+}
+
 @Entity(tableName = "conversation_settings")
 data class ConversationSettings(
     @PrimaryKey val sender: String,
@@ -304,9 +332,10 @@ interface SettingsDao {
         ScheduledMessageEntity::class,
         MemoryEntity::class,
         EntityLinkEntity::class,
-        TranscriptionRunEntity::class
+        TranscriptionRunEntity::class,
+        ConversationBindingEntity::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = false
 )
 abstract class NotifDatabase : RoomDatabase() {
@@ -315,6 +344,7 @@ abstract class NotifDatabase : RoomDatabase() {
     abstract fun settings(): SettingsDao
     abstract fun scheduled(): ScheduledMessageDao
     abstract fun transcriptionRuns(): TranscriptionRunDao
+    abstract fun conversationBindings(): ConversationBindingDao
 
     companion object {
         @Volatile private var INSTANCE: NotifDatabase? = null
@@ -476,6 +506,21 @@ abstract class NotifDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS conversation_bindings (" +
+                        "packageName TEXT NOT NULL, " +
+                        "conversationKey TEXT NOT NULL, " +
+                        "sender TEXT NOT NULL, " +
+                        "isGroup INTEGER NOT NULL DEFAULT 0, " +
+                        "candidatePhones TEXT NOT NULL DEFAULT '', " +
+                        "updatedAt INTEGER NOT NULL, " +
+                        "PRIMARY KEY(packageName, conversationKey))"
+                )
+            }
+        }
+
         fun get(ctx: Context): NotifDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(
                 ctx.applicationContext,
@@ -491,7 +536,8 @@ abstract class NotifDatabase : RoomDatabase() {
                 MIGRATION_7_8,
                 MIGRATION_8_9,
                 MIGRATION_9_10,
-                MIGRATION_10_11
+                MIGRATION_10_11,
+                MIGRATION_11_12
             ).build().also { INSTANCE = it }
         }
     }
