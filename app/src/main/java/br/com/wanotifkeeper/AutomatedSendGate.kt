@@ -1,7 +1,6 @@
 package br.com.wanotifkeeper
 
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 /**
  * Serializa qualquer envio que precise controlar a interface do WhatsApp.
@@ -23,11 +22,22 @@ object AutomatedSendGate {
 
     fun isUserEditing(): Boolean = userEditing
 
-    suspend fun run(block: suspend () -> ReplyResult): ReplyResult {
-        if (userEditing) return ReplyResult.Rejected(USER_BUSY, consumesAttempt = false)
-        return mutex.withLock {
-            if (userEditing) ReplyResult.Rejected(USER_BUSY, consumesAttempt = false)
-            else block()
+    class Lease internal constructor() {
+        fun release() {
+            mutex.unlock()
         }
     }
+
+    suspend fun acquire(): Lease? {
+        if (userEditing) return null
+        mutex.lock()
+        if (userEditing) {
+            mutex.unlock()
+            return null
+        }
+        return Lease()
+    }
+
+    fun busyResult(): ReplyResult =
+        ReplyResult.Rejected(USER_BUSY, consumesAttempt = false)
 }
