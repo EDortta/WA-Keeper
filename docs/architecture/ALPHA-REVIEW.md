@@ -1,6 +1,6 @@
 # WA-Keeper — revisão arquitetural Alpha (2026-10-08)
 
-**Status:** Alpha documental, aberta à crítica; nenhuma refatoração, bloqueio ou mudança de produção aprovada.
+**Status:** Alpha documental, aberta à crítica; nenhuma refatoração, bloqueio ou mudança de produção aprovada. A Alpha está na branch documental `docs/governance-watchdog-domain-baseline`. A expressão **future branch** usada nas discussões designa futuras branches temporárias de implementação de features, não uma branch literal chamada `future`.
 
 **Fonte:** princípios do YB Convênio (`architecture/01-principles.md`, `architecture/02-domain-and-identifiers.md`) adaptados à base Android do WA-Keeper.
 
@@ -43,14 +43,25 @@
 
 Nenhum dos riscos acima é declarado defeito reproduzido sem teste. São hipóteses ligadas a trechos observados.
 
+## Deliberações da revisão Alpha (2026-10-08)
+
+| Item | Decisão | Situação |
+| --- | --- | --- |
+| Fronteiras de Contatos, Conversas e Entidades | **Três domínios distintos**, mesmo com relações e dados compartilhados | **Aprovado conceitualmente** |
+| Autorização de escrita em outro domínio | Autorização explícita, restrita à alteração da feature em sua branch, válida somente até encerrá-la | **Aprovado conceitualmente** |
+| Diário e Git | Referenciar commits/integração e preservar rastreabilidade após excluir branch temporária | **Aprovado conceitualmente** |
+| Propriedade de código/infraestrutura compartilhada | Não se pode inferir domínio proprietário a partir do arquivo; é preciso discutir granularidade e fluxo de autorização sem sobreengenharia | **Aberto, prioritário** |
+
+Não inferir aprovação de mudanças de código ou de regras ainda não discutidas a partir dessas decisões.
+
 ## Pontos de crítica conjunta
 
-1. A lista de domínios é adequada? **Contatos** e **Identidade de conversas** devem permanecer separados?
+1. **Resolvido para esses três:** Contatos, Conversas e Entidades são domínios distintos; completar seus contratos e pontos de integração.
 2. Como documentar a propriedade segmentada de arquivo/classe/tabela compartilhada sem microgerenciar símbolos?
-3. Quais mudanças em contratos compartilhados exigem aprovação expressa mesmo dentro do domínio principal?
+3. Quais mudanças em contratos compartilhados exigem aprovação expressa mesmo dentro do domínio principal? **Ainda em aberto.**
 4. O work item transversal deve possuir domínio principal ou uma lista explícita de proprietários?
 5. Quais invariantes de identidade e envio agendado devem virar testes antes de qualquer refatoração?
-6. O diário terá localização segura e durável independente de branch temporária?
+6. **Princípio aprovado:** diário durável vinculado a commits integrados; falta definir localização e formato.
 7. Há conflitos entre esta Alpha e as regras de `AGENTS.md` ou `validated-features.md` a reconciliar antes do merge?
 
 **Critério de saída da Alpha:** respostas às dúvidas, catálogo de propriedade revisado, invariantes aprovadas e nenhum conflito com contratos PROTECTED. Somente depois planejar mudanças de código.
