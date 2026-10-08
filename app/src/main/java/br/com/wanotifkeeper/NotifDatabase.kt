@@ -335,7 +335,7 @@ interface SettingsDao {
         TranscriptionRunEntity::class,
         ConversationBindingEntity::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = false
 )
 abstract class NotifDatabase : RoomDatabase() {
@@ -521,6 +521,12 @@ abstract class NotifDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE scheduled_messages ADD COLUMN conversationKey TEXT")
+            }
+        }
+
         fun get(ctx: Context): NotifDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(
                 ctx.applicationContext,
@@ -537,7 +543,8 @@ abstract class NotifDatabase : RoomDatabase() {
                 MIGRATION_8_9,
                 MIGRATION_9_10,
                 MIGRATION_10_11,
-                MIGRATION_11_12
+                MIGRATION_11_12,
+                MIGRATION_12_13
             ).build().also { INSTANCE = it }
         }
     }
