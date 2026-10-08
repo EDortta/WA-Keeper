@@ -99,6 +99,7 @@ class SettingsActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         refreshBankModeStatus()
+        refreshDriveBackupStatus()
         refreshAudioPermissionBanner()
         refreshVoiceSection()
     }
@@ -112,6 +113,32 @@ class SettingsActivity : AppCompatActivity() {
             BankModeStatus.RESUME_NEEDS_ACCESSIBILITY -> "WA Keeper retomado · Acessibilidade ainda desligada"
             BankModeStatus.RESUME_NEEDS_NOTIFICATION_ACCESS -> "WA Keeper retomado · Acesso a notificações ainda desligado"
         }
+    }
+
+    private fun refreshDriveBackupStatus() {
+        val uri = DriveBackupPolicy.rootUri(this)
+        if (uri == null) {
+            binding.tvDriveBackupStatus.text = "Google Drive não configurado"
+            binding.btnDriveBackup.text = "Configurar backup no Google Drive"
+            return
+        }
+
+        val folder = uri.lastPathSegment
+            ?.replace("primary:", "")
+            ?.substringAfterLast('/')
+            ?.takeIf { it.isNotBlank() }
+
+        val global = if (DriveBackupPolicy.globalEnabled(this)) "ativo" else "seletivo"
+        binding.tvDriveBackupStatus.text = buildString {
+            append("Google Drive configurado")
+            if (folder != null) {
+                append(" · ")
+                append(folder)
+            }
+            append(" · backup ")
+            append(global)
+        }
+        binding.btnDriveBackup.text = "Gerenciar backup no Google Drive"
     }
 
     /** O aviso aparece só quando a guarda está ligada mas a permissão ainda falta. */
