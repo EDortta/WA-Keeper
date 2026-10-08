@@ -105,7 +105,7 @@ class NotificationReplySender(private val context: Context) : ReplySender {
         val cached = ReplyActionRegistry.get(packageName, sender)
         if (cached == null) {
             val phone = ContactPhone.resolveUniqueForDisplayName(context, sender)
-                ?: return ReplyResult.Rejected(NO_ACTION, consumesAttempt = false)
+                ?: return ReplyResult.Rejected(NO_DESTINATION, consumesAttempt = false)
             return DirectContactAutomation.send(
                 context = context,
                 packageName = packageName,
@@ -190,5 +190,7 @@ class NotificationReplySender(private val context: Context) : ReplySender {
 
     companion object {
         const val NO_ACTION = "notificação sem ação de resposta compatível (RemoteInput ausente)"
+        const val NO_DESTINATION =
+            "sem RemoteInput e sem um único telefone de contato identificável para envio direto"
     }
 }
