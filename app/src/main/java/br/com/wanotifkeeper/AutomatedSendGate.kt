@@ -36,6 +36,11 @@ object AutomatedSendGate {
         mutex.unlock()
     }
 
+    suspend fun acquireUserInitiated(): Lease {
+        mutex.lock()
+        return Lease()
+    }
+
     suspend fun acquire(): Lease? {
         if (userEditing) return null
         mutex.lock()
