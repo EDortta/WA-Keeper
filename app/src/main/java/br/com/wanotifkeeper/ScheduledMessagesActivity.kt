@@ -122,31 +122,10 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             return
         }
 
-        val deliveryPhone = if (trigger == ScheduledTrigger.AT_TIME) {
-            selectedRecipientPhone
-                ?: ContactPhone.resolveUniqueForDisplayName(this, sender)
-        } else {
-            selectedRecipientPhone
-        }
-
-        if (trigger == ScheduledTrigger.AT_TIME && deliveryPhone == null) {
-            AlertDialog.Builder(this)
-                .setTitle("Destino não identificado")
-                .setMessage(
-                    "Para enviar em uma data e hora, o WA Keeper precisa conhecer o telefone " +
-                        "do destino. Não encontrei um único telefone para $sender. " +
-                        "Agende pela lista de contatos para escolher o número correto."
-                )
-                .setPositiveButton("Escolher contato") { _, _ ->
-                    startActivity(
-                        Intent(this, ContactScheduleActivity::class.java)
-                            .putExtra(ContactScheduleActivity.EXTRA_PACKAGE, pkg)
-                    )
-                }
-                .setNegativeButton("Voltar", null)
-                .show()
-            return
-        }
+        // Se o agendamento nasceu da lista de contatos, preservamos o telefone escolhido.
+        // Se nasceu de uma conversa já conhecida, a conversa é o destino canônico e telefone
+        // não é obrigatório (grupos, por exemplo, não têm telefone de destino).
+        val deliveryPhone = selectedRecipientPhone
 
         if (trigger == ScheduledTrigger.AT_TIME && !ensureDirectContactAccess()) {
             return
