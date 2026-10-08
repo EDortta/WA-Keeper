@@ -185,6 +185,17 @@ object MediaShareAutomation {
 
     fun current(): Pending? = pending
 
+    fun cancelForUserInteraction() {
+        val job = pending ?: return
+        job.result.complete(
+            ReplyResult.Rejected(
+                AutomatedSendGate.USER_BUSY,
+                consumesAttempt = false
+            )
+        )
+        clear(job)
+    }
+
     fun contactSelected(job: Pending) {
         if (pending === job) job.phase = Phase.SEND
     }
