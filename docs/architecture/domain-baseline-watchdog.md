@@ -1,6 +1,6 @@
 # WA-Keeper: baseline de domínios e transferência de princípios do YB Convênio
 
-Status: **DRAFT / documentação, não aprovação arquitetural**. Origem: branch `development` consultada em 2026-10-08. Escopo desta etapa: **nenhuma mudança em código, dependências, banco, builds ou CI**.
+Status: **ALPHA / proposta arquitetural para crítica conjunta; não aprovação de implementação**. Origem: branch `development` consultada em 2026-10-08. Escopo desta etapa: **nenhuma mudança em código, dependências, banco, builds ou CI**.
 
 ## Objetivo
 
@@ -43,12 +43,12 @@ Os agrupamentos abaixo derivam de arquivos e referências reais. São **domínio
 | --- | --- | --- |
 | Ingestão de notificações | `NotifListenerService.kt`, `NoiseFilter.kt`, `RepostGuard.kt` | interpretar/capturar evento, deduplicar e persistir |
 | Identidade e conversas | `ConversationIdentity.kt`, `ContactDirectory.kt`, `ConversationActivity.kt` | identidade canônica de conversa, contato e vínculo |
-| Persistência e memória | `NotifDatabase.kt`, `MemoryRepository.kt`, `EntityAssociationsActivity.kt` | mensagens, associações, entidades e histórico |
+| Entidades e memória | `MemoryRepository.kt`, `EntityAssociationsActivity.kt`; implementação armazenada em `NotifDatabase.kt` | entidades, associações, contexto e histórico de memória; a tecnologia Room não constitui domínio independente |
 | Mídia e retenção | `MediaVault.kt`, `RetentionPolicy.kt`, `AudioPlayer.kt` | arquivos capturados, reprodução, retenção |
 | Transcrição e voz | `TranscriptionClient.kt`, `VoiceCommandEngine.kt`, `VoiceGateDecision.kt` | transcrição offline, comandos de voz, métricas |
 | Agendamento e envio | `ScheduledMessageCoordinator.kt`, `ScheduledMessageStore.kt`, `ScheduledMessageAlarm.kt`, `ReplySender.kt`, `AutomatedSendGate.kt` | fila, destinatário, horário, tentativa, envio, falha e recuperação |
 | Backup e restauração | `DriveBackupStore.kt`, `DriveBackupPolicy.kt`, `scripts/android-data-backup.sh`, `tools/local-backup.py` | cópia, integridade e recuperação |
-| UI e configuração | `MainActivity.kt`, `SettingsActivity.kt`, telas `*Activity.kt`, `Prefs.kt` | apresentação e preferências, não regras de identidade |
+| Apresentação e preferências (camada transversal, não domínio proprietário único) | `MainActivity.kt`, `SettingsActivity.kt`, telas `*Activity.kt`, `Prefs.kt` | interfaces e preferências pertencem aos contratos dos domínios que representam |
 
 ### Relações diretamente observadas
 
@@ -199,7 +199,7 @@ Cada work item registra: `id`, `feature_id`, `objective`, `branch`, `base_sha`, 
 - Leitura, inspeção e testes em outros domínios são permitidos; **edição** de comportamento/contrato/código pertencente a outro domínio exige autorização explícita do operador, com justificativa registrada.
 - A permissão adicional persiste **somente até o fechamento da branch/work item**, não se estende à próxima branch nem autoriza modificações não relacionadas dentro do mesmo domínio.
 - Se o pedido introduzir **outra feature ou outro objetivo independente**, suspender essa parte, registrar novo work item e criar branch independente. Não misturar alterações, mesmo quando ambas usam um arquivo compartilhado.
-- Arquivos não são um proxy perfeito para domínios: arquivos compartilhados exigem mapa de propriedade por símbolo/contrato e revisão do diff; arquivos gerados, migrações e integrações podem atravessar limites.
+- Arquivos não são um proxy perfeito para domínios: inclusive persistência, interface, infraestrutura, arquivos compartilhados e arquivos gerados têm responsabilidade segmentada e subordinada a domínio(s) proprietário(s); mudanças exigem mapa de propriedade por símbolo/contrato e revisão do diff.
 - A necessidade de um teste de consumidor não concede automaticamente permissão para modificar sua implementação. Uma correção necessária nesse consumidor deve ser explicitamente autorizada ou separada em trabalho dependente.
 - Autorizações e alterações ficam no diário, vinculadas aos SHAs dos commits; revisão deve verificar tanto **domínio autorizado** quanto **objetivo/feature do work item**.
 - Branch passa por testes, revisão e aprovação antes de integrar; depois da integração confirmada, registra `merge_sha` ou commits resultantes (incluindo squash), encerra o work item e elimina a branch temporária, preservando histórico Git e diário.
@@ -211,7 +211,7 @@ Cada work item registra: `id`, `feature_id`, `objective`, `branch`, `base_sha`, 
 
 **Concorrência:** duas branches podem trabalhar na mesma feature com work items independentes, mas alterações incompatíveis em contrato compartilhado exigem coordenação, rebase/merge e nova verificação, nunca integração cega.
 
-**Alterações transversais:** ajustes de infraestrutura, segurança, build e migrações podem não ter domínio funcional principal; criar categoria própria de trabalho transversal com lista explícita de domínios afetados, e não classificá-las artificialmente como feature de usuário.
+**Alterações transversais:** infraestrutura, segurança, build e migrações não concedem permissão livre. Cada parte técnica mantém proprietário(s) de domínio explícito(s); recursos genuinamente compartilhados exigem autorização dos domínios afetados. Pode existir work item transversal, mas ele também deve listar cada proprietário e limites de escrita, sem criar um domínio artificial nem uma zona livre de autorização.
 
 **Urgência:** incidentes de produção podem demandar hotfix, ainda com work item, branch e evidência mínimos, aprovação excepcional registrada e revisão posterior.
 
