@@ -105,6 +105,7 @@ data class ConversationBindingEntity(
     val sender: String,
     val isGroup: Boolean = false,
     val candidatePhones: String = "",
+    val resolvedPhone: String? = null,
     val updatedAt: Long = System.currentTimeMillis()
 ) {
     val phones: List<String>
@@ -121,6 +122,15 @@ interface ConversationBindingDao {
             "WHERE packageName = :packageName AND conversationKey = :conversationKey LIMIT 1"
     )
     suspend fun get(packageName: String, conversationKey: String): ConversationBindingEntity?
+
+    @Query("SELECT * FROM conversation_bindings")
+    suspend fun all(): List<ConversationBindingEntity>
+
+    @Query(
+        "SELECT COUNT(*) FROM conversation_bindings " +
+            "WHERE packageName = :packageName AND sender = :sender"
+    )
+    suspend fun countByDisplayName(packageName: String, sender: String): Int
 }
 
 @Entity(tableName = "conversation_settings")
@@ -335,7 +345,7 @@ interface SettingsDao {
         TranscriptionRunEntity::class,
         ConversationBindingEntity::class
     ],
-    version = 13,
+    version = 14,
     exportSchema = false
 )
 abstract class NotifDatabase : RoomDatabase() {
@@ -527,6 +537,12 @@ abstract class NotifDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE conversation_bindings ADD COLUMN resolvedPhone TEXT")
+            }
+        }
+
         fun get(ctx: Context): NotifDatabase = INSTANCE ?: synchronized(this) {
             INSTANCE ?: Room.databaseBuilder(
                 ctx.applicationContext,
@@ -544,7 +560,8 @@ abstract class NotifDatabase : RoomDatabase() {
                 MIGRATION_9_10,
                 MIGRATION_10_11,
                 MIGRATION_11_12,
-                MIGRATION_12_13
+                MIGRATION_12_13,
+                MIGRATION_13_14
             ).build().also { INSTANCE = it }
         }
     }
