@@ -1,10 +1,10 @@
-# WA-Keeper: baseline de domínios e laboratório Goals Kit Watchdog
+# WA-Keeper: baseline de domínios e transferência de princípios do YB Convênio
 
 Status: **DRAFT / documentação, não aprovação arquitetural**. Origem: branch `development` consultada em 2026-10-08. Escopo desta etapa: **nenhuma mudança em código, dependências, banco, builds ou CI**.
 
 ## Objetivo
 
-Utilizar o WA-Keeper como bancada para testar princípios de desenho de domínios derivados do YB Convênio, e depois propor lições comprovadas ao Governance Kit. O componente experimental chama-se **Goals Kit Watchdog**; **não está implementado**. Nenhuma regra desta proposta é automaticamente aplicada ao YB Convênio.
+Utilizar o WA-Keeper como bancada para adaptar e validar os princípios arquiteturais do YB Convênio. Este documento **não projeta nem implementa o Goals Kit Watchdog**: esse componente tem trabalho e conversa próprios. Nenhuma regra desta proposta é automaticamente aplicada ao YB Convênio.
 
 ## Princípios transferíveis do YB Convênio
 
@@ -16,6 +16,24 @@ Utilizar o WA-Keeper como bancada para testar princípios de desenho de domínio
 6. **Simplicidade operacional:** manter um app Android modular, sem impor microserviços, protobuf, Go ou arquitetura distribuída.
 7. **Segurança por padrão:** segredos fora do repositório e do histórico; auditoria de vazamento no commit, push e CI.
 8. **Decisões abertas são abertas:** não transformar hipóteses desta análise em decisões definitivas.
+
+## Matriz de transferência: YB Convênio → WA-Keeper
+
+**Leitura:** `Adotar` significa transferir o princípio; `Adaptar` significa preservar a intenção mudando a implementação; `Não transferir` evita acoplamento indevido. **Esta tabela é uma proposta documental, não uma refatoração aprovada.**
+
+| Princípio no YB Convênio | Origem / fundamento | Aplicação no WA-Keeper | Decisão proposta | Validação necessária |
+| --- | --- | --- | --- | --- |
+| Fronteiras de domínio explícitas | `architecture/01-principles.md`: monólito modular, módulos em código | Captura, conversas/identidade, memória, mídia, transcrição, agendamento, backup, apresentação | **Adotar** | Mapear chamadas reais, dono de cada regra e fluxo atravessando domínios |
+| Domínio próprio controla suas regras | `architecture/01-principles.md`: negócio próprio versus domínio clínico externo | WA-Keeper governa histórico/identidade/filas; WhatsApp e Android são integrações externas, não donos das regras internas | **Adaptar** | Identificar código de negócio dependente de serviços externos |
+| Interfaces/adapters para terceiros | `architecture/01-principles.md`: adapters para ImageMais e demais provedores | Fronteiras para Android NotificationListener, envio WhatsApp/Business, Google Drive, motor ASR | **Adotar** | Inventariar dependências concretas e contratos; preservar integrações existentes |
+| Identidade interna independente de fornecedor | `architecture/01-principles.md`: IDs de fornecedores não definem identidade interna | Chave canônica de conversa/entidade distinta de nome exibido, telefone e identificadores externos | **Adaptar** | Conferir `ConversationIdentity`, destinatário agendado, reimportação, deduplicação |
+| Distinguir identidade de papéis | Modelo `Person != Patient` do YB, específico do negócio | Separar conceitualmente contato, conversa, grupo, entidade e associação; não presumir equivalência | **Adaptar** | Descrever cardinalidades, ciclos de vida e migrações existentes |
+| Contratos entre consumidores e provedores | Separação APP/WEB/API do YB e seus contratos de comunicação | Contratos de dados e comportamento entre captura, armazenamento, interface, envio e backup | **Adaptar** | Levantar produtores/consumidores e testes de compatibilidade |
+| Rastreabilidade de decisões e alterações | Auditoria e rastreabilidade do domínio próprio do YB | Diário de engenharia vinculado a tarefa, branch, SHA, baseline, teste, evidência e eventual revert | **Adotar** | Definir formato mínimo e resolver registros sem commit ou com histórico reescrito |
+| Simplicidade, sem serviços prematuros | `architecture/01-principles.md`: serviços separados só por motivo operacional | Preservar aplicativo Android modular; separar responsabilidades lógicas antes de separar módulos físicos | **Adotar** | Justificar custo/benefício antes de dividir pacote, banco ou processo |
+| Propriedade e isolamento dos dados | Sistema próprio versus dados clínicos externos | Determinar quem escreve/lê identidades, mensagens, mídias e filas; Drive é destino de backup | **Adaptar** | Levantar invariantes e garantias de consistência/restauração |
+| Go, Flutter, Connect, protobuf, ImageMais, SUUID, domínio clínico | Decisões tecnológicas ou de negócio específicas do YB | Não correspondem ao WA-Keeper | **Não transferir** | Nenhuma |
+| Prevenir publicação de segredos e operação destrutiva | Necessidade operacional do WA-Keeper, **não** cópia de arquitetura do YB | Bloqueios preventivos e recuperação; detalhes na seção Segurança | **Regra local complementar** | Revisar bypasses, escopo Git/CI e resposta a incidentes |
 
 ## Mapa observado (primeira leitura)
 
@@ -67,31 +85,32 @@ Os agrupamentos abaixo derivam de arquivos e referências reais. São **domínio
 
 A matriz é **proposta para validação**, não uma declaração de que já existem testes automatizados para todas as células.
 
-## Goals Kit Watchdog: desenho inicial, NÃO IMPLEMENTADO
-
-**Entradas:** especificação da tarefa, diff e commits, matriz de impacto, contratos protegidos, testes e evidências.
-
-**Verificações determinísticas:** arquivos alterados, testes requeridos, migrações, padrões de segredo, correspondência entre requisito e evidência, estado de revisão, integridade de refs e backups.
-
-**Análise LLM (advisory):** hipóteses de impacto semântico, violação de fronteiras, lacunas entre pedido e resultado. A LLM não pode certificar execução de teste que não aconteceu.
-
-**Saída:** relatório legível e máquina-legível com `PASS`, `FAIL`, `UNKNOWN` e `NOT_APPLICABLE`, evidências e justificativas. `UNKNOWN` nunca equivale a `PASS`. Futuramente, CI bloqueia violações objetivas; avisos semânticos exigem revisão humana.
-
-**Portabilidade:** núcleo agnóstico ao projeto; adaptadores Android/Gradle/GitHub ficam locais. Migração ao Governance Kit apenas após aprendizagem e aprovação.
-
 ## Segurança e continuidade histórica
 
-- Credenciais fora do Git; `.gitignore` não protege conteúdo já rastreado. Validar `pre-commit`, `pre-push` e CI por varredura de segredos; não imprimir segredos nos relatórios.
-- Um segredo exposto deve ser revogado/rotacionado. Reescrita de histórico exige plano de recuperação verificado, cópias seguras, autorização expressa e avaliação de todos os clones/refs.
-- `publisher/scripts/purge-sensitive-history.sh` usa `git push --force --mirror`; classificar como operação destrutiva de alto risco. Não executá-lo automaticamente.
-- Diário local de engenharia com requisito, decisão, branch, commits, evidências, testes e aprovação. Não duplicar Git: referenciar SHAs.
-- Espelho Git durável e backup independente, preferencialmente fora do mesmo disco. Testar restauração. Backup de credenciais separado e criptografado.
-- Não persistir em repositório ou relatório conversas, áudios, tokens e chaves privadas.
+### Política de prevenção (não reconstruir história como rotina)
 
-## Próximas verificações documentais (sem código)
+- **Não publicar informação sensível:** credenciais, arquivos de configuração privados, tokens e dados pessoais ficam fora do repositório. Preferir referências locais e arquivos de exemplo sem segredo. `.gitignore` sozinho é insuficiente para arquivos rastreados.
+- **Bloqueios em camadas:** varredura de segredos em preparação/commit, antes de push e no CI. Inspecionar também o conjunto de commits a publicar, não só a versão final dos arquivos; nunca imprimir o próprio segredo em logs.
+- **Não permitir operações destrutivas como rotina:** proibir em automações e scripts de uso normal `push --force`, `push --mirror`, `reset --hard` com descarte de trabalho, limpeza irreversível de refs e reescrita de histórico. Uma medida excepcional requer autorização humana específica, backup recuperável e plano de restauração.
+- `publisher/scripts/purge-sensitive-history.sh` foi **medida emergencial histórica**, não procedimento recomendado. Sua existência não autoriza execução automática; deve ser classificado e isolado como perigoso.
+- O operador pode executar comandos manualmente: barreiras técnicas **reduzem risco**, não alegam impedir toda ação do proprietário. Regras de branches protegidas no provedor adicionam defesa independente.
+- Se segredo tiver sido exposto, **revogar/rotacionar** imediatamente; remover histórico sem rotacionar não corrige o comprometimento.
 
-1. Inventariar a cadeia concreta de execução e dependências de cada domínio a partir do código e dos testes.
-2. Identificar proprietários de dados, contratos públicos e caminhos críticos entre domínios.
-3. Confrontar matriz de impacto com testes existentes; classificar ausência de evidência como `UNKNOWN`, não `FAIL` automático.
-4. Priorizar uma regressão conhecida para ensaiar o primeiro gate do Watchdog, sem implementação até autorização.
-5. Propor promoção ao AI-Agents apenas de regras universais comprovadas no laboratório.
+### Diário amarrado ao Git
+
+Registrar por mudança: `change_id`, data, requisito/problema, decisão e justificativa, domínios afetados, branch, `base_sha`, `implementation_sha` (ou lista de SHAs), testes/evidências, aprovação e estratégia de rollback/recovery. O SHA identifica código, mas o diário explica a intenção.
+
+- Antes do primeiro commit, admitir estado `PLANNED` com `implementation_sha: null`; jamais inventar SHA.
+- Ao integrar, registrar `merge_sha`, tag/release quando houver e `supersedes` quando outra correção substitui a anterior.
+- Usar reverts rastreáveis em vez de `reset --hard` em trabalho compartilhado.
+- Se houver reescrita excepcional do histórico, registrar mapeamento antigo→novo quando disponível e preservar diário sanitizado fora dos commits descartados.
+- Espelho Git local durável **não substitui backup independente** (outro disco/host). Testar restauração periodicamente. Credenciais têm backup separado e criptografado.
+- Nunca armazenar conversas, áudios, tokens e chaves privadas no diário ou nas evidências publicadas.
+
+## Próxima análise documental
+
+1. Confirmar cardinalidades, responsáveis e limites reais de cada domínio com leitura dos fluxos de código existentes.
+2. Classificar linha por linha a matriz acima como `CONFIRMADO`, `A VALIDAR` ou `REJEITADO`.
+3. Documentar contratos existentes e dependências indevidas sem alteração de código nesta etapa.
+4. Identificar mecanismos atuais de proteção de credenciais e histórico, inclusive lacunas, **sem executar operações destrutivas**.
+5. Manter especificação e implementação do Goals Kit Watchdog **fora deste chat**.
