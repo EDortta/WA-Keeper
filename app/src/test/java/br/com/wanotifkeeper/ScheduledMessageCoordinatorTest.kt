@@ -27,11 +27,17 @@ class ScheduledMessageCoordinatorTest {
         /** Roda logo depois do claim, antes da releitura — reproduz o TOCTOU do texto. */
         var afterClaim: ((Long) -> Unit)? = null
 
-        fun arm(pkg: String, sender: String, text: String, createdAt: Long = 0L): Long {
+        fun arm(
+            pkg: String,
+            sender: String,
+            text: String,
+            createdAt: Long = 0L,
+            conversationKey: String? = null
+        ): Long {
             val id = nextId++
             rows[id] = ScheduledMessageEntity(
-                id = id, packageName = pkg, sender = sender, text = text,
-                createdAt = createdAt, updatedAt = createdAt
+                id = id, packageName = pkg, sender = sender, conversationKey = conversationKey,
+                text = text, createdAt = createdAt, updatedAt = createdAt
             )
             return id
         }
@@ -45,6 +51,7 @@ class ScheduledMessageCoordinatorTest {
             rows.values
                 .filter {
                     it.packageName == packageName && it.sender == sender &&
+                        (it.conversationKey == null || it.conversationKey == conversationKey) &&
                         it.state == ScheduledState.PENDING.name && it.nextAttemptAt <= now
                 }
                 .minByOrNull { it.createdAt }
@@ -267,6 +274,33 @@ class ScheduledMessageCoordinatorTest {
 
         assertEquals(TriggerOutcome.NothingArmed, outcome)
         assertEquals(ScheduledState.PENDING, store.rows[id]!!.scheduledState)
+    }
+
+    @Test
+    fun `mesmo titulo em conversas diferentes nao cruza agendamento`() = runBlocking {
+        val store = FakeStore()
+        val sender = RecordingSender { ReplyResult.Accepted }
+        val wrong = store.arm(
+            "com.whatsapp", "Família", "grupo errado",
+            createdAt = 1L, conversationKey = "shortcut:grupo-a"
+        )
+        val right = store.arm(
+            "com.whatsapp", "Família", "grupo certo",
+            createdAt = 2L, conversationKey = "shortcut:grupo-b"
+        )
+
+        val outcome = coordinator(store, sender).onConversationActivity(
+            packageName = "com.whatsapp",
+            conversationSender = "Família",
+            fromSelf = false,
+            triggerNotificationKey = "notification-b",
+            conversationKey = "shortcut:grupo-b"
+        )
+
+        assertEquals(TriggerOutcome.Sent(right), outcome)
+        assertEquals(listOf("grupo certo"), sender.sent.map { it.third })
+        assertEquals(ScheduledState.PENDING, store.rows[wrong]!!.scheduledState)
+        assertEquals(ScheduledState.SENT, store.rows[right]!!.scheduledState)
     }
 
     // ---- falha ---------------------------------------------------------------
