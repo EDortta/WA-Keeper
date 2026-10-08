@@ -67,7 +67,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
         selectedRecipientPhone = recipientPhone
 
         binding.tvConversation.text = if (recipientPhone != null) {
-            sender + " · " + formatPhoneForDisplay(recipientPhone!!)
+            sender + "\n" + maskPhoneForDisplay(recipientPhone!!)
         } else {
             sender
         }
@@ -76,6 +76,16 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             binding.radioAtTime.isChecked = true
             binding.radioNextIncoming.isEnabled = false
             binding.radioNextIncoming.alpha = 0.45f
+        } else if (conversationKey != null) {
+            lifecycleScope.launch {
+                val conv = NotifDatabase.get(this@ScheduledMessagesActivity)
+                    .conversationBindings()
+                    .get(pkg, conversationKey!!)
+                conv?.resolvedPhone?.takeIf { it.isNotBlank() }?.let { phone ->
+                    selectedRecipientPhone = phone
+                    binding.tvConversation.text = sender + "\n" + maskPhoneForDisplay(phone)
+                }
+            }
         }
 
         binding.btnArm.setOnClickListener { save() }
@@ -127,7 +137,26 @@ class ScheduledMessagesActivity : AppCompatActivity() {
         lifecycleScope.launch {
             resolveDestinationBeforeSaving(trigger) { deliveryPhone ->
                 lifecycleScope.launch {
-                    persistSchedule(text, trigger, at, deliveryPhone)
+                    if (trigger == ScheduledTrigger.AT_TIME) {
+                        when (val validation = MediaShareAutomation.validateConversation(
+                            context = this@ScheduledMessagesActivity,
+                            packageName = pkg,
+                            sender = sender
+                        )) {
+                            is ReplyResult.Accepted -> {
+                                persistSchedule(text, trigger, at, deliveryPhone)
+                            }
+                            is ReplyResult.Rejected -> {
+                                Toast.makeText(
+                                    this@ScheduledMessagesActivity,
+                                    "Não foi possível validar a conversa no WhatsApp: ${validation.reason}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    } else {
+                        persistSchedule(text, trigger, at, deliveryPhone)
+                    }
                 }
             }
         }
@@ -212,6 +241,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
                 val phone = candidates.single()
                 rememberResolvedPhone(convBinding, phone)
                 selectedRecipientPhone = phone
+                binding.tvConversation.text = sender + "\n" + maskPhoneForDisplay(phone)
                 resolved(phone)
             }
             else -> {
@@ -224,7 +254,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
                             rememberResolvedPhone(convBinding, phone)
                             selectedRecipientPhone = phone
                             binding.tvConversation.text =
-                                sender + " · " + formatPhoneForDisplay(phone)
+                                sender + "\n" + maskPhoneForDisplay(phone)
                             resolved(phone)
                         }
                     }
@@ -616,6 +646,16 @@ class ScheduledMessagesActivity : AppCompatActivity() {
         } ?: "Sem anexo"
         binding.btnRemoveAttachment.visibility =
             if (selectedMediaUri == null) View.GONE else View.VISIBLE
+    }
+
+    private fun maskPhoneForDisplay(raw: String): String {
+        val digits = ContactPhone.normalizeForWhatsApp(raw)
+        if (digits.length <= 6) return "+" + digits
+        val country = if (digits.startsWith("55")) "+55 " else "+"
+        val bodyStart = if (digits.startsWith("55")) 2 else 0
+        val visibleTail = digits.takeLast(4)
+        val hiddenCount = (digits.length - bodyStart - 4).coerceAtLeast(2)
+        return country + "*".repeat(hiddenCount) + "-" + visibleTail
     }
 
     private fun formatPhoneForDisplay(raw: String): String {
