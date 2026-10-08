@@ -73,7 +73,14 @@ class ConversationActivity : AppCompatActivity() {
         }
 
         binding.btnSchedule.setOnClickListener {
-            startActivity(ScheduledMessagesActivity.intent(this, pkg, sender))
+            startActivity(
+                ScheduledMessagesActivity.intent(
+                    ctx = this,
+                    packageName = pkg,
+                    sender = sender,
+                    conversationKey = conversationKey
+                )
+            )
         }
         binding.btnRetention.setOnClickListener {
             startActivity(
