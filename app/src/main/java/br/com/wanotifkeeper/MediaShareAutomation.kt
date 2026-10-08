@@ -49,6 +49,8 @@ object MediaShareAutomation {
         sender: String,
         text: String
     ): ReplyResult {
+        val lease = AutomatedSendGate.acquire() ?: return AutomatedSendGate.busyResult()
+        try {
         if (BankMode.isEnabled(context)) {
             return ReplyResult.Rejected(
                 "Modo Banco ativo: envio pausado",
@@ -102,6 +104,9 @@ object MediaShareAutomation {
             "o envio por conversa não concluiu em 90 segundos",
             consumesAttempt = false
         )
+        } finally {
+            lease.release()
+        }
     }
 
     suspend fun send(
@@ -112,6 +117,8 @@ object MediaShareAutomation {
         uriText: String,
         mimeType: String
     ): ReplyResult {
+        val lease = AutomatedSendGate.acquire() ?: return AutomatedSendGate.busyResult()
+        try {
         if (BankMode.isEnabled(context)) {
             return ReplyResult.Rejected(
                 "Modo Banco ativo: envio de mídia pausado",
@@ -171,6 +178,9 @@ object MediaShareAutomation {
             "o compartilhamento de mídia não concluiu em 90 segundos",
             consumesAttempt = false
         )
+        } finally {
+            lease.release()
+        }
     }
 
     fun current(): Pending? = pending
