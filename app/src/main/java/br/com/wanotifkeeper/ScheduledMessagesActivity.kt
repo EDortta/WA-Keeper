@@ -32,6 +32,9 @@ class ScheduledMessagesActivity : AppCompatActivity() {
 
     private val pkg by lazy { intent.getStringExtra(EXTRA_PKG) ?: "com.whatsapp" }
     private val sender by lazy { intent.getStringExtra(EXTRA_SENDER).orEmpty() }
+    private val conversationKey by lazy {
+        intent.getStringExtra(EXTRA_CONVERSATION_KEY)?.takeIf { it.isNotBlank() }
+    }
     private val recipientPhone by lazy { intent.getStringExtra(EXTRA_RECIPIENT_PHONE)?.takeIf { it.isNotBlank() } }
     private val dao by lazy { NotifDatabase.get(this).scheduled() }
 
@@ -143,6 +146,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
                     ScheduledMessageEntity(
                         packageName = pkg,
                         sender = sender,
+                        conversationKey = conversationKey,
                         text = text,
                         triggerType = trigger.name,
                         scheduledAt = at,
@@ -159,6 +163,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
                 dao.updatePending(
                     id = id,
                     text = text,
+                    conversationKey = conversationKey,
                     triggerType = trigger.name,
                     scheduledAt = at,
                     mediaUri = selectedMediaUri,
@@ -474,17 +479,20 @@ class ScheduledMessagesActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_PKG = "pkg"
         const val EXTRA_SENDER = "sender"
+        const val EXTRA_CONVERSATION_KEY = "conversation_key"
         const val EXTRA_RECIPIENT_PHONE = "recipient_phone"
 
         fun intent(
             ctx: Context,
             packageName: String,
             sender: String,
-            recipientPhone: String? = null
+            recipientPhone: String? = null,
+            conversationKey: String? = null
         ): Intent =
             Intent(ctx, ScheduledMessagesActivity::class.java)
                 .putExtra(EXTRA_PKG, packageName)
                 .putExtra(EXTRA_SENDER, sender)
                 .putExtra(EXTRA_RECIPIENT_PHONE, recipientPhone)
+                .putExtra(EXTRA_CONVERSATION_KEY, conversationKey)
     }
 }
