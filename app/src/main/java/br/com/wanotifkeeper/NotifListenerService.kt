@@ -326,13 +326,16 @@ class NotifListenerService : NotificationListenerService() {
                 }.getOrDefault(emptyList())
             }
             runCatching {
-                db.conversationBindings().upsert(
+                val bindings = db.conversationBindings()
+                val existing = bindings.get(sbn.packageName, conversationKey)
+                bindings.upsert(
                     ConversationBindingEntity(
                         packageName = sbn.packageName,
                         conversationKey = conversationKey,
                         sender = title,
                         isGroup = isGroup,
                         candidatePhones = candidatePhones.joinToString(","),
+                        resolvedPhone = existing?.resolvedPhone,
                         updatedAt = System.currentTimeMillis()
                     )
                 )
