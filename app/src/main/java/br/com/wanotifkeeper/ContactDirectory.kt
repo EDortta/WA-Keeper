@@ -123,9 +123,11 @@ object ContactDirectory {
             val dao = NotifDatabase.get(context).conversationBindings()
             dao.all().forEach { binding ->
                 if (!binding.isGroup) {
+                    val freshPhones = candidates(binding.sender)
                     dao.upsert(
                         binding.copy(
-                            candidatePhones = candidates(binding.sender).joinToString(","),
+                            candidatePhones = freshPhones.joinToString(","),
+                            resolvedPhone = binding.resolvedPhone?.takeIf { it in freshPhones },
                             updatedAt = System.currentTimeMillis()
                         )
                     )
