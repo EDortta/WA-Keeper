@@ -36,7 +36,12 @@ class ScheduledMessageCoordinatorTest {
             return id
         }
 
-        override suspend fun nextEligible(packageName: String, sender: String, now: Long) =
+        override suspend fun nextEligible(
+            packageName: String,
+            sender: String,
+            conversationKey: String?,
+            now: Long
+        ) =
             rows.values
                 .filter {
                     it.packageName == packageName && it.sender == sender &&
