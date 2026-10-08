@@ -256,6 +256,7 @@ class WaKeeperApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         applyThemeMode(Prefs.themeMode(this))
+        ContactDirectory.start(this)
     }
 
     companion object {
