@@ -29,7 +29,8 @@ class ScheduledMessageCoordinator(
         packageName: String,
         conversationSender: String,
         fromSelf: Boolean,
-        triggerNotificationKey: String?
+        triggerNotificationKey: String?,
+        conversationKey: String? = null
     ): TriggerOutcome {
         if (fromSelf) return TriggerOutcome.OwnMessage
 
@@ -45,7 +46,7 @@ class ScheduledMessageCoordinator(
 
         var firstOutcome: TriggerOutcome? = null
         while (true) {
-            val candidate = store.nextEligible(packageName, conversationSender, at)
+            val candidate = store.nextEligible(packageName, conversationSender, conversationKey, at)
                 ?: return firstOutcome ?: TriggerOutcome.NothingArmed
 
             val outcome = deliver(candidate, at, triggerNotificationKey)
