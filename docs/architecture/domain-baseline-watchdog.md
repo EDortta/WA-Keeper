@@ -120,6 +120,59 @@ Estas invariantes são **propostas**, não promessas de que o comportamento atua
 
 **Próxima revisão:** inventariar `ConversationBinding`, `NotifEntity`, `ScheduledMessageEntity`, `ReplySender` e os DAOs respectivos, e produzir uma matriz `dado → proprietário → leitores → escritores → invariantes → testes`. Esta revisão continua documental.
 
+## Definição operacional de domínio (revisão conceitual)
+
+Neste projeto, **domínio** é uma unidade reconhecível de responsabilidade funcional, compreendendo seus dados, operações, invariantes, eventos e contratos de acesso, independentemente das classes que o implementam. Uma classe pode implementar parte de um domínio; um domínio pode atravessar várias classes; uma classe existente pode estar acoplando vários domínios. **Mudanças no comportamento ou contrato de um domínio requerem análise de impacto e autorização explícita**, não apenas revisão de arquivos.
+
+Exemplo **Contatos**: importar agenda inicialmente, observar atualizações da agenda, manter snapshot, consultar nome/números candidatos e fornecer desambiguação. Essas operações devem ter dono funcional único, ainda que sejam implementadas por serviços, observers, repositórios e interfaces distintos. A decisão de atualizar automaticamente um vínculo já resolvido é um contrato **entre Contatos e Identidade de Conversas**, não apenas um detalhe de `ContactDirectory`.
+
+### Catálogo inicial de modelos persistidos (Room, schema v14)
+
+Fonte: `NotifDatabase.kt`, `ScheduledMessage.kt`, `MemoryRepository.kt`, `ScheduledMessageCoordinator.kt`, `ReplySender.kt`. **Proprietário** significa domínio responsável pelo contrato; não necessariamente classe que declara a tabela. Leitores/escritores indicam evidências observadas, **não inventário exaustivo de todas as referências**.
+
+| Modelo / chave | Domínio proprietário proposto | Escrita observada / porta | Leitores e consumidores observados | Contrato e risco |
+| --- | --- | --- | --- | --- |
+| `NotifEntity` (`notifications.id`, `fingerprint` único; `conversationKey` indexado) | Captura e histórico de mensagens | `NotifDao.insert/insertIgnore`, `NotifListenerService`; `NotifDao.setAudioPath/setImagePath/setTranscript` | `ConversationActivity`, `ConversationIdentity`, `MemoryRepository`, backup, transcrição | Evento e identidade da conversa; alterações em `sender`/`conversationKey` repercutem em consumidores e histórico; transcript e paths são escritas de outros domínios |
+| `ConversationBindingEntity` (PK `packageName+conversationKey`) | Identidade de conversas / resolução | `ConversationBindingDao.upsert`, `NotifListenerService`, `ContactDirectory.refreshNow` | `ContactDirectory`, captura e fluxos de resolução | `sender`, `isGroup`, `candidatePhones`, `resolvedPhone`; mudança na agenda escreve no vínculo e pode invalidar resolução anterior |
+| `MemoryEntity` (`memory_entities.id`) | Entidades e memória do usuário | `MemoryDao.insertEntity/updateEntity/deleteEntity` via `MemoryRepository` e interfaces | `EntityAssociationsActivity`, `MemoryRepository` | Identidade própria da entidade, distinta de título/telefone e de conversa |
+| `EntityLinkEntity` (`entity_links.id`, índice **único** em `packageName+sender`) | Associações entre entidades e conversas/contatos | `MemoryDao.upsertLink/unlink/moveAllLinks`, `MemoryRepository`, `EntityAssociationsActivity` | `MemoryRepository`, associação e contexto | Vínculo modelado por pacote+sender+role; ausência de `conversationKey` no índice requer verificar colisões por homônimos antes de qualquer mudança |
+| `ScheduledMessageEntity` (`scheduled_messages.id`, índices por conversa e hora) | Agendamento e envio | `ScheduledMessageDao`, `RoomScheduledMessageStore`, coordenador | `ScheduledMessagesActivity`, `ScheduledMessageCoordinator`, disparadores | Estado PENDING/CLAIMED/SENT/FAILED/CANCELLED; `sender`, `conversationKey` opcional, `recipientPhone` opcional; sequência, claim e recuperação não devem perder identidade |
+| `TranscriptionRunEntity` (`transcription_runs.id`, `notificationId` indexado) | Transcrição e avaliação | `TranscriptionRunDao.insert/rate` | `TranscriptionRunDao.latestForNotification/statsByMethod`, histórico de transcrição | Ancorar execução ao áudio/notificação correto; índice não declara integridade referencial entre entidades |
+| `ConversationSettings` (PK `sender`) | Preferências e retenção de conversas | `SettingsDao.upsert/delete` | `SettingsDao.get/getAll`, políticas de retenção | Chave apenas por `sender`, sem `packageName` ou `conversationKey`; verificar separação WhatsApp/Business e homônimos |
+
+### Fluxos que atravessam fronteiras
+
+| Origem da operação | Fluxo atual identificado | Contrato entre domínios a especificar |
+| --- | --- | --- |
+| Agenda do aparelho | `ContactDirectory.refreshNow` → `conversationBindings.all/upsert` | Contatos propõe candidatos; Identidade de Conversas governa vínculo e desambiguação persistida |
+| Notificação recebida | `NotifListenerService` → `ConversationIdentity` → `NotifDao` / `ConversationBindingDao` | Captura não deve confundir título visual, remetente canônico e identidade persistente |
+| Associação de entidade | `EntityAssociationsActivity` → `MemoryRepository` / `MemoryDao` | Entidades controlam seus vínculos; modelos de contato/conversa não podem perder distinção |
+| Envio agendado | `ScheduledMessageCoordinator` → `ScheduledMessageStore` → `ReplySender` | Estado, destino validado, claim, tentativas, ordem e resultado observável |
+| Persistência do áudio/transcrição | `NotifDao` + `TranscriptionRunDao` | Registros de avaliação devem pertencer à notificação/áudio correto |
+| Retenção e preferências | `ConversationSettings` / `SettingsDao` + eventos `NotifEntity` | Critério de configuração deve identificar inequivocamente o alvo da retenção |
+
+### Achados concretos e perguntas para validação
+
+- `ConversationBindingEntity` possui chave composta por pacote e chave de conversa; isso é uma distinção mais forte do que apenas título.
+- `EntityLinkEntity` usa índice único `packageName+sender`, sem chave de conversa. **Risco:** restrição de uma associação distinta para duas conversas homônimas no mesmo aplicativo. Confirmar regras de negócio e caso real antes de propor migração.
+- `ConversationSettings` tem chave apenas `sender`. **Risco:** retenção compartilhada inadvertidamente entre contas/aplicativos e homônimos. Verificar comportamento.
+- O método `NotifDao.conversationFlow(sender,pkg)` consulta nome e pacote, não `conversationKey`. **Risco:** apresentar mensagens de conversas homônimas juntas em determinadas telas. Precisa de rastreamento completo dos consumidores.
+- `ScheduledMessageDao.nextEligible` filtra pacote+sender e aceita `conversationKey IS NULL` ou chave igual. Isso preserva legado, mas exige testes de ausência e colisão de chaves.
+- `NotificationReplySender.sendToPhone` declara que telefone é **metadado de desambiguação**, depois chama `send(packageName,sender,text)`. Assim, a entrega real depende de resolução pelo título/ação de notificação; exigir evidência da seleção correta, não assumir que o telefone é roteamento.
+- `ScheduledMessageEntity` admite edição e envio imediato em PENDING/FAILED, e DAO inclui ações apropriadas. Confirmar exposição na UI, não inferir a partir da estrutura do modelo.
+- `NotifDatabase` está na versão 14 e `exportSchema=false`; qualquer evolução dos identificadores persistidos requer avaliação prévia de migrações e recuperação de backups.
+
+### Regra de autorização de domínio (proposta, ainda não automatizada)
+
+Uma mudança que altere **contrato observável, identidade, persistência, regras de negócio ou comportamento aprovado** de um domínio requer: descrição do requisito; lista de domínios afetados; matriz de consumidores; avaliação de compatibilidade; autorização do operador; e depois evidência de validação. Refatoração interna sem alteração de contrato segue revisão técnica e testes, sem transformar cada mudança de classe em aprovação manual. O objetivo é aprovar **mudanças de responsabilidade/contrato**, não microgerenciar arquivos.
+
+### Pendências
+
+- Completar mapa de leitura/escrita por busca de todas as chamadas dos DAOs no repositório.
+- Verificar fluxos de importação, exportação e restauração frente às chaves de conversa e vínculos legados.
+- Elaborar cenários exemplares de duas conversas homônimas, contato renomeado, múltiplos números e WhatsApp/Business.
+- Validar com testes existentes quais invariantes já são comprovadas. **Nenhuma alteração de código nesta etapa.**
+
 ## Contratos existentes que continuam prevalecendo
 
 `AGENTS.md` e `docs/validated-features.md` preservam funcionalidades PROTECTED (transcrição offline, reprodução de áudio, envio agendado, backup/restauração). Esta proposta **não as altera**. Sempre que houver divergência, suspender mudanças e solicitar decisão do operador.
