@@ -173,6 +173,68 @@ Uma mudança que altere **contrato observável, identidade, persistência, regra
 - Elaborar cenários exemplares de duas conversas homônimas, contato renomeado, múltiplos números e WhatsApp/Business.
 - Validar com testes existentes quais invariantes já são comprovadas. **Nenhuma alteração de código nesta etapa.**
 
+## Governança cruzada: domínios × features × unidades de alteração
+
+**Definições:** domínio é uma fronteira funcional estável (dados, operações, invariantes e contratos); feature é uma capacidade de produto que pode consumir vários domínios; *work item* é uma mudança delimitada em uma feature, implementada em branch isolada. A branch **não é a feature**. Um mesmo domínio participa de várias features e uma feature usa vários domínios.
+
+### Matriz de relações (hipóteses para catalogação, não permissões)
+
+| Domínio candidato | Captura | Envio agendado | Transcrição | Backup |
+| --- | --- | --- | --- | --- |
+| Identidade e conversas | Consome | Consome | Consome | Consome |
+| Contatos | Consome | Consome | - | - |
+| Captura e mensagens | Principal | Consome | Consome | Consome |
+| Agendamento e envio | - | Principal | - | - |
+| Mídias | Consome | Consome | Consome | Consome |
+| Transcrição | - | - | Principal | Consome |
+| Backup e restauração | - | - | - | Principal |
+
+`Principal` significa responsabilidade funcional típica; `Consome` é dependência possível, não licença de edição. Domínios e features devem ter IDs estáveis e descrição de seus contratos; a matriz real será preenchida com base nos consumidores observados.
+
+### Permissão por implementação e por domínio
+
+Cada work item registra: `id`, `feature_id`, `objective`, `branch`, `base_sha`, `primary_domain`, `affected_contracts`, `authorized_domain_writes`, critérios de aceitação, evidências e estado.
+
+- A branch nasce a partir da branch de integração atualizada, com **uma alteração delimitada em uma feature** e um domínio principal autorizado para escrita **somente no escopo dessa alteração**.
+- Leitura, inspeção e testes em outros domínios são permitidos; **edição** de comportamento/contrato/código pertencente a outro domínio exige autorização explícita do operador, com justificativa registrada.
+- A permissão adicional persiste **somente até o fechamento da branch/work item**, não se estende à próxima branch nem autoriza modificações não relacionadas dentro do mesmo domínio.
+- Se o pedido introduzir **outra feature ou outro objetivo independente**, suspender essa parte, registrar novo work item e criar branch independente. Não misturar alterações, mesmo quando ambas usam um arquivo compartilhado.
+- Arquivos não são um proxy perfeito para domínios: arquivos compartilhados exigem mapa de propriedade por símbolo/contrato e revisão do diff; arquivos gerados, migrações e integrações podem atravessar limites.
+- A necessidade de um teste de consumidor não concede automaticamente permissão para modificar sua implementação. Uma correção necessária nesse consumidor deve ser explicitamente autorizada ou separada em trabalho dependente.
+- Autorizações e alterações ficam no diário, vinculadas aos SHAs dos commits; revisão deve verificar tanto **domínio autorizado** quanto **objetivo/feature do work item**.
+- Branch passa por testes, revisão e aprovação antes de integrar; depois da integração confirmada, registra `merge_sha` ou commits resultantes (incluindo squash), encerra o work item e elimina a branch temporária, preservando histórico Git e diário.
+- A próxima alteração na mesma feature recebe **novo work item e nova branch**. Branch abandonada não deve ser considerada entregue; deve ter estado de cancelamento e documentação de seus commits/referências antes de limpeza.
+
+### Políticas e casos difíceis
+
+**Escopo é a primeira proteção:** autorizar outro domínio não significa aprovar qualquer melhoria descoberta nele. A permissão é a interseção entre `objetivo da alteração` e `domínios autorizados`.
+
+**Concorrência:** duas branches podem trabalhar na mesma feature com work items independentes, mas alterações incompatíveis em contrato compartilhado exigem coordenação, rebase/merge e nova verificação, nunca integração cega.
+
+**Alterações transversais:** ajustes de infraestrutura, segurança, build e migrações podem não ter domínio funcional principal; criar categoria própria de trabalho transversal com lista explícita de domínios afetados, e não classificá-las artificialmente como feature de usuário.
+
+**Urgência:** incidentes de produção podem demandar hotfix, ainda com work item, branch e evidência mínimos, aprovação excepcional registrada e revisão posterior.
+
+**Aplicação futura:** regras documentais não bloqueiam comandos por si sós. Detecção automática por caminhos/arquivos é apenas um sinal preliminar; verificação de escopo semântico requer diff, propriedades de domínio e revisão. O mecanismo de fiscalização é tratado em conversa separada.
+
+### Exemplo de manifesto documental (formato proposto)
+
+```yaml
+work_item: WK-042
+feature_id: scheduled-messages
+objective: recover-failed-message
+branch: feature/WK-042-recover-failed-message
+primary_domain: scheduling
+base_sha: <record-at-branch-creation>
+authorized_domain_writes:
+  - domain: scheduling
+    scope: recover-failed-message
+additional_authorizations: []
+status: active
+```
+
+**Não confundir este modelo com um arquivo já existente ou um gate já implementado.** O exemplo só ilustra o contrato a validar.
+
 ## Contratos existentes que continuam prevalecendo
 
 `AGENTS.md` e `docs/validated-features.md` preservam funcionalidades PROTECTED (transcrição offline, reprodução de áudio, envio agendado, backup/restauração). Esta proposta **não as altera**. Sempre que houver divergência, suspender mudanças e solicitar decisão do operador.
