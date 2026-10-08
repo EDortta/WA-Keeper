@@ -104,12 +104,10 @@ class NotificationReplySender(private val context: Context) : ReplySender {
     override suspend fun send(packageName: String, sender: String, text: String): ReplyResult {
         val cached = ReplyActionRegistry.get(packageName, sender)
         if (cached == null) {
-            val phone = ContactPhone.resolveUniqueForDisplayName(context, sender)
-                ?: return ReplyResult.Rejected(NO_DESTINATION, consumesAttempt = false)
-            return DirectContactAutomation.send(
+            return MediaShareAutomation.sendText(
                 context = context,
                 packageName = packageName,
-                phone = phone,
+                sender = sender,
                 text = text
             )
         }
@@ -191,6 +189,6 @@ class NotificationReplySender(private val context: Context) : ReplySender {
     companion object {
         const val NO_ACTION = "notificação sem ação de resposta compatível (RemoteInput ausente)"
         const val NO_DESTINATION =
-            "sem RemoteInput e sem um único telefone de contato identificável para envio direto"
+            "não foi possível identificar com segurança a conversa de destino"
     }
 }
