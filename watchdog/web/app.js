@@ -54,7 +54,7 @@ function graph(){
     const refs=state.refs.filter(r=>r.sha===n.sha).map(r=>r.name);
     const date=n.committed.slice(0,10);
     const title=escape(n.subject+" | "+date+" | "+n.sha+" | "+(refs.join(", ")||"sem referência"));
-    circles+='<g class="node '+(current?'current':'')+'" role="button" tabindex="0" data-sha="'+n.sha+'" transform="translate('+x+','+y+')"><title>'+title+'</title><circle r="6"/><text text-anchor="middle" y="'+(maxLane*24+45-y)+'">'+escape(n.short)+'</text></g>';
+    circles+='<g class="node '+(current?'current':'')+'" role="button" tabindex="0" data-sha="'+n.sha+'" transform="translate('+x+','+y+')"><title>'+title+'</title><circle r="6"/><text x="8" y="14" text-anchor="start" transform="rotate(30 8 14)">'+escape(n.short)+'</text></g>';
   }
   // Calendar labels give the graph an explicit chronological reference without
   // falsely claiming that topology and author timestamps are always monotonic.
