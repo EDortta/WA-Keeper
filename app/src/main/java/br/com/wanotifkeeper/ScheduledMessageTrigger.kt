@@ -50,6 +50,13 @@ object ScheduledMessageTrigger {
         return outcome
     }
 
+    suspend fun sendNow(ctx: Context, id: Long): TriggerOutcome {
+        if (BankMode.isEnabled(ctx)) return TriggerOutcome.NothingArmed
+        val outcome = coordinator(ctx).onTimedMessage(id)
+        android.util.Log.d(TAG, "manual#$id -> $outcome")
+        return outcome
+    }
+
     suspend fun onTime(ctx: Context): List<TriggerOutcome> {
         if (BankMode.isEnabled(ctx)) return emptyList()
         val dao = NotifDatabase.get(ctx).scheduled()
