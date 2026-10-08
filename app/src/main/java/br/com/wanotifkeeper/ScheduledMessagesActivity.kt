@@ -158,9 +158,9 @@ class ScheduledMessagesActivity : AppCompatActivity() {
         }
 
         val bindings = NotifDatabase.get(this).conversationBindings()
-        val binding = bindings.get(pkg, key)
+        val convBinding = bindings.get(pkg, key)
 
-        if (binding?.isGroup == true) {
+        if (convBinding?.isGroup == true) {
             val sameName = bindings.countByDisplayName(pkg, sender)
             if (sameName > 1) {
                 AlertDialog.Builder(this)
@@ -178,14 +178,14 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             return
         }
 
-        binding?.resolvedPhone?.takeIf { it.isNotBlank() }?.let {
+        convBinding?.resolvedPhone?.takeIf { it.isNotBlank() }?.let {
             selectedRecipientPhone = it
             resolved(it)
             return
         }
 
         val candidates = ContactDirectory.candidates(sender)
-            .ifEmpty { binding?.phones.orEmpty() }
+            .ifEmpty { convBinding?.phones.orEmpty() }
             .distinct()
 
         when (candidates.size) {
@@ -210,7 +210,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             }
             1 -> {
                 val phone = candidates.single()
-                rememberResolvedPhone(binding, phone)
+                rememberResolvedPhone(convBinding, phone)
                 selectedRecipientPhone = phone
                 resolved(phone)
             }
@@ -221,7 +221,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
                     .setItems(labels) { _, which ->
                         val phone = candidates[which]
                         lifecycleScope.launch {
-                            rememberResolvedPhone(binding, phone)
+                            rememberResolvedPhone(convBinding, phone)
                             selectedRecipientPhone = phone
                             binding.tvConversation.text =
                                 sender + " · " + formatPhoneForDisplay(phone)
