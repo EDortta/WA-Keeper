@@ -32,6 +32,7 @@ data class ScheduledMessageEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val packageName: String,
     val sender: String,
+    val conversationKey: String? = null,
     val text: String,
     @ColumnInfo(defaultValue = "'NEXT_INCOMING'")
     val triggerType: String = ScheduledTrigger.NEXT_INCOMING.name,
@@ -85,11 +86,17 @@ interface ScheduledMessageDao {
     @Query(
         "SELECT * FROM scheduled_messages " +
             "WHERE packageName = :pkg AND sender = :sender " +
+            "AND (conversationKey IS NULL OR conversationKey = :conversationKey) " +
             "AND triggerType = 'NEXT_INCOMING' " +
             "AND state = 'PENDING' AND nextAttemptAt <= :now " +
             "ORDER BY createdAt ASC LIMIT 1"
     )
-    suspend fun nextEligible(pkg: String, sender: String, now: Long): ScheduledMessageEntity?
+    suspend fun nextEligible(
+        pkg: String,
+        sender: String,
+        conversationKey: String?,
+        now: Long
+    ): ScheduledMessageEntity?
 
     @Query(
         "SELECT * FROM scheduled_messages " +
@@ -164,7 +171,7 @@ interface ScheduledMessageDao {
 
     @Query(
         "UPDATE scheduled_messages SET " +
-            "text = :text, triggerType = :triggerType, scheduledAt = :scheduledAt, " +
+            "text = :text, conversationKey = :conversationKey, triggerType = :triggerType, scheduledAt = :scheduledAt, " +
             "mediaUri = :mediaUri, mediaMimeType = :mediaMimeType, mediaName = :mediaName, " +
             "recipientPhone = :recipientPhone, " +
             "updatedAt = :now, lastError = NULL, nextAttemptAt = 0 " +
@@ -173,6 +180,7 @@ interface ScheduledMessageDao {
     suspend fun updatePending(
         id: Long,
         text: String,
+        conversationKey: String?,
         triggerType: String,
         scheduledAt: Long?,
         mediaUri: String?,
