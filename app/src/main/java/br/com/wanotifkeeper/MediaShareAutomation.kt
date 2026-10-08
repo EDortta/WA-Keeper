@@ -43,6 +43,67 @@ object MediaShareAutomation {
         return enabled.split(':').any { it.equals(expected, ignoreCase = true) }
     }
 
+    suspend fun sendText(
+        context: Context,
+        packageName: String,
+        sender: String,
+        text: String
+    ): ReplyResult {
+        if (BankMode.isEnabled(context)) {
+            return ReplyResult.Rejected(
+                "Modo Banco ativo: envio pausado",
+                consumesAttempt = false
+            )
+        }
+
+        if (!isEnabled(context)) {
+            return ReplyResult.Rejected(
+                "ative a automação do WA Keeper em Acessibilidade",
+                consumesAttempt = false
+            )
+        }
+
+        synchronized(this) {
+            if (pending != null) {
+                return ReplyResult.Rejected(
+                    "há outro envio sendo despachado agora",
+                    consumesAttempt = false
+                )
+            }
+        }
+
+        val result = CompletableDeferred<ReplyResult>()
+        val job = Pending(packageName, sender, result)
+        synchronized(this) { pending = job }
+
+        val started = runCatching {
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                setPackage(packageName)
+                putExtra(Intent.EXTRA_TEXT, text)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        }.isSuccess
+
+        if (!started) {
+            clear(job)
+            return ReplyResult.Rejected(
+                "não foi possível abrir o seletor de conversa do WhatsApp",
+                consumesAttempt = false
+            )
+        }
+
+        val outcome = withTimeoutOrNull(TIMEOUT_MS) { result.await() }
+        if (outcome != null) return outcome
+
+        clear(job)
+        return ReplyResult.Rejected(
+            "o envio por conversa não concluiu em 90 segundos",
+            consumesAttempt = false
+        )
+    }
+
     suspend fun send(
         context: Context,
         packageName: String,
