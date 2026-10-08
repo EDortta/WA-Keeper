@@ -33,6 +33,8 @@ object ContactPhone {
     }
 
     fun candidatesForDisplayName(context: Context, displayName: String): List<String> {
+        ContactDirectory.candidates(displayName).takeIf { it.isNotEmpty() }?.let { return it }
+
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) !=
             PackageManager.PERMISSION_GRANTED
         ) return emptyList()
