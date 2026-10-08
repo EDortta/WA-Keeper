@@ -11,7 +11,12 @@ package br.com.wanotifkeeper
 interface ScheduledMessageStore {
 
     /** Mensagem candidata ao disparo desta conversa, ou `null` se não há nada a fazer. */
-    suspend fun nextEligible(packageName: String, sender: String, now: Long): ScheduledMessageEntity?
+    suspend fun nextEligible(
+        packageName: String,
+        sender: String,
+        conversationKey: String?,
+        now: Long
+    ): ScheduledMessageEntity?
 
     /**
      * Tenta tomar posse. `true` só para **uma** execução — a segunda chamada
@@ -51,8 +56,12 @@ interface ScheduledMessageStore {
 /** Implementação de produção: delega ao Room, onde o claim é um `UPDATE` condicional. */
 class RoomScheduledMessageStore(private val dao: ScheduledMessageDao) : ScheduledMessageStore {
 
-    override suspend fun nextEligible(packageName: String, sender: String, now: Long) =
-        dao.nextEligible(packageName, sender, now)
+    override suspend fun nextEligible(
+        packageName: String,
+        sender: String,
+        conversationKey: String?,
+        now: Long
+    ) = dao.nextEligible(packageName, sender, conversationKey, now)
 
     override suspend fun claim(id: Long, now: Long, triggerKey: String?): Boolean =
         dao.claim(id, now, triggerKey) == 1
