@@ -18,6 +18,10 @@ object AutomatedSendGate {
 
     fun setUserEditing(editing: Boolean) {
         userEditing = editing
+        if (editing) {
+            MediaShareAutomation.cancelForUserInteraction()
+            DirectContactAutomation.cancelForUserInteraction()
+        }
     }
 
     fun isUserEditing(): Boolean = userEditing
