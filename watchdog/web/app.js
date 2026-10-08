@@ -19,7 +19,7 @@ function graph(){
     cursor=nodes[byId.get(cursor)].parents[0];
   }
   const assigned=new Map(), pending=new Map();
-  const freeLane=()=>{const used=new Set([...assigned.values(),...pending.values()]);let lane=1;while(used.has(lane))lane++;return lane};
+  const freeLane=()=>{const used=new Set([0,...pending.values()]);let lane=1;while(used.has(lane))lane++;return lane};
   for(const n of nodes){
     let lane=firstParent.has(n.sha)?0:pending.get(n.sha);
     if(lane===undefined)lane=freeLane();
