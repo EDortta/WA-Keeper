@@ -1,6 +1,8 @@
 """Minimal read-only local HTTP service: no frameworks or external dependencies."""
 import json
 import mimetypes
+import errno
+import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
@@ -61,7 +63,21 @@ def handler_for(repo):
     return Handler
 
 
-def serve(repo, port=8765):
-    with ThreadingHTTPServer(("127.0.0.1", port), handler_for(repo)) as server:
-        print(f"Watchdog: http://127.0.0.1:{server.server_port} | {repo.root}", flush=True)
+def serve(repo, port=8765, open_browser=True):
+    """Try the requested port first, then ask the OS for an available local port."""
+    try:
+        server = ThreadingHTTPServer(("127.0.0.1", port), handler_for(repo))
+    except OSError as exc:
+        if exc.errno != errno.EADDRINUSE or port == 0:
+            raise
+        print(f"Porta {port} ocupada; escolhendo outra porta local.", flush=True)
+        server = ThreadingHTTPServer(("127.0.0.1", 0), handler_for(repo))
+    with server:
+        url = f"http://127.0.0.1:{server.server_port}"
+        print(f"Watchdog: {url} | {repo.root}", flush=True)
+        if open_browser:
+            try:
+                webbrowser.open(url)
+            except Exception as exc:
+                print(f"Navegador não aberto automaticamente: {exc}", flush=True)
         server.serve_forever()
