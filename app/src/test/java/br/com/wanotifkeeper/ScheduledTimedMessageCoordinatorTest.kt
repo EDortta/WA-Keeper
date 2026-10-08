@@ -8,7 +8,12 @@ import org.junit.Test
 class ScheduledTimedMessageCoordinatorTest {
 
     private class OneRowStore(var row: ScheduledMessageEntity) : ScheduledMessageStore {
-        override suspend fun nextEligible(packageName: String, sender: String, now: Long) = null
+        override suspend fun nextEligible(
+            packageName: String,
+            sender: String,
+            conversationKey: String?,
+            now: Long
+        ) = null
 
         override suspend fun claim(id: Long, now: Long, triggerKey: String?): Boolean {
             if (row.id != id || row.scheduledState != ScheduledState.PENDING) return false
