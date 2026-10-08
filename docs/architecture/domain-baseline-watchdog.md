@@ -66,6 +66,60 @@ Os agrupamentos abaixo derivam de arquivos e referências reais. São **domínio
 - **Regressões de interface e áudio:** confrontar fluxos de controles de reprodução e transcrição com `docs/validated-features.md`; a existência de testes unitários não prova a presença dos controles na tela.
 - **Backup e segurança:** separar backup de dados Android, backup de código Git e backup criptografado de credenciais. Nunca subir dados pessoais como evidências.
 
+## Análise aprofundada: identidade, contatos e conversas
+
+**Estado:** levantamento do código em `development` em 2026-10-08; conclusões restritas aos arquivos examinados. Os comportamentos problemáticos indicados são **riscos a testar**, não defeitos já reproduzidos.
+
+### Vocabulário do domínio e fronteiras
+
+| Conceito | Identidade e ciclo de vida | Não confundir com | Evidência |
+| --- | --- | --- | --- |
+| Contato do dispositivo | Registro da agenda, com nome e um ou mais números; pode mudar externamente | Conversa do WhatsApp | `ContactDirectory.Entry`, `ContactsContract` |
+| Identidade de conversa | Contexto de mensagens associado a pacote de origem, chave de conversa e título canônico | Nome de contato ou número de telefone | `ConversationIdentity.stableKey`, `groupKey`, `sameConversation` |
+| Mensagem/notificação capturada | Evento persistido com remetente, pacote e chave de conversa | Conversa como entidade permanente | `NotifListenerService.onNotificationPosted` e `NotifEntity` |
+| Entidade do usuário | Agrupamento escolhido pelo usuário que pode se relacionar a conversas/contatos | Identidade externa | `EntityAssociationsActivity`, `MemoryRepository` |
+| Destinatário agendado | Alvo validado e persistido para um envio futuro; depende de integração externa | Título textual da conversa | `ScheduledMessageCoordinator`, `ScheduledMessageStore` |
+| Identificador externo | Atalho/tag do Android, pacote, número ou título visível | Identificador canônico interno necessariamente imutável | `ConversationIdentity.stableKey`, `ContactDirectory` |
+
+**Princípio transferido do YB:** identidade do domínio não deve ser ditada pelo identificador de um provedor. O equivalente de `Person != Patient` aqui **não é** uma mesma estrutura de classes, mas as distinções contato ≠ conversa ≠ entidade ≠ destinatário.
+
+### Relações observadas (código)
+
+1. `NotifListenerService.onNotificationPosted` extrai o título e chama `ConversationIdentity.canonicalSender` e `stableKey`. Também consulta `conversationBindings`: a captura participa da formação e resolução da identidade.
+2. `ConversationIdentity.stableKey` prioriza `shortcutId`, depois `tag`, depois um fallback baseado em pacote e título canônico minúsculo. Logo, essa chave **pode depender de representação textual** quando as fontes mais estáveis não estão disponíveis.
+3. `ConversationIdentity.conversationBuckets` agrupa inicialmente por pacote e título canônico; então separa pelas chaves presentes, juntando registros legados sem chave se houver apenas uma chave no grupo. Isso é uma política de migração/agrupamento implícita, não uma prova de identidade definitiva.
+4. `ConversationIdentity.sameConversation` compara chaves se ambas estão presentes, senão recorre à equivalência dos títulos canônicos. Esse fallback pode ser deliberado para compatibilidade legada; demanda testes para homônimos.
+5. `ContactDirectory` lê `ContactsContract`, normaliza os números e indexa por nome convertido em minúsculo. Um nome pode possuir vários números; nomes iguais podem resultar em candidatos agregados.
+6. `ContactDirectory.refreshNow` percorre `conversationBindings`, atualiza números candidatos e só preserva `resolvedPhone` se ele continuar na lista atual. Aqui ocorre **uma escrita persistente provocada por atualização da agenda**, atravessando integração externa e domínio.
+7. `ScheduledMessageCoordinator.onConversationActivity` solicita `store.nextEligible(packageName, conversationSender, conversationKey, at)`, mas o controle temporário de eco utiliza `packageName|conversationSender`. Vale verificar se conversas homônimas podem compartilhar indevidamente esse intervalo.
+8. Na entrega, o coordenador escolhe entre `sendMedia`, `sendToPhone` e `send` com base nos dados persistidos. A escolha entre conversa e telefone, portanto, influencia a fronteira de envio.
+9. `ScheduledMessageStore` é uma **porta explícita**; `RoomScheduledMessageStore` é o adapter Room. O contrato declara claim atômico, estados, retry, falha final e recuperação de claims presos. Preservar esse desenho.
+10. `EntityAssociationsActivity` constrói candidatos de conversas e da agenda, inclusive aliases de contato. É importante estabelecer formalmente cardinalidades de vínculo, sem substituir uma entidade do usuário pelo nome que veio do aparelho.
+
+### Invariantes propostas para futura aprovação
+
+| ID | Invariante candidata | Verificação necessária |
+| --- | --- | --- |
+| ID-01 | Duas conversas distintas não devem ser fundidas exclusivamente porque seus títulos coincidem | Casos de homônimos com chaves externas diferentes e ausência de chave |
+| ID-02 | Mudança de nome de contato não deve reatribuir silenciosamente uma conversa já resolvida a outro destinatário | Alteração da agenda, nomes repetidos e múltiplos números |
+| ID-03 | Uma associação feita pelo usuário deve sobreviver a mudanças de exibição de nomes sempre que a identidade subjacente permanecer válida | Renomeação, reimportação e reinstalação com restauração |
+| ID-04 | O destinatário de um agendamento precisa estar resolvido e validado antes de aceitar o agendamento, com política explícita para perda posterior da capacidade de envio | Criação, disparo, número alterado, conta inexistente e falha recuperável |
+| ID-05 | A fila e o mecanismo de prevenção de eco não podem misturar duas conversas com nomes iguais | Triggers concorrentes, títulos iguais, pacotes diferentes, chaves diferentes |
+| ID-06 | A transição de uma chave legada baseada em título para identificador estável deve preservar histórico sem fusão ou duplicação indevida | Banco anterior à migração, conversa com e sem chave |
+| ID-07 | A falha de envio nunca deve ser representada como sucesso e não deve descartar o item recuperável sem regra explícita | Estados claim/retry/failed e ações de recuperação |
+| ID-08 | Nenhuma alteração de identidade pode quebrar associações com entidades, filtros, mídia, backup ou agendamento | Testes de contrato dos consumidores |
+
+Estas invariantes são **propostas**, não promessas de que o comportamento atual já as cumpre.
+
+### Decisões arquiteturais a não antecipar
+
+- Não introduzir SUUID, UUID novo nem migração de chaves antes de documentar os identificadores persistidos e a compatibilidade de backup.
+- Não dividir `NotifDatabase` ou criar módulos físicos apenas para cumprir um organograma.
+- Não remover fallbacks legados sem entender por quais fluxos de importação e restauração os registros chegam.
+- Não alterar `ScheduledMessageCoordinator` antes de descrever todos os caminhos da escolha do destinatário até `ReplySender`.
+
+**Próxima revisão:** inventariar `ConversationBinding`, `NotifEntity`, `ScheduledMessageEntity`, `ReplySender` e os DAOs respectivos, e produzir uma matriz `dado → proprietário → leitores → escritores → invariantes → testes`. Esta revisão continua documental.
+
 ## Contratos existentes que continuam prevalecendo
 
 `AGENTS.md` e `docs/validated-features.md` preservam funcionalidades PROTECTED (transcrição offline, reprodução de áudio, envio agendado, backup/restauração). Esta proposta **não as altera**. Sempre que houver divergência, suspender mudanças e solicitar decisão do operador.
