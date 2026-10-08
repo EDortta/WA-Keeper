@@ -28,6 +28,7 @@ object MediaShareAutomation {
         val packageName: String,
         val sender: String,
         val result: CompletableDeferred<ReplyResult>,
+        val validateOnly: Boolean = false,
         @Volatile var phase: Phase = Phase.PICK_CONTACT,
         @Volatile var searchRequested: Boolean = false
     )
@@ -41,6 +42,59 @@ object MediaShareAutomation {
             Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
         ).orEmpty()
         return enabled.split(':').any { it.equals(expected, ignoreCase = true) }
+    }
+
+    suspend fun validateConversation(
+        context: Context,
+        packageName: String,
+        sender: String
+    ): ReplyResult {
+        if (!isEnabled(context)) {
+            return ReplyResult.Rejected(
+                "ative o envio automático do WA Keeper em Acessibilidade",
+                consumesAttempt = false
+            )
+        }
+
+        synchronized(this) {
+            if (pending != null) {
+                return ReplyResult.Rejected(
+                    "há outra automação de envio em andamento",
+                    consumesAttempt = false
+                )
+            }
+        }
+
+        val result = CompletableDeferred<ReplyResult>()
+        val job = Pending(packageName, sender, result, validateOnly = true)
+        synchronized(this) { pending = job }
+
+        val started = runCatching {
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                setPackage(packageName)
+                putExtra(Intent.EXTRA_TEXT, " ")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        }.isSuccess
+
+        if (!started) {
+            clear(job)
+            return ReplyResult.Rejected(
+                "não foi possível abrir o seletor de conversa do WhatsApp",
+                consumesAttempt = false
+            )
+        }
+
+        val outcome = withTimeoutOrNull(30_000L) { result.await() }
+        if (outcome != null) return outcome
+
+        clear(job)
+        return ReplyResult.Rejected(
+            "não consegui validar a conversa no WhatsApp em 30 segundos",
+            consumesAttempt = false
+        )
     }
 
     suspend fun sendText(
@@ -248,7 +302,10 @@ class MediaShareAccessibilityService : AccessibilityService() {
 
         when {
             candidates.size == 1 -> {
-                if (candidates.single().performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+                if (job.validateOnly) {
+                    MediaShareAutomation.complete(job)
+                    performGlobalAction(GLOBAL_ACTION_BACK)
+                } else if (candidates.single().performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
                     MediaShareAutomation.contactSelected(job)
                 }
                 return
@@ -256,7 +313,7 @@ class MediaShareAccessibilityService : AccessibilityService() {
             candidates.size > 1 -> {
                 MediaShareAutomation.fail(
                     job,
-                    "há mais de um contato com esse nome; envio de mídia cancelado por segurança"
+                    "há mais de uma conversa com esse título no WhatsApp"
                 )
                 return
             }
