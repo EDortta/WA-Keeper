@@ -3,7 +3,6 @@ package br.com.wanotifkeeper
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.provider.ContactsContract
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -14,10 +13,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import br.com.wanotifkeeper.databinding.ActivityContactScheduleBinding
 import com.google.android.material.card.MaterialCardView
+import kotlinx.coroutines.launch
 
 data class ScheduleContact(
     val name: String,
@@ -84,44 +85,19 @@ class ContactScheduleActivity : AppCompatActivity() {
     }
 
     private fun loadContacts() {
-        val byId = linkedMapOf<Long, Pair<String, LinkedHashSet<String>>>()
-        val projection = arrayOf(
-            ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
-            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-            ContactsContract.CommonDataKinds.Phone.NUMBER
-        )
-
-        contentResolver.query(
-            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-            projection,
-            null,
-            null,
-            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " COLLATE NOCASE ASC"
-        )?.use { cursor ->
-            val idIx = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.CONTACT_ID)
-            val nameIx = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
-            val phoneIx = cursor.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NUMBER)
-
-            while (cursor.moveToNext()) {
-                val id = cursor.getLong(idIx)
-                val name = cursor.getString(nameIx)?.trim().orEmpty()
-                val phone = cursor.getString(phoneIx)?.trim().orEmpty()
-                val normalized = ContactPhone.normalizeForWhatsApp(phone)
-                if (name.isBlank() || normalized.length < 10) continue
-
-                val current = byId[id]
-                val set = current?.second ?: linkedSetOf()
-                set += normalized
-                byId[id] = name to set
-            }
+        val cached = ContactDirectory.entries()
+        if (cached.isNotEmpty()) {
+            contacts = cached.map { ScheduleContact(it.name, it.phones) }
+            render(binding.search.text?.toString().orEmpty())
+            return
         }
 
-        contacts = byId.values
-            .map { (name, phones) -> ScheduleContact(name, phones.toList()) }
-            .filter { it.phones.isNotEmpty() }
-            .sortedBy { it.name.lowercase() }
-
-        render(binding.search.text?.toString().orEmpty())
+        lifecycleScope.launch {
+            ContactDirectory.refreshNow(this@ContactScheduleActivity)
+            contacts = ContactDirectory.entries()
+                .map { ScheduleContact(it.name, it.phones) }
+            render(binding.search.text?.toString().orEmpty())
+        }
     }
 
     private fun render(query: String) {
