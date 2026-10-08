@@ -60,7 +60,13 @@ class MainActivity : AppCompatActivity() {
 
         window.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
 
-        lifecycleScope.launch { Retention.purge(this@MainActivity, System.currentTimeMillis()) }
+        lifecycleScope.launch {
+            Retention.purge(this@MainActivity, System.currentTimeMillis())
+            // Também rearma programações pendentes ao abrir o app. Isto é importante
+            // após atualização/reinstalação: um alarme antigo pode ter sido perdido ou
+            // uma linha AT_TIME pode estar aguardando nova estratégia de entrega.
+            ScheduledMessageAlarmScheduler.reschedule(this@MainActivity)
+        }
 
         adapter = NotifAdapter(
             fmt,
