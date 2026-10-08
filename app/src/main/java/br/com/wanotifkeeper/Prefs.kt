@@ -35,6 +35,7 @@ object Prefs {
     private const val KEY_MANUAL_TIMER_MOTION_SEEN = "voice_manual_timer_motion_seen"
     private const val KEY_THEME_MODE = "theme_mode"
     private const val KEY_SPEECH_PACK_MISSING = "voice_speech_pack_missing"
+    private const val KEY_SCHEDULE_RECIPIENT_PREFIX = "schedule_recipient_"
     const val KEY_BANK_MODE_ENABLED = "bank_mode_enabled"
 
     const val PKG_WHATSAPP = "com.whatsapp"
@@ -208,6 +209,28 @@ object Prefs {
 
     fun setBankModeEnabled(context: Context, enabled: Boolean) {
         prefs(context).edit().putBoolean(KEY_BANK_MODE_ENABLED, enabled).apply()
+    }
+
+    /** Telefone confirmado para envio direto de uma conversa já conhecida. */
+    fun scheduledRecipientPhone(
+        context: Context,
+        packageName: String,
+        sender: String
+    ): String? {
+        val key = KEY_SCHEDULE_RECIPIENT_PREFIX + packageName + "|" + sender.trim().lowercase()
+        return prefs(context).getString(key, null)?.takeIf { it.isNotBlank() }
+    }
+
+    fun setScheduledRecipientPhone(
+        context: Context,
+        packageName: String,
+        sender: String,
+        phone: String
+    ) {
+        val key = KEY_SCHEDULE_RECIPIENT_PREFIX + packageName + "|" + sender.trim().lowercase()
+        prefs(context).edit()
+            .putString(key, ContactPhone.normalizeForWhatsApp(phone))
+            .apply()
     }
 
     /**
