@@ -103,7 +103,16 @@ class NotificationReplySender(private val context: Context) : ReplySender {
 
     override suspend fun send(packageName: String, sender: String, text: String): ReplyResult {
         val cached = ReplyActionRegistry.get(packageName, sender)
-            ?: return ReplyResult.Rejected(NO_ACTION, consumesAttempt = false)
+        if (cached == null) {
+            val phone = ContactPhone.resolveUniqueForDisplayName(context, sender)
+                ?: return ReplyResult.Rejected(NO_ACTION, consumesAttempt = false)
+            return DirectContactAutomation.send(
+                context = context,
+                packageName = packageName,
+                phone = phone,
+                text = text
+            )
+        }
 
         return runCatching {
             val intent = Intent()
