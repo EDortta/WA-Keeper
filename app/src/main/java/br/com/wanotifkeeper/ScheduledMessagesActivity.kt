@@ -40,6 +40,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
     private var selectedMediaUri: String? = null
     private var selectedMediaMimeType: String? = null
     private var selectedMediaName: String? = null
+    private var selectedRecipientPhone: String? = null
 
     private val pickAttachment = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri == null) return@registerForActivityResult
@@ -59,6 +60,8 @@ class ScheduledMessagesActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { finish() }
 
         if (sender.isBlank()) { finish(); return }
+
+        selectedRecipientPhone = recipientPhone
 
         binding.tvConversation.text = if (recipientPhone != null) {
             sender + " · " + formatPhoneForDisplay(recipientPhone!!)
@@ -119,7 +122,33 @@ class ScheduledMessagesActivity : AppCompatActivity() {
             return
         }
 
-        if (recipientPhone != null && !ensureDirectContactAccess()) {
+        val deliveryPhone = if (trigger == ScheduledTrigger.AT_TIME) {
+            selectedRecipientPhone
+                ?: ContactPhone.resolveUniqueForDisplayName(this, sender)
+        } else {
+            selectedRecipientPhone
+        }
+
+        if (trigger == ScheduledTrigger.AT_TIME && deliveryPhone == null) {
+            AlertDialog.Builder(this)
+                .setTitle("Destino não identificado")
+                .setMessage(
+                    "Para enviar em uma data e hora, o WA Keeper precisa conhecer o telefone " +
+                        "do destino. Não encontrei um único telefone para $sender. " +
+                        "Agende pela lista de contatos para escolher o número correto."
+                )
+                .setPositiveButton("Escolher contato") { _, _ ->
+                    startActivity(
+                        Intent(this, ContactScheduleActivity::class.java)
+                            .putExtra(ContactScheduleActivity.EXTRA_PACKAGE, pkg)
+                    )
+                }
+                .setNegativeButton("Voltar", null)
+                .show()
+            return
+        }
+
+        if (trigger == ScheduledTrigger.AT_TIME && !ensureDirectContactAccess()) {
             return
         }
 
@@ -141,7 +170,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
                         mediaUri = selectedMediaUri,
                         mediaMimeType = selectedMediaMimeType,
                         mediaName = selectedMediaName,
-                        recipientPhone = recipientPhone,
+                        recipientPhone = deliveryPhone,
                         createdAt = now,
                         updatedAt = now
                     )
@@ -156,7 +185,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
                     mediaUri = selectedMediaUri,
                     mediaMimeType = selectedMediaMimeType,
                     mediaName = selectedMediaName,
-                    recipientPhone = recipientPhone,
+                    recipientPhone = deliveryPhone,
                     now = now
                 )
             }
@@ -349,6 +378,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
         selectedMediaMimeType = item.mediaMimeType
         selectedMediaName = item.mediaName
         selectedScheduledAt = item.scheduledAt
+        selectedRecipientPhone = item.recipientPhone
 
         if (item.scheduledTrigger == ScheduledTrigger.AT_TIME) {
             binding.radioAtTime.isChecked = true
@@ -415,6 +445,7 @@ class ScheduledMessagesActivity : AppCompatActivity() {
         selectedMediaMimeType = null
         selectedMediaName = null
         selectedScheduledAt = null
+        selectedRecipientPhone = recipientPhone
         if (recipientPhone != null) {
             binding.radioAtTime.isChecked = true
         } else {
