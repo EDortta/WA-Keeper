@@ -1,10 +1,14 @@
 package br.com.wanotifkeeper
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.view.accessibility.AccessibilityNodeInfo
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withTimeoutOrNull
 import java.net.URLEncoder
@@ -26,6 +30,45 @@ object ContactPhone {
             digits.length == 10 || digits.length == 11 -> "55$digits"
             else -> digits
         }
+    }
+
+    /**
+     * Resolve um destino por nome somente quando há exatamente um telefone possível.
+     * Nunca escolhe silenciosamente entre homônimos ou múltiplos números.
+     */
+    fun resolveUniqueForDisplayName(context: Context, displayName: String): String? {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) return null
+
+        val phones = linkedSetOf<String>()
+        val projection = arrayOf(
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+            ContactsContract.CommonDataKinds.Phone.NUMBER
+        )
+
+        context.contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            projection,
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " = ?",
+            arrayOf(displayName),
+            null
+        )?.use { cursor ->
+            val nameIx = cursor.getColumnIndexOrThrow(
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+            )
+            val phoneIx = cursor.getColumnIndexOrThrow(
+                ContactsContract.CommonDataKinds.Phone.NUMBER
+            )
+            while (cursor.moveToNext()) {
+                val name = cursor.getString(nameIx)?.trim().orEmpty()
+                if (!name.equals(displayName.trim(), ignoreCase = true)) continue
+                val normalized = normalizeForWhatsApp(cursor.getString(phoneIx).orEmpty())
+                if (normalized.length >= 10) phones += normalized
+            }
+        }
+
+        return phones.singleOrNull()
     }
 }
 
