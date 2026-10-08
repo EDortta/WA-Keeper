@@ -49,6 +49,8 @@ object MediaShareAutomation {
         packageName: String,
         sender: String
     ): ReplyResult {
+        val lease = AutomatedSendGate.acquireUserInitiated()
+        try {
         if (!isEnabled(context)) {
             return ReplyResult.Rejected(
                 "ative o envio automático do WA Keeper em Acessibilidade",
@@ -95,6 +97,9 @@ object MediaShareAutomation {
             "não consegui validar a conversa no WhatsApp em 30 segundos",
             consumesAttempt = false
         )
+        } finally {
+            lease.release()
+        }
     }
 
     suspend fun sendText(
@@ -315,6 +320,7 @@ class MediaShareAccessibilityService : AccessibilityService() {
                     job,
                     "há mais de uma conversa com esse título no WhatsApp"
                 )
+                if (job.validateOnly) performGlobalAction(GLOBAL_ACTION_BACK)
                 return
             }
         }
