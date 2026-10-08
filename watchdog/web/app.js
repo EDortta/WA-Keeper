@@ -34,7 +34,7 @@ function graph(){
   // Oldest to newest, but still topological. Actual commit dates are shown on the axis.
   const ordered=nodes.slice().reverse();
   const px=62, step=66, maxLane=Math.max(0,...assigned.values());
-  const width=Math.max(800,ordered.length*step+60),height=Math.max(195,125+maxLane*24+55);
+  const width=Math.max(800,ordered.length*step+60),height=Math.max(230,190+maxLane*24);
   const positions=new Map(ordered.map((n,i)=>[n.sha,{x:35+i*step,y:100+assigned.get(n.sha)*24}]));
   const graphEl=$("graph");
   const former=graphEl.parentElement.scrollLeft;
@@ -75,12 +75,21 @@ function graph(){
     }
     circles+='<g class="node '+(current?'current':'')+'" role="button" tabindex="0" data-sha="'+n.sha+'" transform="translate('+x+','+y+')"><title>'+title+'</title><circle r="6"/><text x="8" y="14" text-anchor="start" transform="rotate(30 8 14)">'+escape(n.short)+'</text></g>';
   }
-  // Calendar labels give the graph an explicit chronological reference without
-  // falsely claiming that topology and author timestamps are always monotonic.
-  let axis="";
-  for(let i=0;i<ordered.length;i+=Math.max(1,Math.ceil(ordered.length/15))){
-    const n=ordered[i],x=positions.get(n.sha).x;
-    axis+='<text x="'+x+'" y="'+(height-7)+'" text-anchor="middle">'+escape(n.committed.slice(0,10))+'</text>';
+  // Thick translucent timeline below all commit lanes. Segment boundaries denote
+  // changes in the displayed commit date (topological order is preserved).
+  const barY=155+maxLane*24;
+  let axis='<rect class="date-track" x="30" y="'+barY+'" width="'+(width-60)+'" height="12" rx="6"/>';
+  let start=0;
+  while(start<ordered.length){
+    const day=ordered[start].committed.slice(0,10);
+    let end=start+1;
+    while(end<ordered.length && ordered[end].committed.slice(0,10)===day)end++;
+    const left=start===0?30:(positions.get(ordered[start-1].sha).x+positions.get(ordered[start].sha).x)/2;
+    const right=end===ordered.length?width-30:(positions.get(ordered[end-1].sha).x+positions.get(ordered[end].sha).x)/2;
+    axis+='<path class="date-boundary" d="M'+left+' '+(barY-5)+' V'+(barY+17)+'"/>';
+    const label=day.slice(8,10)+'/'+day.slice(5,7)+'/'+day.slice(0,4);
+    axis+='<text class="date-label" x="'+((left+right)/2)+'" y="'+(barY+32)+'" text-anchor="middle">'+escape(label)+'</text>';
+    start=end;
   }
   graphEl.innerHTML=edges+branchLabels+circles+'<g class="date-axis">'+axis+'</g>';
   document.querySelectorAll("[data-sha]").forEach(n=>{
