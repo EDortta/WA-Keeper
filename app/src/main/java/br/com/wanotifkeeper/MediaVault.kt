@@ -81,21 +81,46 @@ object MediaVault {
         if (!hasAllFilesAccess()) return null
         val root = voiceRoot(pkg)?.takeIf { it.isDirectory } ?: return null
 
-        val cutoff = aroundTs - WINDOW_BACK_MS
+        val cutoff = aroundTs - VOICE_WINDOW_BACK_MS
+        val ceiling = aroundTs + VOICE_WINDOW_FORWARD_MS
+        val settled = System.currentTimeMillis() - FILE_SETTLE_MS
+
         // Áudios vão para a pasta da semana atual; olhar as 2 mais recentes basta e é barato.
         val weekDirs = root.listFiles { f -> f.isDirectory }
             ?.sortedByDescending { it.name }
             ?.take(2)
             ?: return null
 
-        val candidate = weekDirs
-            .flatMap { dir -> dir.listFiles { f -> f.isFile && f.name.endsWith(".opus") }?.toList() ?: emptyList() }
-            .filter { it.lastModified() >= cutoff && key(it) !in consumed }
-            .maxByOrNull { it.lastModified() }
-            ?: return null
+        val candidates = weekDirs
+            .flatMap { dir ->
+                dir.listFiles { f -> f.isFile && f.name.endsWith(".opus") }
+                    ?.toList()
+                    ?: emptyList()
+            }
+            .filter {
+                it.lastModified() in cutoff..ceiling &&
+                    it.lastModified() <= settled &&
+                    key(it) !in consumed
+            }
+            .sortedBy { kotlin.math.abs(it.lastModified() - aroundTs) }
+
+        val candidate = candidates.firstOrNull() ?: return null
+        val bestDelta = kotlin.math.abs(candidate.lastModified() - aroundTs)
+
+        // Sem identidade do remetente no nome do arquivo, horário sozinho não pode decidir
+        // entre dois áudios quase simultâneos. Nesse caso é preferível deixar sem associação
+        // a colocar o áudio de uma pessoa dentro da conversa de outra.
+        val secondDelta = candidates.getOrNull(1)
+            ?.let { kotlin.math.abs(it.lastModified() - aroundTs) }
+
+        if (bestDelta > VOICE_MAX_MATCH_DELTA_MS) return null
+        if (secondDelta != null && secondDelta - bestDelta < VOICE_MIN_SEPARATION_MS) return null
 
         return runCatching {
-            val dest = File(audioDir(ctx), candidate.name)
+            val dest = File(
+                audioDir(ctx),
+                "voice-${aroundTs}-${candidate.name}"
+            )
             candidate.copyTo(dest, overwrite = true)
             consumed.add(key(candidate))
             dest.absolutePath
@@ -194,8 +219,12 @@ object MediaVault {
 
     private fun key(f: File): String = "${f.absolutePath}:${f.lastModified()}"
 
-    /** Janela para trás a partir da notificação — o arquivo aparece por volta desse horário. */
-    private const val WINDOW_BACK_MS = 20_000L
+    /** Áudio sem identidade forte: janelas deliberadamente conservadoras para não cruzar contatos. */
+    private const val VOICE_WINDOW_BACK_MS = 3_000L
+    private const val VOICE_WINDOW_FORWARD_MS = 12_000L
+    private const val VOICE_MAX_MATCH_DELTA_MS = 6_000L
+    private const val VOICE_MIN_SEPARATION_MS = 1_500L
+
     private const val IMAGE_WINDOW_BACK_MS = 15_000L
 
     /** Quanto tempo um arquivo precisa estar sem escrita para ser considerado baixado por inteiro. */
