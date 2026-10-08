@@ -46,6 +46,15 @@
                 android:textColor="@color/wa_text_primary" />
 
             <Button
+                android:id="@+id/btnSendNow"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Enviar agora"
+                android:textAllCaps="false"
+                android:textColor="@color/wa_text_primary" />
+
+            <Button
                 android:id="@+id/btnCancel"
                 style="?android:attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
