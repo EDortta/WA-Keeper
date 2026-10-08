@@ -158,6 +158,17 @@ object DirectContactAutomation {
 
     fun current(): Pending? = pending
 
+    fun cancelForUserInteraction() {
+        val job = pending ?: return
+        job.result.complete(
+            ReplyResult.Rejected(
+                AutomatedSendGate.USER_BUSY,
+                consumesAttempt = false
+            )
+        )
+        clear(job)
+    }
+
     fun handle(root: AccessibilityNodeInfo, eventPackage: String?) {
         val job = pending ?: return
         if (eventPackage != job.packageName) return
