@@ -23,11 +23,13 @@ object ScheduledMessageTrigger {
     suspend fun onIncoming(ctx: Context, sbn: StatusBarNotification, sender: String): TriggerOutcome {
         if (BankMode.isEnabled(ctx)) return TriggerOutcome.NothingArmed
         val fromSelf = looksLikeOwnMessage(sbn.notification)
+        val conversationKey = ConversationIdentity.stableKey(sbn, sender)
         val outcome = coordinator(ctx).onConversationActivity(
             packageName = sbn.packageName,
             conversationSender = sender,
             fromSelf = fromSelf,
-            triggerNotificationKey = sbn.key
+            triggerNotificationKey = sbn.key,
+            conversationKey = conversationKey
         )
         if (outcome !is TriggerOutcome.NothingArmed) {
             android.util.Log.d(TAG, "${sbn.packageName}|$sender -> $outcome")
