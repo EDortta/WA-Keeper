@@ -318,6 +318,26 @@ class NotifListenerService : NotificationListenerService() {
                 )
             )
 
+            val candidatePhones = if (isGroup) {
+                emptyList()
+            } else {
+                runCatching {
+                    ContactPhone.candidatesForDisplayName(applicationContext, title)
+                }.getOrDefault(emptyList())
+            }
+            runCatching {
+                db.conversationBindings().upsert(
+                    ConversationBindingEntity(
+                        packageName = sbn.packageName,
+                        conversationKey = conversationKey,
+                        sender = title,
+                        isGroup = isGroup,
+                        candidatePhones = candidatePhones.joinToString(","),
+                        updatedAt = System.currentTimeMillis()
+                    )
+                )
+            }
+
             // Se o usuário já associou este contato do telefone a uma entidade,
             // conecta automaticamente a primeira conversa recebida desse contato.
             runCatching {
