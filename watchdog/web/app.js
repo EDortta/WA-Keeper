@@ -34,14 +34,21 @@ function graph(){
   // Oldest to newest, but still topological. Actual commit dates are shown on the axis.
   const ordered=nodes.slice().reverse();
   const px=62, step=66, maxLane=Math.max(0,...assigned.values());
-  const width=Math.max(800,ordered.length*step+60),height=Math.max(135,55+maxLane*24+55);
-  const positions=new Map(ordered.map((n,i)=>[n.sha,{x:35+i*step,y:25+assigned.get(n.sha)*24}]));
+  const width=Math.max(800,ordered.length*step+60),height=Math.max(195,125+maxLane*24+55);
+  const positions=new Map(ordered.map((n,i)=>[n.sha,{x:35+i*step,y:100+assigned.get(n.sha)*24}]));
   const graphEl=$("graph");
   const former=graphEl.parentElement.scrollLeft;
   graphEl.setAttribute("viewBox",`0 0 ${width} ${height}`);
   graphEl.style.width=width+"px";
   graphEl.style.height=height+"px";
-  let edges="",circles="";
+  let edges="",circles="",branchLabels="";
+  const occupied=[];
+  function labelRow(left,right){
+    let row=0;
+    while(occupied[row]?.some(([a,b])=>left<b&&right>a))row++;
+    (occupied[row]??=[]).push([left,right]);
+    return row;
+  }
   for(const n of ordered){
     const {x,y}=positions.get(n.sha);
     for(let i=0;i<n.parents.length;i++){
@@ -54,6 +61,18 @@ function graph(){
     const refs=state.refs.filter(r=>r.sha===n.sha).map(r=>r.name);
     const date=n.committed.slice(0,10);
     const title=escape(n.subject+" | "+date+" | "+n.sha+" | "+(refs.join(", ")||"sem referência"));
+    // Keep branch names horizontal and distinct from the rotated commit hash.
+    for(const ref of refs){
+      const label=ref.length>43?ref.slice(0,40)+"…":ref;
+      const w=Math.max(55,label.length*6.1+14);
+      const left=Math.min(Math.max(3,x-w/2),width-w-3);
+      const row=labelRow(left-4,left+w+4);
+      const ly=12+row*19;
+      branchLabels+='<g class="branch-label"><title>'+escape(ref)+'</title>'+
+        '<path d="M'+x+' '+(ly+16)+' L'+x+' '+(y-9)+'" stroke="var(--sub)" stroke-opacity=".45" stroke-dasharray="2 3"/>'+
+        '<rect x="'+left+'" y="'+ly+'" width="'+w+'" height="16" rx="3"/>'+
+        '<text x="'+(left+7)+'" y="'+(ly+11)+'">'+escape(label)+'</text></g>';
+    }
     circles+='<g class="node '+(current?'current':'')+'" role="button" tabindex="0" data-sha="'+n.sha+'" transform="translate('+x+','+y+')"><title>'+title+'</title><circle r="6"/><text x="8" y="14" text-anchor="start" transform="rotate(30 8 14)">'+escape(n.short)+'</text></g>';
   }
   // Calendar labels give the graph an explicit chronological reference without
@@ -63,7 +82,7 @@ function graph(){
     const n=ordered[i],x=positions.get(n.sha).x;
     axis+='<text x="'+x+'" y="'+(height-7)+'" text-anchor="middle">'+escape(n.committed.slice(0,10))+'</text>';
   }
-  graphEl.innerHTML=edges+circles+'<g class="date-axis">'+axis+'</g>';
+  graphEl.innerHTML=edges+branchLabels+circles+'<g class="date-axis">'+axis+'</g>';
   document.querySelectorAll("[data-sha]").forEach(n=>{
     n.onclick=()=>revision(n.dataset.sha);
     n.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();revision(n.dataset.sha)}};
