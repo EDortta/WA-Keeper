@@ -1,5 +1,6 @@
 package br.com.wanotifkeeper
 
+import kotlinx.coroutines.sync.Mutex
 sealed class TriggerOutcome {
     object OwnMessage : TriggerOutcome()
     object NothingArmed : TriggerOutcome()
@@ -91,6 +92,8 @@ class ScheduledMessageCoordinator(
         at: Long,
         triggerKey: String?
     ): TriggerOutcome {
+        deliveryMutex.lock()
+        try {
         if (!store.claim(candidate.id, at, triggerKey)) return TriggerOutcome.LostClaim
 
         val row = store.byId(candidate.id) ?: return TriggerOutcome.Vanished
@@ -137,9 +140,13 @@ class ScheduledMessageCoordinator(
                 }
             }
         }
+        } finally {
+            deliveryMutex.unlock()
+        }
     }
 
     companion object {
+        private val deliveryMutex = Mutex()
         const val DEFAULT_MAX_ATTEMPTS = 3
         const val DEFAULT_RETRY_BACKOFF_MS = 60_000L
         const val DEFAULT_STALE_CLAIM_MS = 5 * 60_000L
