@@ -38,7 +38,7 @@ def central_publisher():
     checkout = private / "repo"
     # Only bootstrap/update the public script under a lock. Never merge,
     # commit or push: those operations belong solely to publisher.py.
-    with (private / "bootstrap.lock").open("a+") as lock:
+    with (private / "publish.lock").open("a+") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         if not (checkout / ".git").exists():
             git("clone", REMOTE, str(checkout))
