@@ -212,7 +212,7 @@ async function updateAndRestart(){
       await new Promise(resolve=>setTimeout(resolve,500));
       try{
         const ready=await fetch("/api/project",{cache:"no-store"});
-        if(ready.ok){const info=await ready.json();if(info.head===data.head){location.reload();return}}
+        if(ready.ok){const info=await ready.json();if(info.head===data.head && info.update_token!==updateToken){location.reload();return}}
       }catch(_){}
     }
     throw Error("Reinício não confirmado. Verifique o terminal.");
