@@ -8,6 +8,7 @@ import argparse
 import datetime as dt
 import fcntl
 import json
+import tempfile
 import os
 from pathlib import Path
 import re
@@ -29,72 +30,29 @@ def chmod_private(path):
     path.mkdir(parents=True, exist_ok=True, mode=0o700)
     path.chmod(0o700)
 
-def flush():
-    chmod_private(STATE)
-    repo = STATE/"repo"
-    outbox = STATE/"outbox"
-    chmod_private(outbox)
-    stage = "lock"
-    with (STATE/"publish.lock").open("a+") as lock:
+def central_publisher():
+    """Bootstrap a shared read-only checkout for publisher.py under a short lock."""
+    import fcntl
+    private = STATE
+    chmod_private(private)
+    checkout = private / "repo"
+    with (private / "bootstrap.lock").open("a+") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
-        try:
-            stage = "sync"
-            if not (repo/".git").exists():
-                git("clone", REMOTE, str(repo))
-            else:
-                git("fetch", "origin")
-                branch = git("symbolic-ref", "--short", "HEAD", cwd=repo).stdout.strip()
-                upstream = git("rev-parse", "--verify", f"refs/remotes/origin/{branch}", cwd=repo, check=False)
-                if upstream.returncode == 0:
-                    git("-c", "user.name=Development Evidence", "-c",
-                        "user.email=development-evidence@local",
-                        "merge", "--no-edit", f"origin/{branch}", cwd=repo)
-            stage = "prepare"
-            files = sorted(outbox.glob("*.json"))
-            if not files:
-                return 0
-            for entry in files:
-                payload = json.loads(entry.read_text())
-                dest = repo/payload["relative_path"]
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                rendered = json.dumps(payload["report"], indent=2, ensure_ascii=False)+"\n"
-                if dest.exists():
-                    if dest.read_text() != rendered:
-                        raise RuntimeError(f"evidence collision: {dest}")
-                    continue
-                dest.write_text(rendered)
-            git("add", "--", ".", cwd=repo)
-            diff = git("diff", "--cached", "--quiet", cwd=repo, check=False)
-            if diff.returncode == 1:
-                git("-c", "user.name=Development Evidence", "-c",
-                    "user.email=development-evidence@local", "commit",
-                    "-m", f"evidence: publish {len(files)} execution(s)", cwd=repo)
-            stage = "push"
-            for attempt in range(4):
-                pushed = git("push", "origin", "HEAD", cwd=repo, check=False)
-                if pushed.returncode == 0:
-                    break
-                stage = "resync"
-                git("fetch", "origin", cwd=repo)
-                git("-c", "user.name=Development Evidence", "-c",
-                    "user.email=development-evidence@local",
-                    "merge", "--no-edit", f"origin/{branch}", cwd=repo)
-                stage = "push"
-            else:
-                raise RuntimeError("push refused after four synchronization attempts")
-            stage = "acknowledge"
-            for entry in files:
-                entry.unlink()
-            return 0
-        except Exception as exc:
-            diagnostic = STATE / "last-publish-error.log"
-            detail = str(exc)
-            if isinstance(exc, subprocess.CalledProcessError):
-                detail = f"command={exc.cmd!r} returncode={exc.returncode} stderr={exc.stderr!r} stdout={exc.stdout!r}"
-            diagnostic.write_text(f"stage={stage}\nerror={detail}\n")
-            diagnostic.chmod(0o600)
-            print(f"evidence upload deferred at stage={stage}; local diagnostic: {diagnostic}", file=sys.stderr)
-            return 1
+        if not (checkout / ".git").exists():
+            git("clone", REMOTE, str(checkout))
+        else:
+            # Do not write to this checkout here: only publisher.py may mutate Git.
+            pass
+    script = checkout / "publisher.py"
+    if not script.exists():
+        raise RuntimeError("central publisher.py missing; update development-evidences checkout")
+    return script
+
+
+def flush():
+    script = central_publisher()
+    result = subprocess.run([sys.executable, str(script), "flush"])
+    return result.returncode
 
 def record(args):
     chmod_private(STATE)
@@ -114,12 +72,21 @@ def record(args):
         "phase": args.phase,
         "error_category": args.error_category,
     }
-    f=outbox/(uuid.uuid4().hex+".json")
-    f.write_text(json.dumps({"relative_path": relative, "report":report},ensure_ascii=False))
-    f.chmod(0o600)
-    print(f"Evidence queued: {relative}")
+    envelope={"relative_path": relative, "report":report}
+    # Producers only enqueue; never commit or push Git.
+    script=central_publisher()
+    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", delete=False,
+                                     dir=STATE, prefix=".envelope-", suffix=".json") as tmp:
+        json.dump(envelope, tmp, ensure_ascii=False)
+        temp_path=Path(tmp.name)
+    try:
+        result=subprocess.run([sys.executable, str(script), "enqueue", "--file", str(temp_path)])
+        if result.returncode != 0:
+            return result.returncode
+    finally:
+        temp_path.unlink(missing_ok=True)
     if args.remote:
-        flush()
+        return flush()
     return 0
 
 def main():
