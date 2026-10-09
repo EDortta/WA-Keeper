@@ -62,7 +62,7 @@ def discover(root):
                     results.append({"id":item_id,"kind":kind,"name":canonical,"path":rel,"line":line,
                                     "level":level,"status":status,"source":"markdown","confidence":confidence})
                 context.append((level,title))
-    return {"items":results,"documents":inspected}
+    return {"items":results,"documents":inspected,"diagnostics":{"recognized":len(results),"unclassified_markdown":max(0,inspected-len(set(x["path"] for x in results)))}}
 
 def scan(root):
     target=cache_file(root)
@@ -104,9 +104,8 @@ def create_domain_template(root):
         "# Mapa de domínios\n\n"
         "Defina os domínios do projeto neste documento.\n\n"
         "Use títulos como \`## Domínio: Nome do domínio\`.\n\n"
-        "### Propósito\nDescreva a responsabilidade principal.\n\n"
-        "### É dono de\nDescreva o que pertence ao domínio.\n\n"
-        "### Não pode tocar\nDescreva os limites.\n"
+        "Campos sugeridos: propósito, responsabilidades, exclusões, "
+        "entradas, saídas e invariantes.\n"
     )
     with target.open("x",encoding="utf-8") as out:out.write(template)
     return {"created":True,"path":"docs/domains.md"}
