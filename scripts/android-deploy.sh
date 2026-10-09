@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 APP_ID="br.com.wanotifkeeper"
-VARIANT="release"
+VARIANT="auto"
 PROFILE="auto"
 RUN_TESTS=1
 LAUNCH_APP=1
@@ -27,11 +27,11 @@ Aliases:
   development development
 
 Opções:
-  --release      compila/instala release (padrão; preserva a assinatura esperada do app)
-  --debug        compila/instala debug
-  --lab          usa perfil experimental
-  --store        usa perfil Google Play
-  --skip-tests   não roda testes unitários antes do build
+  --release      força compilação release (exige assinatura configurada)
+  --debug        força compilação debug
+  --lab          força perfil experimental
+  --store        força perfil Google Play
+  --skip-tests   não roda testes unitários antes do build\n  --evidence=remote  publica metadados sanitizados no repositório central
   --no-launch    instala mas não abre o app
   -h, --help     mostra esta ajuda
 
@@ -44,9 +44,7 @@ Exemplos:
 Se houver mais de um Android conectado:
   ANDROID_SERIAL=<serial> bash scripts/android-deploy.sh audio
 
-Em caso de falha nos testes, build ou instalação, o último erro é publicado em:
-  branch: diagnostics/android-deploy
-  arquivo: diagnostics/android-deploy/last-failure.md
+Logs brutos ficam locais. Evidências publicadas são somente metadados sanitizados.
 EOF
 }
 
@@ -187,7 +185,7 @@ publish_failure() {
 fail() {
   if [[ -n "${LOG_FILE:-}" ]]; then
     printf 'ERRO: %s\n' "$*" | tee -a "$LOG_FILE" >&2
-    publish_failure 1
+    log_line "Diagnóstico local: $LOG_FILE"
   else
     printf 'ERRO: %s\n' "$*" >&2
   fi
@@ -207,7 +205,7 @@ run_logged() {
   set -e
 
   if (( status != 0 )); then
-    publish_failure "$status"
+    log_line "Falha registrada localmente: $LOG_FILE"
     exit "$status"
   fi
 }
@@ -220,6 +218,8 @@ while (($#)); do
     --store) PROFILE="store" ;;
     --skip-tests) RUN_TESTS=0 ;;
     --no-launch) LAUNCH_APP=0 ;;
+    --evidence=remote) WA_EVIDENCE_MODE=remote ;;
+    --evidence=local) WA_EVIDENCE_MODE=local ;;
     -h|--help) usage; exit 0 ;;
     -*) fail "opção desconhecida: $1" ;;
     *)
@@ -251,28 +251,24 @@ esac
 
 [[ -n "$TARGET_BRANCH" ]] || fail "não consegui determinar a branch atual"
 
-if [[ "$PROFILE" == "auto" ]]; then
-  case "$TARGET_BRANCH" in
-    play|main) PROFILE="store" ;;
-    *) PROFILE="lab" ;;
-  esac
-fi
-
+# Reuse the successful build recipe for this worktree, not another checkout.
+GIT_HEAD_FILE="$(git rev-parse --git-path HEAD)"
+MANIFEST="$(dirname "$GIT_HEAD_FILE")/wa-build/last-success"
+[[ -f "$MANIFEST" ]] || fail "nenhum build APK bem-sucedido neste worktree; execute scripts/build.sh primeiro"
+read_manifest() { sed -n "s/^$1=//p" "$MANIFEST" | tail -n1; }
+MANIFEST_PROFILE="$(read_manifest profile)"
+MANIFEST_TYPE="$(read_manifest type)"
+MANIFEST_MODE="$(read_manifest mode)"
+MANIFEST_TARGET="$(read_manifest target)"
+MANIFEST_FEATURES="$(read_manifest features)"
+[[ "$MANIFEST_MODE" == "apk" && "$MANIFEST_TARGET" == "app" ]] || fail "último build não corresponde a APK do aplicativo"
+[[ "$MANIFEST_PROFILE" == "lab" || "$MANIFEST_PROFILE" == "store" ]] || fail "perfil inválido no manifesto"
+[[ "$MANIFEST_TYPE" == "debug" || "$MANIFEST_TYPE" == "release" ]] || fail "tipo inválido no manifesto"
+[[ "$PROFILE" == "auto" ]] && PROFILE="$MANIFEST_PROFILE"
+[[ "$VARIANT" == "auto" ]] && VARIANT="$MANIFEST_TYPE"
 if [[ "$PROFILE" == "store" && "$TARGET_BRANCH" != "play" && "$TARGET_BRANCH" != "main" ]]; then
   fail "perfil store só pode ser usado nas branches play ou main"
 fi
-
-log_line "==> Atualizando origin/$TARGET_BRANCH"
-git fetch origin "$TARGET_BRANCH"
-
-if git show-ref --verify --quiet "refs/heads/$TARGET_BRANCH"; then
-  git switch "$TARGET_BRANCH"
-else
-  git switch --track -c "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
-fi
-
-git pull --ff-only origin "$TARGET_BRANCH"
-
 if [[ "$VARIANT" == "release" ]]; then
   STORE_FILE="$(sed -n 's/^RELEASE_STORE_FILE=//p' gradle.properties 2>/dev/null | tail -n 1 || true)"
   if [[ -n "$STORE_FILE" && ! -f "app/$STORE_FILE" && ! -f "$STORE_FILE" ]]; then
@@ -302,9 +298,10 @@ log_line "==> Branch: $TARGET_BRANCH"
 log_line "==> Variante: $VARIANT"
 log_line "==> Perfil: $PROFILE"
 
-BUILD_ARGS=( "--$PROFILE" )
+BUILD_ARGS=( "--$PROFILE" "--only" "$MANIFEST_FEATURES" )
 [[ "$VARIANT" == "release" ]] && BUILD_ARGS+=( --release ) || BUILD_ARGS+=( --debug )
 (( RUN_TESTS )) || BUILD_ARGS+=( --skip-tests )
+BUILD_ARGS+=( "--evidence=${WA_EVIDENCE_MODE:-local}" )
 
 run_logged "Compilação via scripts/build.sh" bash scripts/build.sh "${BUILD_ARGS[@]}"
 
@@ -333,7 +330,7 @@ if (( INSTALL_STATUS != 0 )); then
 A instalação falhou. NÃO desinstale o WA-Keeper para "resolver" assinatura incompatível:
 a desinstalação apagaria o banco local. Corrija a assinatura/keystore e rode novamente.
 EOF
-  publish_failure "$INSTALL_STATUS"
+  log_line "Instalação falhou; log permanece local: $LOG_FILE"
   exit "$INSTALL_STATUS"
 fi
 
@@ -351,4 +348,4 @@ printf 'OK: %s instalado no Android a partir de %s (%s).\n' "$APP_ID" "$TARGET_B
   | head -n 2 \
   | sed 's/^/  /' || true
 
-rm -f "$LOG_FILE"
+echo "Log de deploy local: $LOG_FILE"
