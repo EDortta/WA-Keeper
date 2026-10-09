@@ -70,7 +70,18 @@ def flush():
                     "user.email=development-evidence@local", "commit",
                     "-m", f"evidence: publish {len(files)} execution(s)", cwd=repo)
             stage = "push"
-            git("push", "origin", "HEAD", cwd=repo)
+            for attempt in range(4):
+                pushed = git("push", "origin", "HEAD", cwd=repo, check=False)
+                if pushed.returncode == 0:
+                    break
+                stage = "resync"
+                git("fetch", "origin", cwd=repo)
+                git("-c", "user.name=Development Evidence", "-c",
+                    "user.email=development-evidence@local",
+                    "merge", "--no-edit", f"origin/{branch}", cwd=repo)
+                stage = "push"
+            else:
+                raise RuntimeError("push refused after four synchronization attempts")
             stage = "acknowledge"
             for entry in files:
                 entry.unlink()
