@@ -15,6 +15,7 @@ BUILD_TYPE="debug"
 MODE="apk"
 TARGET="app"
 ONLY=""
+ONLY_SET=0
 PRINT_ONLY=0
 RUN_TESTS=1
 EVIDENCE_MODE="${WA_EVIDENCE_MODE:-local}"
@@ -30,7 +31,7 @@ while (($#)); do
     --store) PROFILE="store"; BUILD_TYPE="release"; MODE="bundle" ;;
     --feature) shift; [[ $# -gt 0 ]] || fail "--feature exige nome"; ENABLE+=("$1") ;;
     --no-feature) shift; [[ $# -gt 0 ]] || fail "--no-feature exige nome"; DISABLE+=("$1") ;;
-    --only) shift; [[ $# -gt 0 ]] || fail "--only exige lista"; ONLY="$1" ;;
+    --only) shift; [[ $# -gt 0 ]] || fail "--only exige lista"; ONLY="$1"; ONLY_SET=1 ;;
     --app) TARGET="app" ;;
     --benchmark) TARGET="benchmark"; PROFILE="lab"; BUILD_TYPE="debug"; MODE="apk" ;;
     --godofredo-benchmark) TARGET="godofredo-benchmark"; PROFILE="lab"; BUILD_TYPE="debug"; MODE="apk" ;;
@@ -114,9 +115,11 @@ declare -A KNOWN=() ENABLED=()
 for f in "${ALL_FEATURES[@]}"; do KNOWN["$f"]=1; done
 validate_name(){ [[ -n "${KNOWN[$1]:-}" ]] || fail "feature desconhecida: $1"; }
 
-if [[ -n "$ONLY" ]]; then
-  IFS=',' read -r -a selected <<< "$ONLY"
-  for f in "${selected[@]}"; do validate_name "$f"; ENABLED["$f"]=1; done
+if (( ONLY_SET )); then
+  if [[ -n "$ONLY" ]]; then
+    IFS=',' read -r -a selected <<< "$ONLY"
+    for f in "${selected[@]}"; do validate_name "$f"; ENABLED["$f"]=1; done
+  fi
 else
   for f in "${ALL_FEATURES[@]}"; do
     if [[ "$PROFILE" == "store" ]]; then
