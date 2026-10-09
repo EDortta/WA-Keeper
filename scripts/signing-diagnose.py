@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Read-only Android signing compatibility diagnosis. Never installs or exposes secrets."""
 import argparse
+import datetime as dt
+import json
+import tempfile
 import os
 from pathlib import Path
 import re
@@ -15,8 +18,45 @@ def call(argv):
 
 def cert(apksigner, apk):
     result = call([apksigner, "verify", "--print-certs", str(apk)])
-    digests = re.findall(r"Signer #\\d+ certificate SHA-256 digest:\\s*([0-9a-fA-F:]+)", result.stdout)
+    digests = re.findall(r"Signer #\d+ certificate SHA-256 digest:\s*([0-9a-fA-F:]+)", result.stdout)
     return (result.returncode, [d.replace(":", "").lower() for d in digests])
+
+def recorded_main():
+    """Write safe local evidence for every execution, including failure."""
+    state = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local/state"))) / "wa-keeper" / "signing"
+    state.mkdir(parents=True, exist_ok=True, mode=0o700)
+    stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    report = state / f"diagnostic-{stamp}.json"
+    import contextlib
+    import io
+    buffer = io.StringIO()
+    code = 2
+    try:
+        with contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
+            code = main()
+    except SystemExit as exc:
+        code = exc.code if isinstance(exc.code, int) else 2
+    except Exception as exc:
+        buffer.write(f"ERROR: exception_type={type(exc).__name__}\n")
+    output = buffer.getvalue()
+    allow = ("package=", "installed_certificate_sha256=", "candidate_certificate_sha256=",
+             "signature_match=", "candidate_certificate=", "read_only=", "NOT_INSTALLED:")
+    findings = [line.strip() for line in output.splitlines() if line.startswith(allow)]
+    evidence = {"schema": 1, "timestamp_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
+                "tool": "signing-diagnose", "status": "success" if code == 0 else "failed",
+                "exit_code": code, "findings": findings}
+    with tempfile.NamedTemporaryFile(dir=state, mode="w", prefix=".diag-", delete=False) as tmp:
+        json.dump(evidence, tmp, indent=2)
+        tmp.write("\n")
+        tmp.flush()
+        os.fsync(tmp.fileno())
+        temporary = Path(tmp.name)
+    temporary.chmod(0o600)
+    os.replace(temporary, report)
+    print(output, end="")
+    print(f"Evidence saved locally: {report}")
+    return code
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -44,7 +84,6 @@ def main():
         print(f"NOT_INSTALLED: {APP_ID}")
         return 2
     # Pull APK to a private tempdir; never read application databases or personal data.
-    import tempfile
     with tempfile.TemporaryDirectory(prefix="wa-signing-") as temp:
         installed = Path(temp) / "installed.apk"
         pulled = call(base + ["pull", remote, str(installed)])
@@ -72,4 +111,4 @@ def main():
     return 0
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(recorded_main())
