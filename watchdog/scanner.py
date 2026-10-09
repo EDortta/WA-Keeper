@@ -16,7 +16,7 @@ STATUSES={"protected":"PROTECTED","protegido":"PROTECTED","implementado":"implem
 
 def cache_file(root):
     # Workspace cache is deliberately outside tracked project documentation.
-    return Path(root)/".git"/"watchdog"/"catalog.json"
+    return Path(root)/".git"/"watchdog"/"catalog.json" if (Path(root)/".git").is_dir() else Path(root)/".watchdog"/"catalog.json"
 
 def discover(root):
     root=Path(root).resolve()
@@ -100,12 +100,13 @@ def create_domain_template(root):
     if target.exists():return {"created":False,"path":"docs/domains.md"}
     directory.mkdir(parents=True,exist_ok=True)
     if directory.is_symlink():raise ValueError("Unsafe documentation directory")
-    template=("# Mapa de domínios\\n\\n"
-              "Este documento declara os domínios oficiais deste projeto.\\n"
-              "Substitua os exemplos de sintaxe abaixo por seções reais.\\n\\n"
-              "Formato: cada domínio deve começar por um título de nível 2, "
-              "por exemplo, \\x60\\x60## Domínio: Nome\\x60\\x60.\\n"
-              "Inclua propósito, responsabilidades, exclusões, entradas, saídas e invariantes.\\n"
-              "Não declare um domínio enquanto ele não for validado pelo projeto.\\n")
+    template=(
+        "# Mapa de domínios\n\n"
+        "Defina os domínios do projeto neste documento.\n\n"
+        "Use títulos como `## Domínio: Nome do domínio`.\n\n"
+        "### Propósito\nDescreva a responsabilidade principal.\n\n"
+        "### É dono de\nDescreva o que pertence ao domínio.\n\n"
+        "### Não pode tocar\nDescreva os limites.\n"
+    )
     with target.open("x",encoding="utf-8") as out:out.write(template)
     return {"created":True,"path":"docs/domains.md"}
