@@ -32,11 +32,17 @@ function graph(){
     n.parents.forEach((p,i)=>{if(byId.has(p)&&!lane.has(p)&&!pending.has(p))pending.set(p,i===0?k:freeLane())});
   }
   const ordered=visible.slice().reverse();
-  const gap=compact?85:64, laneGap=compact?37:39;
-  const maxLane=Math.max(0,...ordered.map(n=>lane.get(n.sha)));
+  const gap=compact?85:64, laneGap=compact?30:34;
+  // Lane IDs may contain holes because inactive branches were released.
+  // Remap only the lanes present in the displayed DAG to contiguous rows.
+  const usedLanes=[...new Set(ordered.map(n=>lane.get(n.sha)))].sort((a,b)=>a-b);
+  const rowForLane=new Map(usedLanes.map((id,row)=>[id,row]));
+  const lastRow=Math.max(0,usedLanes.length-1);
   const width=Math.max(800,ordered.length*gap+70);
-  const height=Math.max(160,100+maxLane*laneGap+35);
-  const positions=new Map(ordered.map((n,i)=>[n.sha,{x:35+i*gap,y:37+lane.get(n.sha)*laneGap}]));
+  const topPad=compact?27:32;
+  const bottomPad=compact?37:42;
+  const height=topPad+lastRow*laneGap+bottomPad;
+  const positions=new Map(ordered.map((n,i)=>[n.sha,{x:35+i*gap,y:topPad+rowForLane.get(lane.get(n.sha))*laneGap}]));
   const svg=$("graph"), scroll=svg.parentElement, previous=scroll.scrollLeft;
   svg.setAttribute("viewBox",`0 0 ${width} ${height}`);
   svg.style.width=width+"px";svg.style.height=height+"px";
