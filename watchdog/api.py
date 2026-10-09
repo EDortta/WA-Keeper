@@ -6,11 +6,13 @@ import webbrowser
 import secrets
 import subprocess
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 from .catalog import domains, features, markdown_tree
 from .scanner import scan, cached, create_domain_template
+from .evidence import record_scan
 
 
 def handler_for(repo, update_token):
@@ -93,7 +95,28 @@ def handler_for(repo, update_token):
                     self.json(create_domain_template(repo.root))
                     return
                 if action == "/api/scan":
-                    self.json(scan(repo.root))
+                    started=time.monotonic()
+                    result=None
+                    try:
+                        result=scan(repo.root)
+                        result["evidence"]=record_scan(
+                            repo.root,success=True,duration=time.monotonic()-started,
+                            documents=result["documents"],
+                            domains=sum(i["kind"]=="domain" for i in result["items"]),
+                            features=sum(i["kind"]=="feature" for i in result["items"]))
+                        self.json(result)
+                    except Exception as exc:
+                        category="configuration" if isinstance(exc,(PermissionError,FileNotFoundError)) else "other"
+                        evidence=None
+                        try:
+                            evidence=record_scan(repo.root,success=False,
+                                duration=time.monotonic()-started,
+                                documents=(result or {}).get("documents",0),
+                                error_category=category,stage="failed")
+                        except Exception:
+                            pass
+                        self.json(dict(error="Scan falhou: "+type(exc).__name__,
+                                       evidence=evidence),500)
                     return
                 branch = repo.branch()
                 if branch == "(detached)":
