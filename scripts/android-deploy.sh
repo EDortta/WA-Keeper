@@ -282,6 +282,14 @@ fi
 LATEST_DIGEST="$(read_manifest sha256)"
 [[ -n "$LATEST_DIGEST" && "$(sha256sum "$APK" | awk '{print $1}')" == "$LATEST_DIGEST" ]] || fail "APK final não corresponde ao manifesto gerado pelo build"
 
+STAGE="Verificação preventiva de assinatura"
+log_line "==> Comparando assinatura do APK com o aplicativo instalado"
+# Fail closed: never attempt an update if signing diagnosis is missing or
+# reports a different certificate. The Python tool saves local evidence.
+SIGNING_ARGS=(--apk "$APK")
+[[ -n "${ANDROID_SERIAL:-}" ]] && SIGNING_ARGS+=(--serial "$ANDROID_SERIAL")
+run_logged "Verificação preventiva de assinatura" python3 scripts/signing-diagnose.py "${SIGNING_ARGS[@]}"
+
 STAGE="Instalação ADB"
 log_line "==> Instalando sem apagar dados"
 set +e
