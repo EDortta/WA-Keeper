@@ -73,9 +73,11 @@ record_build() {
       [[ -f "$artifact" ]] || { echo "ERRO: APK ausente após compilação" >&2; exit_status=1; }
       if (( exit_status == 0 )); then
       mkdir -p "$EVIDENCE_DIR"
+      local digest
+      digest="$(sha256sum "$artifact" | awk '{print $1}')"
       local manifest_tmp="$EVIDENCE_DIR/last-success.tmp"
       printf 'profile=%s\ntype=%s\nmode=%s\ntarget=%s\nfeatures=%s\ncommit=%s\n' \
-        "$PROFILE" "$BUILD_TYPE" "$MODE" "$TARGET" "$FEATURE_CSV" "$sha" > "$manifest_tmp"
+        "$PROFILE" "$BUILD_TYPE" "$MODE" "$TARGET" "$FEATURE_CSV" "$sha" "$artifact" "$digest" > "$manifest_tmp"
       mv -f "$manifest_tmp" "$EVIDENCE_DIR/last-success"
       fi
     fi
