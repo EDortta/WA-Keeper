@@ -6,19 +6,21 @@ from .scanner import cached
 def domains(repo, sha):
     if sha != repo.head():return []
     snapshot=cached(repo.root)
+    active=[item for item in (snapshot or {}).get("items",[]) if item["kind"]=="domain"]
+    missing=[item for item in (snapshot or {}).get("diff",{}).get("missing",[]) if item["kind"]=="domain"]
     return [dict(id=item["id"],domain=item["name"],purpose="Fonte: "+item["path"],
                  owns="",excludes="",inputs="",outputs="",invariants="",
-                 status=item["status"],path=item["path"],line=item["line"],
-                 historicity="scan-local") for item in (snapshot or {}).get("items",[])
-            if item["kind"]=="domain"]
+                 status=("AUSENTE NO SCAN" if item in missing else item["status"]),path=item["path"],line=item["line"],
+                 historicity="scan-local") for item in active+missing]
 
 def features(repo, sha):
     if sha == repo.head():
         snapshot=cached(repo.root)
         if snapshot is not None:
-            return [dict(id=item["id"],name=item["name"],status=item["status"],
+            missing=[item for item in snapshot.get("diff",{}).get("missing",[]) if item["kind"]=="feature"]
+            return [dict(id=item["id"],name=item["name"],status=("AUSENTE NO SCAN" if item in missing else item["status"]),
                          path=item["path"],line=item["line"],historicity="scan-local")
-                    for item in snapshot["items"] if item["kind"]=="feature"]
+                    for item in [x for x in snapshot["items"] if x["kind"]=="feature"]+missing]
     # Historical fallback only: document is loaded from selected Git revision.
     path="docs/validated-features.md"
     if not repo.exists_at(sha,path):return []
