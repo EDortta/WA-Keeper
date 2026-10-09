@@ -171,7 +171,13 @@ function graph(){
 }
 function render(){graph();$("selected-rev").textContent=state.sha.slice(0,8)+" · "+(state.sha===state.head?"HEAD":"histórico");$("map").hidden=state.view!=="map";$("management").hidden=state.view==="map";renderMap();if(state.view!=="map")renderManagement()}
 function renderMap(){let visible=cols.filter(c=>c.visible);$("grid").innerHTML='<colgroup>'+visible.map(c=>'<col style="width:'+c.width+'px">').join("")+'</colgroup><thead><tr>'+visible.map(c=>'<th class="'+(c.id==="domain"?"frozen":"")+'"><div class="column-head">'+escape(c.name)+'<span style="display:flex">'+(c.id==="domain"?"":'<button data-hide="'+c.id+'" title="Ocultar">−</button>')+'<span class="resize" data-size="'+c.id+'"></span></span></div></th>').join("")+'</tr></thead><tbody>'+state.domains.map(d=>'<tr>'+visible.map(c=>'<td class="'+(c.id==="domain"?"frozen":"")+'">'+(c.id==="domain"?'<button class="domain-link" data-domain="'+escape(d.id)+'">'+escape(d.domain)+'</button>':escape(d[c.id]))+'</td>').join("")+'</tr>').join("")+'</tbody>';$("picker").innerHTML=cols.map(c=>'<label><input type="checkbox" data-toggle="'+c.id+'" '+(c.visible?"checked":"")+' '+(c.id==="domain"?"disabled":"")+'> '+escape(c.name)+'</label>').join("");document.querySelectorAll("[data-domain]").forEach(b=>b.onclick=()=>navigate("domains",b.dataset.domain));document.querySelectorAll("[data-hide]").forEach(b=>b.onclick=()=>{cols.find(c=>c.id===b.dataset.hide).visible=false;renderMap()});document.querySelectorAll("[data-toggle]").forEach(b=>b.onchange=()=>{cols.find(c=>c.id===b.dataset.toggle).visible=b.checked;renderMap()});document.querySelectorAll("[data-size]").forEach(el=>el.onpointerdown=e=>{e.preventDefault();const col=cols.find(c=>c.id===el.dataset.size),x=e.clientX,old=col.width;const move=ev=>{col.width=Math.max(80,Math.min(550,old+ev.clientX-x));const idx=cols.filter(c=>c.visible).indexOf(col);$("grid").querySelectorAll("col")[idx].style.width=col.width+"px"};const stop=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",stop)};window.addEventListener("pointermove",move);window.addEventListener("pointerup",stop)})}
-function renderTree(n){return '<details open><summary>'+escape(n.title)+'</summary>'+(n.body.trim()?'<pre>'+escape(n.body.trim())+'</pre>':"")+(n.children||[]).map(renderTree).join("")+'</details>'}
+function renderTree(n){
+  const level=Math.max(1,Math.min(6,Number(n.level)||1));
+  const title='<span class="markdown-heading markdown-heading-'+level+'">'+MarkdownView.inline(n.title)+'</span>';
+  const body=n.body.trim()?'<div class="markdown-body">'+MarkdownView.blocks(n.body)+'</div>':"";
+  return '<details open class="markdown-node level-'+level+'"><summary>'+title+'</summary>'+body+
+    (n.children||[]).map(renderTree).join("")+'</details>';
+}
 function treeControls(detail){
   const tree=detail.querySelector(".tree");
   if(!tree)return;
