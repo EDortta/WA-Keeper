@@ -6,121 +6,110 @@ let state={view:"map",tab:"description",sha:null,items:[],selected:null,commits:
 async function get(path){const r=await fetch(path);const data=await r.json();if(!r.ok)throw Error(data.error||r.status);return data}
 async function load(){try{const [p,g]=await Promise.all([get("/api/project"),get("/api/commits")]);$("project").textContent=p.name;$("subtitle").textContent="Goals Kit Watchdog · "+p.branch;state.commits=g.commits;state.refs=g.refs;state.head=g.head;state.sha=g.head;await revision(g.head)}catch(e){$("notice").textContent="Falha: "+e.message}}
 async function revision(sha){state.sha=sha;try{[state.domains,state.features]=await Promise.all([get("/api/domains?sha="+sha),get("/api/features?sha="+sha)]);render()}catch(e){$("notice").textContent=e.message}}
+state.compact=true;
 function navigate(view,selected){state.view=view;if(selected)state.selected=selected;state.tab="description";render()}
 function graph(){
-  // Walk the DAG newest -> oldest: a commit's FIRST parent inherits its lane.
-  // Additional merge parents get side lanes. The HEAD first-parent line stays on lane 0.
   const nodes=state.commits.slice(0,250);
-  const byId=new Map(nodes.map((c,i)=>[c.sha,i]));
-  const firstParent=new Set();
-  let cursor=state.head;
-  while(byId.has(cursor)&&!firstParent.has(cursor)){
-    firstParent.add(cursor);
-    cursor=nodes[byId.get(cursor)].parents[0];
-  }
-  const assigned=new Map(), pending=new Map();
-  const freeLane=()=>{const used=new Set([0,...pending.values()]);let lane=1;while(used.has(lane))lane++;return lane};
+  const byId=new Map(nodes.map((n,i)=>[n.sha,i]));
+  const parentsOf=new Map(nodes.map(n=>[n.sha,n.parents.filter(p=>byId.has(p))]));
+  const childCount=new Map(nodes.map(n=>[n.sha,0]));
+  for(const n of nodes)for(const p of parentsOf.get(n.sha))childCount.set(p,childCount.get(p)+1);
+  const tips=new Set(state.refs.map(r=>r.sha));
+  tips.add(state.head);
+  const keep=new Set(nodes.filter(n=>n.parents.length!==1||childCount.get(n.sha)!==1||tips.has(n.sha)||n.sha===state.sha).map(n=>n.sha));
+  if(nodes.length){keep.add(nodes[0].sha);keep.add(nodes[nodes.length-1].sha)}
+  const compact=state.compact!==false;
+  const visible=compact?nodes.filter(n=>keep.has(n.sha)):nodes;
+  const visibleIds=new Set(visible.map(n=>n.sha));
+  const main=new Set();let cur=state.head;
+  while(byId.has(cur)&&!main.has(cur)){main.add(cur);cur=nodes[byId.get(cur)].parents[0]}
+  const lane=new Map(),pending=new Map();
+  function freeLane(){const used=new Set([0,...pending.values()]);let k=1;while(used.has(k))k++;return k}
   for(const n of nodes){
-    let lane=firstParent.has(n.sha)?0:pending.get(n.sha);
-    if(lane===undefined)lane=freeLane();
-    pending.delete(n.sha);
-    assigned.set(n.sha,lane);
-    for(let i=0;i<n.parents.length;i++){
-      const parent=n.parents[i];
-      if(!byId.has(parent)||assigned.has(parent))continue;
-      if(!pending.has(parent))pending.set(parent,i===0?lane:freeLane());
-    }
+    let k=main.has(n.sha)?0:pending.get(n.sha);
+    if(k===undefined)k=freeLane();
+    pending.delete(n.sha);lane.set(n.sha,k);
+    n.parents.forEach((p,i)=>{if(byId.has(p)&&!lane.has(p)&&!pending.has(p))pending.set(p,i===0?k:freeLane())});
   }
-  // Oldest to newest, but still topological. Actual commit dates are shown on the axis.
-  const ordered=nodes.slice().reverse();
-  const px=62, step=66, maxLane=Math.max(0,...assigned.values());
-  const laneGap=64;
-  const width=Math.max(800,ordered.length*step+60),height=Math.max(250,205+maxLane*laneGap);
-  const positions=new Map(ordered.map((n,i)=>[n.sha,{x:35+i*step,y:98+assigned.get(n.sha)*laneGap}]));
-  const graphEl=$("graph");
-  const former=graphEl.parentElement.scrollLeft;
-  graphEl.setAttribute("viewBox",`0 0 ${width} ${height}`);
-  graphEl.style.width=width+"px";
-  graphEl.style.height=height+"px";
-  let edges="",circles="",branchLabels="";
-  // Each label stays near its own branch lane, never in a detached header.
-  const labelBoxes=[];
-  function labelPlacement(x,y,w){
-    const tries=[
-      [x+11,y-28],[x-w-11,y-28],[x-w/2,y-46],
-      [x+11,y-46],[x-w-11,y-46]
-    ];
-    for(let level=0;level<7;level++){
-      for(const [rawX,rawY] of tries){
-        const left=Math.max(2,Math.min(width-w-2,rawX));
-        const top=Math.max(3,rawY-level*19);
-        const hit=labelBoxes.some(b=>left<b.right+5&&left+w>b.left-5&&top<b.bottom+3&&top+17>b.top-3);
-        if(!hit){labelBoxes.push({left,right:left+w,top,bottom:top+17});return {left,top};}
-      }
+  const ordered=visible.slice().reverse();
+  const gap=compact?85:64, laneGap=compact?37:39;
+  const maxLane=Math.max(0,...ordered.map(n=>lane.get(n.sha)));
+  const width=Math.max(800,ordered.length*gap+70);
+  const height=Math.max(160,100+maxLane*laneGap+35);
+  const positions=new Map(ordered.map((n,i)=>[n.sha,{x:35+i*gap,y:37+lane.get(n.sha)*laneGap}]));
+  const svg=$("graph"), scroll=svg.parentElement, previous=scroll.scrollLeft;
+  svg.setAttribute("viewBox",`0 0 ${width} ${height}`);
+  svg.style.width=width+"px";svg.style.height=height+"px";
+  const visibleAncestor=sha=>{
+    let p=sha,seen=new Set();
+    while(byId.has(p)&&!visibleIds.has(p)&&!seen.has(p)){
+      seen.add(p);p=nodes[byId.get(p)].parents[0];
     }
-    const left=Math.max(2,Math.min(width-w-2,x-w/2)),top=Math.max(3,y-28);
-    labelBoxes.push({left,right:left+w,top,bottom:top+17});
-    return {left,top};
-  }
+    return visibleIds.has(p)?p:null;
+  };
+  let edges="",points="",labels="",bands="",dates="";
   for(const n of ordered){
     const {x,y}=positions.get(n.sha);
-    for(let i=0;i<n.parents.length;i++){
-      const parent=positions.get(n.parents[i]);
-      if(!parent)continue;
-      const dx=(x-parent.x)/2;
-      edges+='<path class="edge" d="M'+parent.x+' '+parent.y+' C'+(parent.x+dx)+' '+parent.y+' '+(x-dx)+' '+y+' '+x+' '+y+'"/>';
+    for(const parentSha of n.parents){
+      const p=positions.get(visibleAncestor(parentSha));
+      if(!p)continue;
+      const mid=(p.x+x)/2;
+      edges+='<path class="edge" d="M'+p.x+' '+p.y+' C'+mid+' '+p.y+' '+mid+' '+y+' '+x+' '+y+'"/>';
     }
-    const current=n.sha===state.sha;
     const refs=state.refs.filter(r=>r.sha===n.sha).map(r=>r.name);
-    const date=n.committed.slice(0,10);
-    const title=escape(n.subject+" | "+date+" | "+n.sha+" | "+(refs.join(", ")||"sem referência"));
-    // Horizontal names beside their corresponding branch/commit.
-    for(const ref of refs){
-      const label=ref.length>43?ref.slice(0,40)+"…":ref;
-      const w=Math.max(55,label.length*6.1+14);
-      const {left,top}=labelPlacement(x,y,w);
-      const attachX=Math.max(left+5,Math.min(left+w-5,x));
-      branchLabels+='<g class="branch-label"><title>'+escape(ref)+'</title>'+
-        '<path d="M'+attachX+' '+(top+17)+' L'+x+' '+(y-8)+'" stroke="var(--sub)" stroke-opacity=".45" stroke-dasharray="2 3"/>'+
-        '<rect x="'+left+'" y="'+top+'" width="'+w+'" height="17" rx="3"/>'+
-        '<text x="'+(left+7)+'" y="'+(top+12)+'">'+escape(label)+'</text></g>';
+    const title=escape(n.subject+" | "+n.committed+" | "+n.sha+" | "+(refs.join(", ")||"sem referência"));
+    points+='<g class="node '+(state.sha===n.sha?'current':'')+'" tabindex="0" role="button" data-sha="'+n.sha+'" transform="translate('+x+','+y+')"><title>'+title+'</title><circle r="5"/>'+(compact?'':'<text x="7" y="12" transform="rotate(30 7 12)">'+escape(n.short)+'</text>')+'</g>';
+    // Inline labels right-aligned at their branch tips, immediately above each lane.
+    if(refs.length){
+      const text=refs.join(" · ");
+      const label=text.length>55?text.slice(0,52)+"…":text;
+      const estimated=Math.min(350,Math.max(50,label.length*5.6+12));
+      const left=Math.max(3,Math.min(width-estimated-3,x-estimated-7));
+      const top=Math.max(3,y-20);
+      labels+='<g class="branch-inline"><title>'+escape(text)+'</title><rect x="'+left+'" y="'+top+'" width="'+estimated+'" height="15" rx="2"/><text x="'+(left+estimated-5)+'" y="'+(top+11)+'" text-anchor="end">'+escape(label)+'</text></g>';
     }
-    circles+='<g class="node '+(current?'current':'')+'" role="button" tabindex="0" data-sha="'+n.sha+'" transform="translate('+x+','+y+')"><title>'+title+'</title><circle r="6"/><text x="8" y="14" text-anchor="start" transform="rotate(30 8 14)">'+escape(n.short)+'</text></g>';
   }
-  // Day-wide vertical separators and alternating subtle bands behind the DAG.
-  // Dates are labels on the X axis; the Git DAG retains topological ordering.
-  const axisBottom=height-12;
-  let backdrop="",axis="",start=0,section=0;
+  // Every visible line receives a compact, explicit identity at its earliest
+  // position. Without a named Git ref, show the abbreviated commit, not a guess.
+  const startOfLane=new Map();
+  for(const n of ordered)if(!startOfLane.has(lane.get(n.sha)))startOfLane.set(lane.get(n.sha),n);
+  for(const [k,n] of startOfLane){
+    const x=positions.get(n.sha).x,y=positions.get(n.sha).y;
+    const direct=state.refs.filter(r=>r.sha===n.sha).map(r=>r.name);
+    const name=direct[0]||(k===0?"linha principal":"ramo "+n.short);
+    const w=Math.min(240,name.length*5.8+12);
+    // A lane identity is not a Git branch name unless a ref actually exists.
+    labels+='<g class="lane-identity"><title>'+escape(direct.length?"Referência Git: "+name:"Identificação visual; branch sem ref neste commit")+'</title><text x="'+(x+8)+'" y="'+(y-11)+'">'+escape(name)+'</text></g>';
+  }
+  const bottom=height-9;
+  let start=0,section=0;
   while(start<ordered.length){
     const day=ordered[start].committed.slice(0,10);
     let end=start+1;
-    while(end<ordered.length && ordered[end].committed.slice(0,10)===day)end++;
+    while(end<ordered.length&&ordered[end].committed.slice(0,10)===day)end++;
     const left=start===0?0:(positions.get(ordered[start-1].sha).x+positions.get(ordered[start].sha).x)/2;
     const right=end===ordered.length?width:(positions.get(ordered[end-1].sha).x+positions.get(ordered[end].sha).x)/2;
-    if(section%2===1)backdrop+='<rect class="date-band" x="'+left+'" y="0" width="'+(right-left)+'" height="'+(axisBottom+4)+'"/>';
-    const label=day.slice(8,10)+'/'+day.slice(5,7)+'/'+day.slice(0,4);
+    const date=day.slice(8,10)+"/"+day.slice(5,7)+"/"+day.slice(0,4);
+    if(section%2===1)bands+='<rect class="date-band" x="'+left+'" y="0" width="'+(right-left)+'" height="'+height+'"/>';
     if(start>0){
-      backdrop+='<path class="date-divider" d="M'+left+' 0 V'+(axisBottom+4)+'"/>';
-      // Vertical calendar date next to the boundary, within the new day's band.
-      axis+='<text class="date-divider-label" x="'+(left+9)+'" y="8" transform="rotate(90 '+(left+9)+' 8)">'+escape(label)+'</text>';
+      bands+='<path class="date-divider" d="M'+left+' 0 V'+height+'"/>';
+      dates+='<text class="date-divider-label" x="'+(left+7)+'" y="5" transform="rotate(90 '+(left+7)+' 5)">'+escape(date)+'</text>';
     }
-    axis+='<text class="date-label" x="'+((left+right)/2)+'" y="'+axisBottom+'" text-anchor="middle">'+escape(label)+'</text>';
+    dates+='<text class="date-label" x="'+((left+right)/2)+'" y="'+bottom+'" text-anchor="middle">'+escape(date)+'</text>';
     start=end;section++;
   }
-  graphEl.innerHTML='<g class="date-background">'+backdrop+'</g>'+edges+branchLabels+circles+'<g class="date-axis">'+axis+'</g>';
-  document.querySelectorAll("[data-sha]").forEach(n=>{
-    n.onclick=()=>revision(n.dataset.sha);
-    n.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();revision(n.dataset.sha)}};
+  svg.innerHTML='<g class="date-background">'+bands+'</g>'+edges+points+labels+'<g class="date-axis">'+dates+'</g>';
+  svg.querySelectorAll("[data-sha]").forEach(el=>{
+    el.onclick=()=>revision(el.dataset.sha);
+    el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();revision(el.dataset.sha)}};
   });
-  if(!graphEl.dataset.initialized){
-    graphEl.parentElement.scrollLeft=graphEl.parentElement.scrollWidth;
-    graphEl.dataset.initialized="1";
-  }else{
-    graphEl.parentElement.scrollLeft=former;
-  }
+  if(!svg.dataset.initialized){scroll.scrollLeft=scroll.scrollWidth;svg.dataset.initialized="1"}else scroll.scrollLeft=previous;
+  const toggle=$("graph-mode");
+  if(toggle)toggle.textContent=compact?"Expandir commits":"Recolher commits";
 }
 function render(){graph();$("selected-rev").textContent=state.sha.slice(0,8)+" · "+(state.sha===state.head?"HEAD":"histórico");$("map").hidden=state.view!=="map";$("management").hidden=state.view==="map";for(const key of ["home","domains","features"])$(key).classList.toggle("active",state.view===(key==="home"?"map":key));$("view-name").textContent=state.view==="map"?"Mapa geral":state.view==="domains"?"Gestão de domínios":"Gestão de features";renderMap();if(state.view!=="map")renderManagement()}
 function renderMap(){let visible=cols.filter(c=>c.visible);$("grid").innerHTML='<colgroup>'+visible.map(c=>'<col style="width:'+c.width+'px">').join("")+'</colgroup><thead><tr>'+visible.map(c=>'<th class="'+(c.id==="domain"?"frozen":"")+'"><div class="column-head">'+escape(c.name)+'<span style="display:flex">'+(c.id==="domain"?"":'<button data-hide="'+c.id+'" title="Ocultar">−</button>')+'<span class="resize" data-size="'+c.id+'"></span></span></div></th>').join("")+'</tr></thead><tbody>'+state.domains.map(d=>'<tr>'+visible.map(c=>'<td class="'+(c.id==="domain"?"frozen":"")+'">'+(c.id==="domain"?'<button class="domain-link" data-domain="'+escape(d.id)+'">'+escape(d.domain)+'</button>':escape(d[c.id]))+'</td>').join("")+'</tr>').join("")+'</tbody>';$("picker").innerHTML=cols.map(c=>'<label><input type="checkbox" data-toggle="'+c.id+'" '+(c.visible?"checked":"")+' '+(c.id==="domain"?"disabled":"")+'> '+escape(c.name)+'</label>').join("");document.querySelectorAll("[data-domain]").forEach(b=>b.onclick=()=>navigate("domains",b.dataset.domain));document.querySelectorAll("[data-hide]").forEach(b=>b.onclick=()=>{cols.find(c=>c.id===b.dataset.hide).visible=false;renderMap()});document.querySelectorAll("[data-toggle]").forEach(b=>b.onchange=()=>{cols.find(c=>c.id===b.dataset.toggle).visible=b.checked;renderMap()});document.querySelectorAll("[data-size]").forEach(el=>el.onpointerdown=e=>{e.preventDefault();const col=cols.find(c=>c.id===el.dataset.size),x=e.clientX,old=col.width;const move=ev=>{col.width=Math.max(80,Math.min(550,old+ev.clientX-x));const idx=cols.filter(c=>c.visible).indexOf(col);$("grid").querySelectorAll("col")[idx].style.width=col.width+"px"};const stop=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",stop)};window.addEventListener("pointermove",move);window.addEventListener("pointerup",stop)})}
 function renderTree(n){return '<details open><summary>'+escape(n.title)+'</summary>'+(n.body.trim()?'<pre>'+escape(n.body.trim())+'</pre>':"")+(n.children||[]).map(renderTree).join("")+'</details>'}
 function renderManagement(){const arr=state.view==="domains"?state.domains.map(d=>({...d,name:d.domain})):state.features;if(!arr.some(i=>i.id===state.selected))state.selected=arr[0]?.id||null;const d=arr.find(i=>i.id===state.selected);$("side-features").classList.toggle("active",state.view==="features");$("side-domains").classList.toggle("active",state.view==="domains");$("items").innerHTML=arr.map(i=>'<button class="item '+(i.id===state.selected?"active":"")+'" data-item="'+escape(i.id)+'"><strong>'+escape(i.name)+'</strong><br><small class="muted">'+escape(i.purpose||i.path||"")+'</small></button>').join("");document.querySelectorAll("[data-item]").forEach(b=>b.onclick=()=>{state.selected=b.dataset.item;state.tab="description";renderManagement()});if(!d){$("item-title").textContent="Nenhum item nesta revisão";$("item-description").textContent="";$("item-state").textContent="";$("detail").innerHTML="";return}$("item-title").textContent=d.name;$("item-description").textContent=d.purpose||"";$("item-state").textContent=d.status;document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===state.tab));const detail=$("detail");if(state.tab==="description"&&d.path){detail.textContent="Carregando documentação…";get("/api/document?sha="+state.sha+"&path="+encodeURIComponent(d.path)).then(doc=>{if(state.tab==="description"&&state.selected===d.id)detail.innerHTML='<div class="tree">'+renderTree(doc.tree)+'</div>'}).catch(e=>detail.textContent=e.message)}else if(state.tab==="description")detail.innerHTML='<div class="tree"><details open><summary>Propósito</summary><p>'+escape(d.purpose)+'</p></details><details><summary>É dono de</summary><p>'+escape(d.owns)+'</p></details><details><summary>Não pode tocar</summary><p>'+escape(d.excludes)+'</p></details><details><summary>Invariantes</summary><p>'+escape(d.invariants)+'</p></details></div><p class="muted">Catálogo candidato; historicidade não estabelecida.</p>';else if(state.tab==="events")detail.innerHTML='<div class="tree"><b>Entradas</b><p>'+escape(d.inputs||"Não catalogadas")+'</p><b>Saídas</b><p>'+escape(d.outputs||"Não catalogadas")+'</p><p class="muted">Nomes propostos, não verificados no código.</p></div>';else detail.innerHTML='<p class="muted">'+(state.tab==="code"?"Indexação de código ainda não implementada.":"Nenhum teste executado nesta versão.")+'</p>'}
+$("graph-mode").onclick=()=>{state.compact=!state.compact;graph()};
 $("home").onclick=()=>navigate("map");$("domains").onclick=$("side-domains").onclick=()=>navigate("domains");$("features").onclick=$("side-features").onclick=()=>navigate("features");document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;renderManagement()});$("columns").onclick=()=>{$("picker").hidden=!$("picker").hidden};$("reset").onclick=()=>{cols.forEach(c=>c.visible=true);renderMap()};$("theme").onclick=()=>{document.body.classList.toggle("dark");localStorage.setItem("wd-theme",document.body.classList.contains("dark")?"dark":"light")};if(localStorage.getItem("wd-theme")==="dark")document.body.classList.add("dark");load();
