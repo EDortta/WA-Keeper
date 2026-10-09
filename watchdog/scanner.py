@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import re
+import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -126,7 +127,7 @@ def create_instrument(root, kind, name):
         raise ValueError("Provide an instrument name")
     if any(c in name for c in "\r\n<>"):
         raise ValueError("Invalid instrument name")
-    slug=re.sub(r"[^a-z0-9]+","-",name.casefold().strip()).strip("-")
+    slug=re.sub(r"[^a-z0-9]+","-",unicodedata.normalize("NFKD",name.casefold()).encode("ascii","ignore").decode("ascii")).strip("-")
     if not slug:
         raise ValueError("Invalid instrument name")
     root=Path(root).resolve()
