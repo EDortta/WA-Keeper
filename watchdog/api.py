@@ -51,7 +51,7 @@ def handler_for(repo, update_token):
                         raise ValueError("Only Markdown files under docs/ are readable")
                     source = repo.read_at(sha, path)
                     self.json(dict(path=path, sha=sha, markdown=source, tree=markdown_tree(source)))
-                elif url.path in ("/", "/index.html", "/app.js", "/style.css"):
+                elif url.path in ("/", "/index.html", "/app.js", "/markdown.js", "/style.css"):
                     filename = "index.html" if url.path == "/" else url.path.lstrip("/")
                     self.send(200, (static / filename).read_bytes(),
                               mimetypes.guess_type(filename)[0] or "application/octet-stream")
