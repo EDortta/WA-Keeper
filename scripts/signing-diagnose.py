@@ -115,7 +115,10 @@ def main():
                 print("candidate_certificate=UNVERIFIED")
                 return 2
             print(f"candidate_certificate_sha256={','.join(candidate)}")
-            print("signature_match=" + ("YES" if existing == candidate else "NO"))
+            match = existing == candidate
+            print("signature_match=" + ("YES" if match else "NO"))
+            if not match:
+                return 3
         else:
             print("candidate_certificate=NOT_PROVIDED")
     print("read_only=YES; no install, uninstall, app-data access or keystore export")
