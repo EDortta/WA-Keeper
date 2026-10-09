@@ -7,3 +7,5 @@
 #graph .date-divider{fill:none;stroke:#7e8792;stroke-opacity:.45;stroke-width:5}
 #graph .date-background{pointer-events:none}
 #graph .date-label{fill:var(--sub);font:10px system-ui,sans-serif}
+
+#graph .date-divider-label{fill:var(--sub);font:600 10px system-ui,sans-serif;pointer-events:none}
