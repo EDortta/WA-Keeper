@@ -1,5 +1,7 @@
 import argparse
 import json
+import os
+import sys
 from .gitrepo import Repository
 from .catalog import domains, features
 from .api import serve
@@ -17,7 +19,11 @@ def main():
     args = parser.parse_args()
     repo = Repository(args.root)
     if args.command == "open":
-        serve(repo, args.port, open_browser=not args.no_browser)
+        restart_port = serve(repo, args.port, open_browser=not args.no_browser)
+        if restart_port is not None:
+            entry = str(repo.root / "watchdog.py")
+            os.execv(sys.executable, [sys.executable, entry, "--root", str(repo.root),
+                                       "open", "--port", str(restart_port), "--no-browser"])
     else:
         actions = {"history": repo.commits, "map": lambda: domains(repo, repo.head()),
                    "features": lambda: features(repo, repo.head())}
