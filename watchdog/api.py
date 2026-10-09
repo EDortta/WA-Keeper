@@ -10,7 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 from .catalog import domains, features, markdown_tree
-from .scanner import scan, cached
+from .scanner import scan, cached, create_domain_template
 
 
 def handler_for(repo, update_token):
@@ -66,7 +66,7 @@ def handler_for(repo, update_token):
 
         def do_POST(self):
             action=urlsplit(self.path).path
-            if action not in ("/api/update-restart","/api/scan"):
+            if action not in ("/api/update-restart","/api/scan","/api/domain-template"):
                 self.json(dict(error="Unknown action"), 405)
                 return
             # Require exact local Host/Origin and a session-specific secret header.
@@ -83,6 +83,9 @@ def handler_for(repo, update_token):
                 self.json(dict(error="Update already running"), 409)
                 return
             try:
+                if action == "/api/domain-template":
+                    self.json(create_domain_template(repo.root))
+                    return
                 if action == "/api/scan":
                     self.json(scan(repo.root))
                     return
