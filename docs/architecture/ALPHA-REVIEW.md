@@ -1,6 +1,6 @@
 # WA-Keeper — baseline de domínios v1 (originada na Alpha, 2026-10-09)
 
-**Status:** baseline arquitetural v1 aprovada para orientar a migração, ainda sem afirmar conformidade do código existente. Migrações e refatorações serão implementadas em feature branches isoladas, com contratos, testes e autorização de domínios afetados. A Alpha está na branch documental `docs/governance-watchdog-domain-baseline`. A expressão **future branch** usada nas discussões designa futuras branches temporárias de implementação de features, não uma branch literal chamada `future`.
+**Status:** baseline arquitetural v1 aprovada para orientar a migração, ainda sem afirmar conformidade do código existente. Migrações e refatorações serão implementadas em feature branches isoladas, com contratos, testes e autorização de domínios afetados. A Alpha está na branch documental `docs/governance-watchdog-domain-baseline`. A expressão **feature branch** usada nas discussões designa  branches temporárias de implementação de features.
 
 **Fonte:** princípios do YB Convênio (`architecture/01-principles.md`, `architecture/02-domain-and-identifiers.md`) adaptados à base Android do WA-Keeper.
 
