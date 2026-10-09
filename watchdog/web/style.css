@@ -16,8 +16,8 @@
 #graph .branch-inline.graph-link,#graph .lane-identity.graph-link{cursor:pointer;pointer-events:all}\n#graph .graph-link:hover rect{stroke-width:1.8;fill:var(--bg)}\n#graph .graph-link:focus-visible{outline:2px solid var(--accent)}
 
 body.graph-focus{overflow:hidden}
-body.graph-focus header{position:fixed;inset:0;z-index:30;overflow:auto;background:var(--bg);display:flex;flex-direction:column}
-body.graph-focus header>.scroll{flex:1;min-height:0;max-height:none}
+body.graph-focus header{position:fixed;inset:0;z-index:30;overflow:hidden;background:var(--bg);display:flex;flex-direction:column}
+body.graph-focus header>.scroll{flex:1;min-height:0;max-height:none;overflow-x:auto;overflow-y:hidden}
 body.graph-focus header>.row:last-child{display:none}
 body.graph-focus main,body.graph-focus footer{display:none}
 body.graph-focus #graph-height{border-color:var(--accent);background:var(--panel)}
