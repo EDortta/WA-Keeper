@@ -59,7 +59,7 @@ start_evidence() {
   chmod 600 "$EVIDENCE_LOG"
   printf 'branch=%s\ncommit=%s\nstart_utc=%s\n' "$(git branch --show-current)" "$(git rev-parse HEAD)" "$(date -u +%FT%TZ)" >> "$EVIDENCE_LOG"
   echo "  evidence=$EVIDENCE_LOG (local, não versionado)"
-  trap 'code=$?; if [[ -n "${EVIDENCE_LOG:-}" ]]; then printf "end_utc=%s\\nexit_code=%s\\n" "$(date -u +%FT%TZ)" "$code" >> "$EVIDENCE_LOG"; echo "  evidence=$EVIDENCE_LOG (exit=$code)" >&2; fi' EXIT
+  trap 'code=$?; if [[ -n "${EVIDENCE_LOG:-}" ]]; then printf "end_utc=%s\nexit_code=%s\n" "$(date -u +%FT%TZ)" "$code" >> "$EVIDENCE_LOG"; echo "  evidence=$EVIDENCE_LOG (exit=$code)" >&2; fi' EXIT
 }
 run_gradle() {
   if [[ -n "${EVIDENCE_LOG:-}" ]]; then
