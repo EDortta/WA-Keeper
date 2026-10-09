@@ -8,6 +8,8 @@ RUN_TESTS=1
 LAUNCH_APP=1
 TARGET_BRANCH=""
 STAGE="inicialização"
+DEPLOY_START="$(date +%s)"
+WA_EVIDENCE_MODE="${WA_EVIDENCE_MODE:-local}"
 LOG_FILE=""
 
 usage() {
@@ -163,6 +165,29 @@ while (($#)); do
 done
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || fail "execute dentro do repositório WA-Keeper"
+record_deploy() {
+  local code=$?
+  trap - EXIT
+  [[ "$WA_EVIDENCE_MODE" == "off" ]] && return "$code"
+  local branch sha category
+  branch="$(git branch --show-current)"
+  sha="$(git rev-parse HEAD)"
+  category="none"
+  if (( code != 0 )); then
+    case "$STAGE" in
+      *Compila*) category="build" ;;
+      *assinatura*|*Assinatura*) category="signing" ;;
+      *Instala*) category="install" ;;
+      *Android*|*dispositivo*) category="device" ;;
+      *) category="configuration" ;;
+    esac
+  fi
+  local args=(record --project WA-Keeper --feature "${WA_FEATURE_ID:-general}" --branch "$branch" --commit "$sha" --target app --profile "$PROFILE" --build-type "$VARIANT" --mode apk --exit-code "$code" --duration "$(( $(date +%s) - DEPLOY_START ))" --phase deploy --error-category "$category")
+  [[ "$WA_EVIDENCE_MODE" == "remote" ]] && args+=(--remote)
+  python3 "$REPO_ROOT/scripts/evidence.py" "${args[@]}" || echo "Aviso: evidência de deploy não registrada" >&2
+  return "$code"
+}
+trap record_deploy EXIT
 cd "$REPO_ROOT"
 LOG_FILE="$(mktemp "${TMPDIR:-/tmp}/wa-keeper-android-deploy.XXXXXX.log")"
 
@@ -230,7 +255,12 @@ log_line "==> Branch: $TARGET_BRANCH"
 log_line "==> Variante: $VARIANT"
 log_line "==> Perfil: $PROFILE"
 
-BUILD_ARGS=( "--$PROFILE" "--only" "$MANIFEST_FEATURES" )
+BUILD_ARGS=( "--$PROFILE" )
+if [[ -n "$MANIFEST_FEATURES" ]]; then
+  BUILD_ARGS+=( --only "$MANIFEST_FEATURES" )
+else
+  BUILD_ARGS+=( --only "" )
+fi
 [[ "$VARIANT" == "release" ]] && BUILD_ARGS+=( --release ) || BUILD_ARGS+=( --debug )
 (( RUN_TESTS )) || BUILD_ARGS+=( --skip-tests )
 BUILD_ARGS+=( "--evidence=${WA_EVIDENCE_MODE:-local}" )
