@@ -50,8 +50,9 @@ def handler_for(repo, update_token):
                     self.json(features(repo, sha))
                 elif url.path == "/api/document":
                     path = query.get("path", [""])[0]
-                    if not path.startswith("docs/") or not path.endswith(".md"):
-                        raise ValueError("Only Markdown files under docs/ are readable")
+                    if (not path.endswith(".md") or path.startswith("/") or
+                            ".." in Path(path).parts or "\\x00" in path):
+                        raise ValueError("Invalid Markdown path")
                     source = repo.read_at(sha, path)
                     self.json(dict(path=path, sha=sha, markdown=source, tree=markdown_tree(source)))
                 elif url.path in ("/", "/index.html", "/app.js", "/markdown.js", "/style.css"):
