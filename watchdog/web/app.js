@@ -252,6 +252,28 @@ document.addEventListener("keydown",e=>{
     graph();
   }
 });
+async function scanMarkdown(){
+  const button=$("scan-docs");
+  if(!updateToken||button.disabled)return;
+  if(state.sha!==state.head){
+    alert("O scan trabalha sobre os arquivos atuais. Selecione HEAD antes de executar.");
+    return;
+  }
+  button.disabled=true;button.textContent="Lendo Markdown…";
+  try{
+    const response=await fetch("/api/scan",{method:"POST",headers:{"X-Watchdog-Token":updateToken}});
+    const result=await response.json();
+    if(!response.ok)throw Error(result.error||"Falha no scan");
+    await revision(state.head);
+    const count=kind=>result.items.filter(item=>item.kind===kind).length;
+    const diff=result.diff||{};
+    $("notice").textContent="Scan: "+result.documents+" documentos · "+count("domain")+" domínios · "+
+      count("feature")+" features · "+(diff.added||[]).length+" novos · "+
+      (diff.missing||[]).length+" ausentes em relação ao scan anterior (revisar; não excluídos).";
+  }catch(error){$("notice").textContent="Falha no scan: "+error.message}
+  finally{button.disabled=false;button.textContent="Scan Markdown"}
+}
+$("scan-docs").onclick=scanMarkdown;
 async function updateAndRestart(){
   const button=$("update-restart");
   if(!updateToken||button.disabled)return;
