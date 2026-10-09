@@ -223,8 +223,6 @@ MANIFEST_ARTIFACT="$(read_manifest artifact)"
 MANIFEST_DIGEST="$(read_manifest sha256)"
 [[ "$MANIFEST_ARTIFACT" == "app/build/outputs/apk/debug/app-debug.apk" || "$MANIFEST_ARTIFACT" == "app/build/outputs/apk/release/app-release.apk" ]] || fail "artefato inválido no manifesto"
 [[ "$MANIFEST_DIGEST" =~ ^[0-9a-f]{64}$ ]] || fail "hash SHA-256 inválido no manifesto"
-[[ -f "$MANIFEST_ARTIFACT" ]] || fail "APK não encontrado"
-[[ "$(sha256sum "$MANIFEST_ARTIFACT" | awk '{print $1}')" == "$MANIFEST_DIGEST" ]] || fail "APK alterado após o último build"
 [[ "$MANIFEST_MODE" == "apk" && "$MANIFEST_TARGET" == "app" ]] || fail "último build não corresponde a APK do aplicativo"
 [[ "$MANIFEST_PROFILE" == "lab" || "$MANIFEST_PROFILE" == "store" ]] || fail "perfil inválido no manifesto"
 [[ "$MANIFEST_TYPE" == "debug" || "$MANIFEST_TYPE" == "release" ]] || fail "tipo inválido no manifesto"
@@ -281,6 +279,8 @@ else
 fi
 
 [[ -f "$APK" ]] || fail "APK não encontrado em $APK"
+LATEST_DIGEST="$(read_manifest sha256)"
+[[ -n "$LATEST_DIGEST" && "$(sha256sum "$APK" | awk '{print $1}')" == "$LATEST_DIGEST" ]] || fail "APK final não corresponde ao manifesto gerado pelo build"
 
 STAGE="Instalação ADB"
 log_line "==> Instalando sem apagar dados"
