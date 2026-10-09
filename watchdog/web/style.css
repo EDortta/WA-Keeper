@@ -3,6 +3,7 @@
 #graph .branch-label text{fill:var(--fg);font:10px system-ui,sans-serif}
 #graph .branch-label{pointer-events:none}
 
-#graph .date-track{fill:#808992;fill-opacity:.38}
-#graph .date-boundary{fill:none;stroke:var(--fg);stroke-opacity:.38;stroke-width:2}
+#graph .date-band{fill:#7e8792;fill-opacity:.09}
+#graph .date-divider{fill:none;stroke:#7e8792;stroke-opacity:.45;stroke-width:5}
+#graph .date-background{pointer-events:none}
 #graph .date-label{fill:var(--sub);font:10px system-ui,sans-serif}
