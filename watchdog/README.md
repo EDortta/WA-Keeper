@@ -53,3 +53,20 @@ O botão **Atualizar e reiniciar** executa `git pull --ff-only` no checkout loca
 A ação requer um token de sessão, host e origem locais. Em caso de erro do Git, o servidor atual continua no ar e apresenta o erro, sem forçar merge. O reinício somente é solicitado depois de um pull bem-sucedido. Não substitui `git fetch` manual quando é necessário atualizar informações de outros ramos sem pull.
 
 A API continua somente leitura para documentação e histórico; a única ação mutável é a atualização explícita do checkout por esse botão. O botão não é destinado a repositórios com mudanças locais que impeçam o avanço simples.
+
+
+## Scan determinístico de Markdown (fase inicial)
+
+- **Scan Markdown** percorre arquivos `.md` do checkout em qualquer pasta do projeto, ignorando `.git`, dependências e artefatos de compilação. Não usa LLM nem rede.
+- O reconhecimento é **conservador**: títulos `## Domínio: Nome`, `## Feature: Nome`, seções de `# Mapa de domínios` / `# Features`, e documentos individuais em pastas `domains/`, `dominios/` ou `features/`. Markdown arbitrário sem sinais explícitos não é interpretado semanticamente.
+- O resultado fica em `.git/watchdog/catalog.json` (não versionado). Cada scan compara a definição atual com a anterior. Itens desaparecidos são apresentados como **AUSENTE NO SCAN**, não apagados automaticamente.
+- **Criar mapa Markdown** cria, somente por pedido explícito, `docs/domains.md` com instruções e sem inventar domínios. Não sobrescreve arquivos.
+- No HEAD, o catálogo reflete os arquivos do checkout, incluindo Markdown ainda não commitado. A seleção histórica continua lendo o Git da revisão escolhida; o catálogo do scan atual não é projetado retroativamente sobre revisões antigas.
+- A persistência da árvore e da rolagem continua local ao navegador, identificada por projeto, revisão e item. O ID do scanner deriva de tipo, caminho e título, sem depender do número da linha.
+- Diferentes documentos com o mesmo nome geram fontes distintas, para evitar fusões sem prova. Unificação de entidades entre fontes e análise semântica de quebras ainda não estão implementadas.
+
+Testes previstos:
+
+```bash
+python3 -m unittest discover -s watchdog/tests -v
+```
