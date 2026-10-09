@@ -8,7 +8,7 @@ from .api import serve
 
 def main():
     parser = argparse.ArgumentParser(description="Goals Kit Watchdog")
-    parser.add_argument("--root", default=".", help="Git repository")
+    parser.add_argument("--root", default=".", help="Starting directory inside target Git repository (default: current directory)")
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("open", help="Serve local browser UI")
     p.add_argument("--port", type=int, default=8765)
@@ -21,8 +21,7 @@ def main():
     if args.command == "open":
         restart_port = serve(repo, args.port, open_browser=not args.no_browser)
         if restart_port is not None:
-            entry = str(repo.root / "watchdog.py")
-            os.execv(sys.executable, [sys.executable, entry, "--root", str(repo.root),
+            os.execv(sys.executable, [sys.executable, "-m", "watchdog", "--root", str(repo.root),
                                        "open", "--port", str(restart_port), "--no-browser"])
     else:
         actions = {"history": repo.commits, "map": lambda: domains(repo, repo.head()),
