@@ -103,7 +103,7 @@ def create_domain_template(root):
     template=(
         "# Mapa de domínios\n\n"
         "Defina os domínios do projeto neste documento.\n\n"
-        "Use títulos como `## Domínio: Nome do domínio`.\n\n"
+        "Use títulos como \`## Domínio: Nome do domínio\`.\n\n"
         "### Propósito\nDescreva a responsabilidade principal.\n\n"
         "### É dono de\nDescreva o que pertence ao domínio.\n\n"
         "### Não pode tocar\nDescreva os limites.\n"
