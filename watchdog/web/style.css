@@ -33,3 +33,9 @@ body.graph-focus #graph-height{border-color:var(--accent);background:var(--panel
 .management-nav .map-home svg{display:block}
 .management-nav button{white-space:nowrap}
 @media(max-width:600px){.management-nav{flex-wrap:wrap}}
+
+/* Hierarchical description: children belong visually to their parent summary. */
+.tree details > :not(summary){margin-left:23px}
+.tree details > details{margin-left:23px}
+.tree details > p,.tree details > pre{padding-left:0}
+.tree details summary{padding:2px 0}
