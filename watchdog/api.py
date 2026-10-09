@@ -11,7 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 from .catalog import domains, features, markdown_tree
-from .scanner import scan, cached, create_domain_template
+from .scanner import scan, cached, create_domain_template, create_instrument
 from .evidence import record_scan
 
 
@@ -74,7 +74,7 @@ def handler_for(repo, update_token):
 
         def do_POST(self):
             action=urlsplit(self.path).path
-            if action not in ("/api/update-restart","/api/scan","/api/domain-template"):
+            if action not in ("/api/update-restart","/api/scan","/api/domain-template","/api/instrument"):
                 self.json(dict(error="Unknown action"), 405)
                 return
             # Require exact local Host/Origin and a session-specific secret header.
@@ -91,6 +91,14 @@ def handler_for(repo, update_token):
                 self.json(dict(error="Update already running"), 409)
                 return
             try:
+                if action == "/api/instrument":
+                    size=int(self.headers.get("Content-Length","0"))
+                    if size < 1 or size > 4096:
+                        self.json(dict(error="Invalid payload size"),400)
+                        return
+                    data=json.loads(self.rfile.read(size))
+                    self.json(create_instrument(repo.root,data.get("kind"),data.get("name")))
+                    return
                 if action == "/api/domain-template":
                     self.json(create_domain_template(repo.root))
                     return
