@@ -1,10 +1,13 @@
 "use strict";
 const $=id=>document.getElementById(id);
 const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const MONTHS_PT=["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+function splitIsoDate(iso){const [year,month,day]=iso.split("-");return {day,month:MONTHS_PT[Number(month)-1]||month,year}}
+let updateToken=null;
 const cols=[["domain","Domínio",165],["purpose","Propósito",230],["owns","É dono de",215],["excludes","Não pode tocar",210],["inputs","Entradas",200],["outputs","Saídas / Eventos",220],["invariants","Invariantes",230],["status","Estado",130]].map(([id,name,width])=>({id,name,width,visible:true}));
 let state={view:"map",tab:"description",sha:null,items:[],selected:null,commits:[],refs:[],head:null,domains:[],features:[]};
 async function get(path){const r=await fetch(path);const data=await r.json();if(!r.ok)throw Error(data.error||r.status);return data}
-async function load(){try{const [p,g]=await Promise.all([get("/api/project"),get("/api/commits")]);$("project").textContent=p.name;$("subtitle").textContent="Goals Kit Watchdog · "+p.branch;state.commits=g.commits;state.refs=g.refs;state.head=g.head;state.sha=g.head;await revision(g.head)}catch(e){$("notice").textContent="Falha: "+e.message}}
+async function load(){try{const [p,g]=await Promise.all([get("/api/project"),get("/api/commits")]);$("project").textContent=p.name;$("subtitle").textContent="Goals Kit Watchdog · "+p.branch;state.commits=g.commits;state.refs=g.refs;state.head=g.head;state.sha=g.head;updateToken=p.update_token;await revision(g.head)}catch(e){$("notice").textContent="Falha: "+e.message}}
 async function revision(sha){state.sha=sha;try{[state.domains,state.features]=await Promise.all([get("/api/domains?sha="+sha),get("/api/features?sha="+sha)]);render()}catch(e){$("notice").textContent=e.message}}
 state.compact=true;
 state.graphFocus=false;
@@ -122,19 +125,24 @@ function graph(){
     if(section%2===1)bands+='<rect class="date-band" x="'+left+'" y="0" width="'+(right-left)+'" height="'+height+'"/>';
     if(start>0){
       bands+='<path class="date-divider" d="M'+left+' 0 V'+height+'"/>';
-      // Compact: one date to the right, read bottom-to-top like branch labels.
-      // Expanded commits: previous segment's actual final date at left, next
-      // segment's actual starting date at right. Never infer the adjacent day.
-      // Anchor the pair in the lower part of the divider, above the bottom axis.
-      // Extra horizontal separation keeps opposing rotations readable.
-      const labelY=Math.max(35,height-43);
-      const dateOffset=compact?10:17;
-      if(!compact){
-        const previous=ordered[start-1].committed.slice(0,10);
+      const previous=ordered[start-1].committed.slice(0,10);
+      if(compact){
+        // Reduced view: symmetric 3-line dates directly on the boundary.
+        const leftDate=splitIsoDate(previous),rightDate=splitIsoDate(day);
+        const dateY=Math.max(31,height-47),lineHeight=12,gap=9;
+        function dateBlock(parts,x,anchor){
+          return ['day','month','year'].map((part,i)=>
+            '<text class="date-divider-block" x="'+x+'" y="'+(dateY+i*lineHeight)+'" text-anchor="'+anchor+'">'+escape(parts[part])+'</text>'
+          ).join('');
+        }
+        dates+=dateBlock(leftDate,left-gap,"end")+dateBlock(rightDate,left+gap,"start");
+      }else{
+        // Full history: vertical labels, separated and safely above the scrollbar.
+        const labelY=Math.max(40,height-48),offset=22;
         const previousDate=previous.slice(8,10)+"/"+previous.slice(5,7)+"/"+previous.slice(0,4);
-        dates+='<text class="date-divider-label" x="'+(left-dateOffset)+'" y="'+labelY+'" text-anchor="middle" transform="rotate(90 '+(left-dateOffset)+' '+labelY+')">'+escape(previousDate)+'</text>';
+        dates+='<text class="date-divider-label" x="'+(left-offset)+'" y="'+labelY+'" text-anchor="middle" transform="rotate(90 '+(left-offset)+' '+labelY+')">'+escape(previousDate)+'</text>';
+        dates+='<text class="date-divider-label" x="'+(left+offset)+'" y="'+labelY+'" text-anchor="middle" transform="rotate(-90 '+(left+offset)+' '+labelY+')">'+escape(date)+'</text>';
       }
-      dates+='<text class="date-divider-label" x="'+(left+dateOffset)+'" y="'+labelY+'" text-anchor="middle" transform="rotate(-90 '+(left+dateOffset)+' '+labelY+')">'+escape(date)+'</text>';
     }
     // Repeat the day inside wide segments so the operator always has a date
     // even when horizontal scrolling hides both boundaries.
@@ -186,4 +194,30 @@ document.addEventListener("keydown",e=>{
     graph();
   }
 });
+async function updateAndRestart(){
+  const button=$("update-restart");
+  if(!updateToken||button.disabled)return;
+  if(!confirm("Executar git pull --ff-only e reiniciar o Watchdog nesta mesma porta?"))return;
+  button.disabled=true;button.textContent="Atualizando…";
+  try{
+    const response=await fetch("/api/update-restart",{
+      method:"POST",headers:{"X-Watchdog-Token":updateToken}
+    });
+    const data=await response.json();
+    if(!response.ok)throw Error(data.error||"Falha na atualização");
+    button.textContent="Reiniciando…";
+    $("notice").textContent=data.message||"Atualização concluída. Aguardando reinício…";
+    // The old server closes after responding; new process takes the same port.
+    for(let i=0;i<40;i++){
+      await new Promise(resolve=>setTimeout(resolve,500));
+      try{
+        const ready=await fetch("/api/project",{cache:"no-store"});
+        if(ready.ok){const info=await ready.json();if(info.head===data.head){location.reload();return}}
+      }catch(_){}
+    }
+    throw Error("Reinício não confirmado. Verifique o terminal.");
+  }catch(error){alert(error.message);$("notice").textContent=error.message}
+  finally{button.disabled=false;button.textContent="Atualizar e reiniciar"}
+}
+$("update-restart").onclick=updateAndRestart;
 $("home").onclick=()=>navigate("map");$("domains").onclick=$("side-domains").onclick=()=>navigate("domains");$("features").onclick=$("side-features").onclick=()=>navigate("features");document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;renderManagement()});$("columns").onclick=()=>{$("picker").hidden=!$("picker").hidden};$("reset").onclick=()=>{cols.forEach(c=>c.visible=true);renderMap()};$("theme").onclick=()=>{document.body.classList.toggle("dark");localStorage.setItem("wd-theme",document.body.classList.contains("dark")?"dark":"light")};if(localStorage.getItem("wd-theme")==="dark")document.body.classList.add("dark");load();
