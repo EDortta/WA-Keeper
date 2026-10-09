@@ -118,7 +118,16 @@ function graph(){
     if(section%2===1)bands+='<rect class="date-band" x="'+left+'" y="0" width="'+(right-left)+'" height="'+height+'"/>';
     if(start>0){
       bands+='<path class="date-divider" d="M'+left+' 0 V'+height+'"/>';
-      dates+='<text class="date-divider-label" x="'+(left+7)+'" y="5" transform="rotate(90 '+(left+7)+' 5)">'+escape(date)+'</text>';
+      // Compact: one date to the right, read bottom-to-top like branch labels.
+      // Expanded commits: previous segment's actual final date at left, next
+      // segment's actual starting date at right. Never infer the adjacent day.
+      const labelY=Math.min(height-18,Math.max(95,height/2));
+      if(!compact){
+        const previous=ordered[start-1].committed.slice(0,10);
+        const previousDate=previous.slice(8,10)+"/"+previous.slice(5,7)+"/"+previous.slice(0,4);
+        dates+='<text class="date-divider-label" x="'+(left-8)+'" y="'+labelY+'" text-anchor="middle" transform="rotate(90 '+(left-8)+' '+labelY+')">'+escape(previousDate)+'</text>';
+      }
+      dates+='<text class="date-divider-label" x="'+(left+8)+'" y="'+labelY+'" text-anchor="middle" transform="rotate(-90 '+(left+8)+' '+labelY+')">'+escape(date)+'</text>';
     }
     dates+='<text class="date-label" x="'+((left+right)/2)+'" y="'+bottom+'" text-anchor="middle">'+escape(date)+'</text>';
     start=end;section++;
