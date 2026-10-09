@@ -175,7 +175,7 @@ function renderMap(){let visible=cols.filter(c=>c.visible);$("grid").innerHTML='
 let readingProject="unknown", readingEpoch=0, restoringReading=false;
 function readingKey(){
   if(state.view==="map"||!state.selected||state.tab!=="description")return null;
-  return "watchdog:reading:v1:"+JSON.stringify([readingProject,state.sha,state.view,state.selected]);
+  return "watchdog:reading:v2:"+JSON.stringify([readingProject,state.sha,state.view,state.selected]);
 }
 function readingGet(key){
   try{return JSON.parse(localStorage.getItem(key)||"null")}catch(_){return null}
@@ -185,7 +185,7 @@ function readingSave(){
   if(!key||!tree||restoringReading)return;
   const nodes=[...tree.querySelectorAll("details")];
   const current=readingGet(key)||{};
-  const value={open:nodes.map(n=>n.open),scroll:current.scroll??window.scrollY};
+  const value={open:nodes.map(n=>n.open),scroll:$("detail").scrollTop};
   try{localStorage.setItem(key,JSON.stringify(value))}catch(_){}
 }
 function readingScrollSave(){
@@ -193,10 +193,10 @@ function readingScrollSave(){
   const key=readingKey();
   if(!key)return;
   const value=readingGet(key)||{};
-  value.scroll=window.scrollY;
+  value.scroll=$("detail").scrollTop;
   try{localStorage.setItem(key,JSON.stringify(value))}catch(_){}
 }
-window.addEventListener("scroll",readingScrollSave,{passive:true});
+$("detail").addEventListener("scroll",readingScrollSave,{passive:true});
 function readingMount(detail,key){
   const tree=detail.querySelector(".tree");
   if(!tree||!key)return;
@@ -208,10 +208,11 @@ function readingMount(detail,key){
   }
   tree.addEventListener("toggle",()=>readingSave(),true);
   const epoch=++readingEpoch;
+  if(!saved)detail.scrollTop=0;
   if(saved&&Number.isFinite(saved.scroll)){
     restoringReading=true;
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      if(epoch===readingEpoch&&readingKey()===key)window.scrollTo(0,saved.scroll);
+      if(epoch===readingEpoch&&readingKey()===key)detail.scrollTop=saved.scroll;
       restoringReading=false;
     }));
   }
