@@ -53,7 +53,13 @@ def handler_for(repo, update_token):
                     if (not path.endswith(".md") or path.startswith("/") or
                             ".." in Path(path).parts or "\\x00" in path):
                         raise ValueError("Invalid Markdown path")
-                    source = repo.read_at(sha, path)
+                    if sha == repo.head():
+                        target=(repo.root/path).resolve()
+                        if not target.is_relative_to(repo.root) or target.suffix.lower() != ".md":
+                            raise ValueError("Unsafe Markdown path")
+                        source=target.read_text("utf-8")[:300_000]
+                    else:
+                        source = repo.read_at(sha, path)
                     self.json(dict(path=path, sha=sha, markdown=source, tree=markdown_tree(source)))
                 elif url.path in ("/", "/index.html", "/app.js", "/markdown.js", "/style.css"):
                     filename = "index.html" if url.path == "/" else url.path.lstrip("/")
