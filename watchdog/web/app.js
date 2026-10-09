@@ -126,23 +126,16 @@ function graph(){
     if(start>0){
       bands+='<path class="date-divider" d="M'+left+' 0 V'+height+'"/>';
       const previous=ordered[start-1].committed.slice(0,10);
-      if(compact){
-        // Reduced view: symmetric 3-line dates directly on the boundary.
-        const leftDate=splitIsoDate(previous),rightDate=splitIsoDate(day);
-        const dateY=Math.max(31,height-47),lineHeight=12,gap=9;
-        function dateBlock(parts,x,anchor){
-          return ['day','month','year'].map((part,i)=>
-            '<text class="date-divider-block" x="'+x+'" y="'+(dateY+i*lineHeight)+'" text-anchor="'+anchor+'">'+escape(parts[part])+'</text>'
-          ).join('');
-        }
-        dates+=dateBlock(leftDate,left-gap,"end")+dateBlock(rightDate,left+gap,"start");
-      }else{
-        // Full history: vertical labels, separated and safely above the scrollbar.
-        const labelY=Math.max(40,height-48),offset=22;
-        const previousDate=previous.slice(8,10)+"/"+previous.slice(5,7)+"/"+previous.slice(0,4);
-        dates+='<text class="date-divider-label" x="'+(left-offset)+'" y="'+labelY+'" text-anchor="middle" transform="rotate(90 '+(left-offset)+' '+labelY+')">'+escape(previousDate)+'</text>';
-        dates+='<text class="date-divider-label" x="'+(left+offset)+'" y="'+labelY+'" text-anchor="middle" transform="rotate(-90 '+(left+offset)+' '+labelY+')">'+escape(date)+'</text>';
+      // Both modes use the same three-line calendar block, at the baseline.
+      const leftDate=splitIsoDate(previous),rightDate=splitIsoDate(day);
+      const lineHeight=12,gap=compact?9:12;
+      const dateY=height-35; // year baseline = height - 11
+      function dateBlock(parts,x,anchor){
+        return ['day','month','year'].map((part,i)=>
+          '<text class="date-divider-block" x="'+x+'" y="'+(dateY+i*lineHeight)+'" text-anchor="'+anchor+'">'+escape(parts[part])+'</text>'
+        ).join('');
       }
+      dates+=dateBlock(leftDate,left-gap,"end")+dateBlock(rightDate,left+gap,"start");
     }
     // Repeat the day inside wide segments so the operator always has a date
     // even when horizontal scrolling hides both boundaries.
@@ -151,10 +144,10 @@ function graph(){
     const segmentWidth=right-left;
     if(!compact && segmentWidth>viewportWidth){
       for(let at=left+spacing/2;at<right;at+=spacing){
-        dates+='<text class="date-label" x="'+at+'" y="'+(height-33)+'" text-anchor="middle">'+escape(date)+'</text>';
+        dates+='<text class="date-label" x="'+at+'" y="'+(height-11)+'" text-anchor="middle">'+escape(date)+'</text>';
       }
     }else{
-      dates+='<text class="date-label" x="'+((left+right)/2)+'" y="'+(height-33)+'" text-anchor="middle">'+escape(date)+'</text>';
+      dates+='<text class="date-label" x="'+((left+right)/2)+'" y="'+(height-11)+'" text-anchor="middle">'+escape(date)+'</text>';
     }
     start=end;section++;
   }
