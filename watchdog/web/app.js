@@ -86,8 +86,12 @@ function graph(){
     const left=start===0?0:(positions.get(ordered[start-1].sha).x+positions.get(ordered[start].sha).x)/2;
     const right=end===ordered.length?width:(positions.get(ordered[end-1].sha).x+positions.get(ordered[end].sha).x)/2;
     if(section%2===1)backdrop+='<rect class="date-band" x="'+left+'" y="0" width="'+(right-left)+'" height="'+(axisBottom+4)+'"/>';
-    if(start>0)backdrop+='<path class="date-divider" d="M'+left+' 0 V'+(axisBottom+4)+'"/>';
     const label=day.slice(8,10)+'/'+day.slice(5,7)+'/'+day.slice(0,4);
+    if(start>0){
+      backdrop+='<path class="date-divider" d="M'+left+' 0 V'+(axisBottom+4)+'"/>';
+      // Vertical calendar date next to the boundary, within the new day's band.
+      axis+='<text class="date-divider-label" x="'+(left+9)+'" y="8" transform="rotate(90 '+(left+9)+' 8)">'+escape(label)+'</text>';
+    }
     axis+='<text class="date-label" x="'+((left+right)/2)+'" y="'+axisBottom+'" text-anchor="middle">'+escape(label)+'</text>';
     start=end;section++;
   }
