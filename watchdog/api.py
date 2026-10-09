@@ -10,6 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit, parse_qs
 from .catalog import domains, features, markdown_tree
+from .scanner import scan, cached
 
 
 def handler_for(repo, update_token):
@@ -41,6 +42,8 @@ def handler_for(repo, update_token):
                     self.json(dict(name=repo.root.name, root=str(repo.root), head=repo.head(), branch=repo.branch(), update_token=update_token))
                 elif url.path == "/api/commits":
                     self.json(dict(commits=repo.commits(), refs=repo.refs(), head=repo.head()))
+                elif url.path == "/api/scan":
+                    self.json(cached(repo.root) or dict(items=[],never_scanned=True))
                 elif url.path == "/api/domains":
                     self.json(domains(repo, sha))
                 elif url.path == "/api/features":
@@ -61,7 +64,8 @@ def handler_for(repo, update_token):
                 self.json(dict(error=str(e)), 400)
 
         def do_POST(self):
-            if urlsplit(self.path).path != "/api/update-restart":
+            action=urlsplit(self.path).path
+            if action not in ("/api/update-restart","/api/scan"):
                 self.json(dict(error="Unknown action"), 405)
                 return
             # Require exact local Host/Origin and a session-specific secret header.
@@ -78,6 +82,9 @@ def handler_for(repo, update_token):
                 self.json(dict(error="Update already running"), 409)
                 return
             try:
+                if action == "/api/scan":
+                    self.json(scan(repo.root))
+                    return
                 branch = repo.branch()
                 if branch == "(detached)":
                     self.json(dict(error="Detached HEAD: checkout a branch before updating"), 409)
