@@ -107,3 +107,11 @@ Features condicionais devem obedecer aos macros `BuildConfig.WA_FEATURE_*`. Não
 
 Nenhum outro script, workflow ou agente pode chamar diretamente tarefas Gradle de assemble/bundle. Scripts de deploy, benchmark, pacote e publicação devem delegar a `scripts/build.sh`.
 
+
+## Fonte documental compartilhada com o Goals Kit Watchdog
+
+Antes de qualquer alteração, além de `docs/validated-features.md`, consultar `docs/governance/index.md` **quando existir** e seguir as definições oficiais de domínios, features, contratos e política de inspeção ali referenciadas. Os arquivos `docs/governance/domains/`, `features/` e `contracts/` são definições documentais; a existência de um Markdown não comprova implementação nem aprovação de comportamento.
+
+A issue #57 foi aceita conceitualmente como direção arquitetural: tipos e operações explícitos, encapsulamento por domínio e contratos estáveis, com rigor configurável (`off`, `advisory`, `strict`). **Não declarar validação automática nem impor bloqueios até existir implementação e configuração aprovada.** Preservar as regras PROTECTED anteriores.
+
+O Goals Kit Watchdog navega e descobre essa documentação, não mantém uma cópia paralela de regras para agentes. O catálogo JSON local é reconstruível; Git registra o histórico; testes e evidências estabelecem a situação verificada.
