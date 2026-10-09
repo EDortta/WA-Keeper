@@ -56,7 +56,7 @@ def discover(root):
                 elif len(Path(rel).parts)>1 and Path(rel).parts[-2].lower() in ROOT_HINTS and level==1:
                     kind="domain" if Path(rel).parts[-2].lower() in {"domains","dominios","domínios"} else "feature"
                 if kind:
-                    identity=f"{kind}:{rel}:{line}:{canonical}"
+                    identity=f"{kind}:{rel}:{canonical.casefold()}"
                     item_id=hashlib.sha256(identity.encode()).hexdigest()[:16]
                     status=next((STATUSES[p.lower()] for p in reversed(parent) if p.lower() in STATUSES),"documentado")
                     results.append({"id":item_id,"kind":kind,"name":canonical,"path":rel,"line":line,
