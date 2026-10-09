@@ -265,6 +265,33 @@ async function createDomainMap(){
   }catch(error){$("notice").textContent="Falha ao criar mapa: "+error.message}
 }
 $("create-domain-map").onclick=createDomainMap;
+$("new-instrument").onclick=()=>{
+  const options=$("new-options"),show=options.hidden;
+  options.hidden=!show;
+  $("new-instrument").setAttribute("aria-expanded",String(show));
+};
+document.querySelectorAll("[data-create]").forEach(button=>button.onclick=async()=>{
+  const kind=button.dataset.create,name=prompt("Nome do instrumento ("+button.textContent+"): ");
+  $("new-options").hidden=true;
+  $("new-instrument").setAttribute("aria-expanded","false");
+  if(name===null||!name.trim())return;
+  if(state.sha!==state.head){$("notice").textContent="Selecione HEAD para criar documentação.";return}
+  try{
+    const response=await fetch("/api/instrument",{method:"POST",
+      headers:{"X-Watchdog-Token":updateToken,"Content-Type":"application/json"},
+      body:JSON.stringify({kind,name:name.trim()})});
+    const result=await response.json();
+    if(!response.ok)throw Error(result.error||"Falha ao criar documento");
+    $("notice").textContent="Documento criado: "+result.path+
+      " · Índice: "+result.index+" · Execute Scan Markdown para atualizar o catálogo.";
+  }catch(error){$("notice").textContent="Novo: "+error.message}
+});
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".new-instrument")){
+    $("new-options").hidden=true;
+    $("new-instrument").setAttribute("aria-expanded","false");
+  }
+});
 async function scanMarkdown(){
   const button=$("scan-docs");
   if(!updateToken||button.disabled)return;
