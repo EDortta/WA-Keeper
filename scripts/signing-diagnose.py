@@ -42,7 +42,18 @@ def recorded_main():
     allow = ("package=", "installed_certificate_sha256=", "candidate_certificate_sha256=",
              "signature_match=", "candidate_certificate=", "read_only=", "NOT_INSTALLED:")
     findings = [line.strip() for line in output.splitlines() if line.startswith(allow)]
-    evidence = {"schema": 1, "timestamp_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
+    reason = "none" if code == 0 else "verification_failed"
+    if "cannot verify installed certificate" in output:
+        reason = "installed_certificate_parse_or_verification"
+    elif "could not retrieve installed base APK" in output:
+        reason = "installed_apk_pull"
+    elif "apksigner not found" in output:
+        reason = "apksigner_unavailable"
+    elif "exactly one authorized device" in output:
+        reason = "device_selection"
+    elif "NOT_INSTALLED:" in output:
+        reason = "package_not_installed"
+    evidence = {"error_category": reason, "schema": 1, "timestamp_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
                 "tool": "signing-diagnose", "status": "success" if code == 0 else "failed",
                 "exit_code": code, "findings": findings}
     with tempfile.NamedTemporaryFile(dir=state, mode="w", prefix=".diag-", delete=False) as tmp:
