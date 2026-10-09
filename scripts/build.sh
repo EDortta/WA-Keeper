@@ -17,6 +17,7 @@ TARGET="app"
 ONLY=""
 PRINT_ONLY=0
 RUN_TESTS=1
+EVIDENCE=1
 declare -a ENABLE=()
 declare -a DISABLE=()
 
@@ -36,12 +37,37 @@ while (($#)); do
     --release) BUILD_TYPE="release"; MODE="apk" ;;
     --bundle) BUILD_TYPE="release"; MODE="bundle" ;;
     --skip-tests) RUN_TESTS=0 ;;
+    --no-evidence) EVIDENCE=0 ;;
     --print) PRINT_ONLY=1 ;;
-    -h|--help) echo "uso: bash scripts/build.sh [--lab|--store] [--feature N] [--no-feature N] [--only a,b] [--app|--benchmark|--godofredo-benchmark] [--debug|--release|--bundle] [--skip-tests] [--print]"; exit 0 ;;
+    -h|--help) echo "uso: bash scripts/build.sh [--lab|--store] [--feature N] [--no-feature N] [--only a,b] [--app|--benchmark|--godofredo-benchmark] [--debug|--release|--bundle] [--skip-tests] [--no-evidence] [--print]"; exit 0 ;;
     *) fail "opção desconhecida: $1" ;;
   esac
   shift
 done
+
+# Evidence stays outside the repository. Never commit raw build output without review.
+# Every command is piped through tee with pipefail enabled, preserving failure status.
+start_evidence() {
+  (( EVIDENCE && ! PRINT_ONLY )) || return 0
+  local evidence_dir="${XDG_STATE_HOME:-$HOME/.local/state}/wa-keeper/builds"
+  (umask 077; mkdir -p "$evidence_dir") || fail "não foi possível criar pasta de evidências"
+  chmod 700 "$evidence_dir" || fail "não foi possível proteger pasta de evidências"
+  local date_part sha_part
+  date_part="$(date -u +%Y%m%dT%H%M%SZ)"
+  sha_part="$(git rev-parse --short=12 HEAD)"
+  EVIDENCE_LOG="$(mktemp "$evidence_dir/${date_part}-${sha_part}-XXXXXXXX.log")" || fail "não foi possível criar evidência"
+  chmod 600 "$EVIDENCE_LOG"
+  printf 'branch=%s\ncommit=%s\nstart_utc=%s\n' "$(git branch --show-current)" "$(git rev-parse HEAD)" "$(date -u +%FT%TZ)" >> "$EVIDENCE_LOG"
+  echo "  evidence=$EVIDENCE_LOG (local, não versionado)"
+  trap 'code=$?; if [[ -n "${EVIDENCE_LOG:-}" ]]; then printf "end_utc=%s\\nexit_code=%s\\n" "$(date -u +%FT%TZ)" "$code" >> "$EVIDENCE_LOG"; echo "  evidence=$EVIDENCE_LOG (exit=$code)" >&2; fi' EXIT
+}
+run_gradle() {
+  if [[ -n "${EVIDENCE_LOG:-}" ]]; then
+    ./gradlew --console=plain "$@" 2>&1 | tee -a "$EVIDENCE_LOG"
+  else
+    ./gradlew --console=plain "$@"
+  fi
+}
 
 if [[ "$TARGET" == "benchmark" || "$TARGET" == "godofredo-benchmark" ]]; then
   [[ "$PROFILE" != "store" ]] || fail "benchmark não é artefato de loja"
@@ -49,8 +75,10 @@ if [[ "$TARGET" == "benchmark" || "$TARGET" == "godofredo-benchmark" ]]; then
   echo "  target=$TARGET"
   echo "  profile=lab"
   echo "  type=debug"
+  echo "  defaults: target=app profile=lab type=debug mode=apk"
   (( PRINT_ONLY )) && exit 0
-  ./gradlew --console=plain ":$TARGET:assembleDebug"
+  start_evidence
+  run_gradle ":$TARGET:assembleDebug"
   exit 0
 fi
 
@@ -93,19 +121,21 @@ STORE=false
 [[ "$PROFILE" == "store" ]] && STORE=true
 
 echo "WA Keeper build"
-echo "  target=app"
+echo "  target=$TARGET"
 echo "  profile=$PROFILE"
 echo "  store=$STORE"
 echo "  type=$BUILD_TYPE"
 echo "  mode=$MODE"
 echo "  features=${FEATURE_CSV:-<none>}"
+echo "  defaults: target=app profile=lab type=debug mode=apk"
 
 (( PRINT_ONLY )) && exit 0
+start_evidence
 
 ARGS=("-PwaStore=$STORE" "-PwaFeatures=$FEATURE_CSV")
 
 if (( RUN_TESTS )); then
-  ./gradlew --console=plain testDebugUnitTest "${ARGS[@]}"
+  run_gradle :app:testDebugUnitTest "${ARGS[@]}"
 fi
 
 if [[ "$MODE" == "bundle" ]]; then
@@ -116,4 +146,4 @@ else
   TASK="assembleRelease"
 fi
 
-./gradlew --console=plain "$TASK" "${ARGS[@]}"
+run_gradle ":app:$TASK" "${ARGS[@]}"
