@@ -42,3 +42,19 @@ body.graph-focus #graph-height{border-color:var(--accent);background:var(--panel
 
 .tree-actions{display:flex;justify-content:flex-end;gap:6px;margin:0 0 8px}
 .tree-actions button{font-size:12px}
+
+/* Markdown typography stays inside each collapsible tree node. */
+.tree .markdown-heading{font-weight:600;line-height:1.45}
+.tree .markdown-heading-1{font-size:1.4rem}
+.tree .markdown-heading-2{font-size:1.22rem}
+.tree .markdown-heading-3{font-size:1.1rem}
+.tree .markdown-heading-4{font-size:1rem}
+.tree .markdown-heading-5,.tree .markdown-heading-6{font-size:.92rem}
+.tree .markdown-body{max-width:95ch;line-height:1.58}
+.tree .markdown-body p{margin:7px 0}
+.tree .markdown-body pre{background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow-x:auto;padding:12px;margin:8px 0;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre}
+.tree .markdown-body :not(pre)>code,.tree summary code{font: .95em ui-monospace,SFMono-Regular,Consolas,monospace;background:var(--panel);border-radius:3px;padding:1px 3px}
+.tree .markdown-body blockquote{border-left:3px solid var(--line);padding-left:12px;margin:8px 0;color:var(--sub)}
+.tree .markdown-body a{color:var(--accent);text-decoration:underline}
+.tree .markdown-body ul,.tree .markdown-body ol{margin:7px 0;padding-left:22px}
+.tree .markdown-body li{margin:3px 0}
