@@ -62,3 +62,6 @@ body.graph-focus #graph-height{border-color:var(--accent);background:var(--panel
 /* Keep Markdown navigation within its own reading viewport. */
 #management #detail{max-height:min(65vh,760px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable}
 #management #detail:focus-visible{outline:2px solid var(--accent)}
+
+.tabs .tree-actions{margin:0 0 0 auto;display:inline-flex;gap:6px;align-items:center}
+.tabs{flex-wrap:wrap}
