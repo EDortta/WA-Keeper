@@ -70,3 +70,29 @@ Testes previstos:
 ```bash
 python3 -m unittest discover -s watchdog/tests -v
 ```
+
+
+## Evidências do Scan Markdown
+
+Cada clique em **Scan Markdown** registra sucesso ou falha na fila do repositório compartilhado
+\`EDortta/development-evidences\`, usando o contrato de manifesto \`schema: 1\`.
+O identificador da execução aparece na barra inferior do Watchdog.
+
+- Fila local: \`~/.local/state/development-evidences/outbox/\` (ou \`$XDG_STATE_HOME/development-evidences/outbox/\`).
+- Projeto, branch e SHA são obtidos diretamente do Git. O manifesto contém duração,
+  contagem de documentos, domínios e features, etapa e categoria da falha.
+- O upload não acontece durante a requisição do scan: um servidor Git/SSH indisponível
+  não pode travar a interface. O publicador compartilhado faz o \`flush\` posteriormente.
+- Nunca são publicados nomes de documentos, conteúdo Markdown, logs brutos,
+  textos de exceção, credenciais ou dados pessoais.
+- A fila continua disponível mesmo se o reconhecimento de domínios falhar.
+  Se a própria criação da fila local falhar, a interface retorna erro sem alegar publicação.
+
+Com uma cópia atualizada de \`scripts/evidence.py\` contendo o comando \`flush\`:
+
+\`\`\`bash
+python3 scripts/evidence.py flush
+python3 -m unittest discover -s watchdog/tests -v
+\`\`\`
+
+\`flush\` requer acesso SSH ao repositório privado e pode ser executado posteriormente.
