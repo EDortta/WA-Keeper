@@ -98,7 +98,11 @@ run_gradle() {
   fi
 }
 start_recording() {
-  [[ "$EVIDENCE_MODE" == "off" || "$PRINT_ONLY" == 1 ]] && return
+  [[ "$PRINT_ONLY" == 1 ]] && return
+  if [[ "$EVIDENCE_MODE" == "off" ]]; then
+    trap record_build EXIT
+    return
+  fi
   local logdir="${XDG_STATE_HOME:-$HOME/.local/state}/wa-keeper/build-logs"
   (umask 077; mkdir -p "$logdir")
   BUILD_LOG="$(mktemp "$logdir/build-XXXXXXXX.log")"
