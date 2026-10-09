@@ -27,3 +27,9 @@ body.graph-focus #graph-height{border-color:var(--accent);background:var(--panel
 
 #graph .date-divider-block{fill:var(--sub);font:600 10px system-ui,sans-serif;pointer-events:none}
 #update-restart:disabled{opacity:.55}
+
+.management-nav{flex-wrap:nowrap;gap:6px;margin-bottom:6px}
+.management-nav .map-home{display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;padding:5px}
+.management-nav .map-home svg{display:block}
+.management-nav button{white-space:nowrap}
+@media(max-width:600px){.management-nav{flex-wrap:wrap}}
