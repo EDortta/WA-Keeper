@@ -21,3 +21,6 @@ body.graph-focus header>.scroll{flex:1;min-height:0;max-height:none}
 body.graph-focus header>.row:last-child{display:none}
 body.graph-focus main,body.graph-focus footer{display:none}
 body.graph-focus #graph-height{border-color:var(--accent);background:var(--panel)}
+
+#graph .branch-inline rect{fill:var(--panel);fill-opacity:.94;stroke:var(--accent);stroke-opacity:.7}
+#graph .branch-inline text{font:10px system-ui,sans-serif}
