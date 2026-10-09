@@ -75,23 +75,23 @@ function graph(){
     }
     circles+='<g class="node '+(current?'current':'')+'" role="button" tabindex="0" data-sha="'+n.sha+'" transform="translate('+x+','+y+')"><title>'+title+'</title><circle r="6"/><text x="8" y="14" text-anchor="start" transform="rotate(30 8 14)">'+escape(n.short)+'</text></g>';
   }
-  // Thick translucent timeline below all commit lanes. Segment boundaries denote
-  // changes in the displayed commit date (topological order is preserved).
-  const barY=155+maxLane*24;
-  let axis='<rect class="date-track" x="30" y="'+barY+'" width="'+(width-60)+'" height="12" rx="6"/>';
-  let start=0;
+  // Day-wide vertical separators and alternating subtle bands behind the DAG.
+  // Dates are labels on the X axis; the Git DAG retains topological ordering.
+  const axisBottom=height-12;
+  let backdrop="",axis="",start=0,section=0;
   while(start<ordered.length){
     const day=ordered[start].committed.slice(0,10);
     let end=start+1;
     while(end<ordered.length && ordered[end].committed.slice(0,10)===day)end++;
-    const left=start===0?30:(positions.get(ordered[start-1].sha).x+positions.get(ordered[start].sha).x)/2;
-    const right=end===ordered.length?width-30:(positions.get(ordered[end-1].sha).x+positions.get(ordered[end].sha).x)/2;
-    axis+='<path class="date-boundary" d="M'+left+' '+(barY-5)+' V'+(barY+17)+'"/>';
+    const left=start===0?0:(positions.get(ordered[start-1].sha).x+positions.get(ordered[start].sha).x)/2;
+    const right=end===ordered.length?width:(positions.get(ordered[end-1].sha).x+positions.get(ordered[end].sha).x)/2;
+    if(section%2===1)backdrop+='<rect class="date-band" x="'+left+'" y="0" width="'+(right-left)+'" height="'+(axisBottom+4)+'"/>';
+    if(start>0)backdrop+='<path class="date-divider" d="M'+left+' 0 V'+(axisBottom+4)+'"/>';
     const label=day.slice(8,10)+'/'+day.slice(5,7)+'/'+day.slice(0,4);
-    axis+='<text class="date-label" x="'+((left+right)/2)+'" y="'+(barY+32)+'" text-anchor="middle">'+escape(label)+'</text>';
-    start=end;
+    axis+='<text class="date-label" x="'+((left+right)/2)+'" y="'+axisBottom+'" text-anchor="middle">'+escape(label)+'</text>';
+    start=end;section++;
   }
-  graphEl.innerHTML=edges+branchLabels+circles+'<g class="date-axis">'+axis+'</g>';
+  graphEl.innerHTML='<g class="date-background">'+backdrop+'</g>'+edges+branchLabels+circles+'<g class="date-axis">'+axis+'</g>';
   document.querySelectorAll("[data-sha]").forEach(n=>{
     n.onclick=()=>revision(n.dataset.sha);
     n.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();revision(n.dataset.sha)}};
