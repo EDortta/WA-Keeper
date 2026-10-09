@@ -76,7 +76,7 @@ record_build() {
       local digest
       digest="$(sha256sum "$artifact" | awk '{print $1}')"
       local manifest_tmp="$EVIDENCE_DIR/last-success.tmp"
-      printf 'profile=%s\ntype=%s\nmode=%s\ntarget=%s\nfeatures=%s\ncommit=%s\n' \
+      printf 'profile=%s\ntype=%s\nmode=%s\ntarget=%s\nfeatures=%s\ncommit=%s\nartifact=%s\nsha256=%s\n' \
         "$PROFILE" "$BUILD_TYPE" "$MODE" "$TARGET" "$FEATURE_CSV" "$sha" "$artifact" "$digest" > "$manifest_tmp"
       mv -f "$manifest_tmp" "$EVIDENCE_DIR/last-success"
       fi
