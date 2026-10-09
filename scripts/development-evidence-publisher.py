@@ -80,7 +80,7 @@ def publish():
             run("git", "clone", REMOTE, str(checkout))
         branch = run("git", "symbolic-ref", "--short", "HEAD", cwd=checkout).stdout.strip()
         # No reset, clean, force or rebase. Keep local unpublished commits.
-        items = sorted(outbox.glob("[0-9]*.json"))
+        items = sorted(outbox.glob("*.json"), key=lambda p: (0 if p.name[:1].isdigit() else 1, p.name))
         for entry in items:
             envelope = json.loads(entry.read_text())
             relative = Path(envelope["relative_path"])
