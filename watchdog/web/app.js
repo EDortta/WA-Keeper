@@ -69,12 +69,16 @@ function graph(){
     points+='<g class="node '+(state.sha===n.sha?'current':'')+'" tabindex="0" role="button" data-sha="'+n.sha+'" transform="translate('+x+','+y+')"><title>'+title+'</title><circle r="5"/>'+(compact?'':'<text x="7" y="12" transform="rotate(30 7 12)">'+escape(n.short)+'</text>')+'</g>';
     // Inline labels right-aligned at their branch tips, immediately above each lane.
     if(refs.length){
-      const text=refs.join(" · ");
-      const label=text.length>55?text.slice(0,52)+"…":text;
-      const estimated=Math.min(350,Math.max(50,label.length*5.6+12));
-      const left=Math.max(3,Math.min(width-estimated-3,x-estimated-7));
-      const top=Math.max(3,y-20);
-      labels+='<g class="branch-inline graph-link" role="button" tabindex="0" data-sha="'+n.sha+'"><title>'+escape(text)+'</title><rect x="'+left+'" y="'+top+'" width="'+estimated+'" height="15" rx="2"/><text x="'+(left+estimated-5)+'" y="'+(top+11)+'" text-anchor="end">'+escape(label)+'</text></g>';
+      // The rightmost tip of each slanted label is attached to its commit.
+      // Exact rectangle width is measured after SVG insertion, not guessed.
+      refs.forEach((ref,i)=>{
+        const anchorX=x-7, anchorY=y-9-i*17;
+        labels+='<g class="branch-inline graph-link" role="button" tabindex="0" data-sha="'+n.sha+'" '+
+          'transform="translate('+anchorX+' '+anchorY+') rotate(-30)">'+
+          '<title>'+escape(ref)+'</title>'+
+          '<rect x="-14" y="-13" width="14" height="17" rx="2"/>'+
+          '<text x="-5" y="0" text-anchor="end">'+escape(ref)+'</text></g>';
+      });
     }
   }
   // Every visible line receives a compact, explicit identity at its earliest
@@ -107,6 +111,13 @@ function graph(){
     start=end;section++;
   }
   svg.innerHTML='<g class="date-background">'+bands+'</g>'+edges+points+labels+'<g class="date-axis">'+dates+'</g>';
+  // Measure actual text in the rendered SVG. Keep tight 5px padding.
+  svg.querySelectorAll(".branch-inline").forEach(el=>{
+    const text=el.querySelector("text"),rect=el.querySelector("rect");
+    const w=text.getComputedTextLength();
+    rect.setAttribute("x",String(-w-10));
+    rect.setAttribute("width",String(w+10));
+  });
   svg.querySelectorAll("[data-sha]").forEach(el=>{
     el.onclick=()=>revision(el.dataset.sha);
     el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();revision(el.dataset.sha)}};
