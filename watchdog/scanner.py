@@ -16,7 +16,6 @@ STATUSES={"protected":"PROTECTED","protegido":"PROTECTED","implementado":"implem
 
 def cache_file(root):
     # Workspace cache is deliberately outside tracked project documentation.
-    output=os.popen("") if False else None
     return Path(root)/".git"/"watchdog"/"catalog.json"
 
 def discover(root):
@@ -50,9 +49,9 @@ def discover(root):
                     word=title.split(":",1)[0].split("-",1)[0].strip().lower()
                     kind="domain" if word in ("domínio","dominio","domain") else "feature"
                     canonical=explicit[1].strip()
-                elif any(DOMAINS.match(p) for p in parent) and not DOMAINS.match(title):
+                elif parent and DOMAINS.match(parent[-1]) and not DOMAINS.match(title):
                     kind="domain"
-                elif any(FEATURES.match(p) for p in parent) and not FEATURES.match(title) and title.lower() not in {"protected","protegido","ainda não protegido","proposed","proposto"}:
+                elif parent and (FEATURES.match(parent[-1]) or (parent[-1].lower() in {"protected","protegido","ainda não protegido","proposed","proposto"} and any(FEATURES.match(p) for p in parent[:-1]))) and not FEATURES.match(title) and title.lower() not in {"protected","protegido","ainda não protegido","proposed","proposto"}:
                     kind="feature"
                 elif len(Path(rel).parts)>1 and Path(rel).parts[-2].lower() in ROOT_HINTS and level==1:
                     kind="domain" if Path(rel).parts[-2].lower() in {"domains","dominios","domínios"} else "feature"
