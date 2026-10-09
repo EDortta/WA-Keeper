@@ -34,20 +34,33 @@ function graph(){
   // Oldest to newest, but still topological. Actual commit dates are shown on the axis.
   const ordered=nodes.slice().reverse();
   const px=62, step=66, maxLane=Math.max(0,...assigned.values());
-  const width=Math.max(800,ordered.length*step+60),height=Math.max(230,190+maxLane*24);
-  const positions=new Map(ordered.map((n,i)=>[n.sha,{x:35+i*step,y:100+assigned.get(n.sha)*24}]));
+  const laneGap=64;
+  const width=Math.max(800,ordered.length*step+60),height=Math.max(250,205+maxLane*laneGap);
+  const positions=new Map(ordered.map((n,i)=>[n.sha,{x:35+i*step,y:98+assigned.get(n.sha)*laneGap}]));
   const graphEl=$("graph");
   const former=graphEl.parentElement.scrollLeft;
   graphEl.setAttribute("viewBox",`0 0 ${width} ${height}`);
   graphEl.style.width=width+"px";
   graphEl.style.height=height+"px";
   let edges="",circles="",branchLabels="";
-  const occupied=[];
-  function labelRow(left,right){
-    let row=0;
-    while(occupied[row]?.some(([a,b])=>left<b&&right>a))row++;
-    (occupied[row]??=[]).push([left,right]);
-    return row;
+  // Each label stays near its own branch lane, never in a detached header.
+  const labelBoxes=[];
+  function labelPlacement(x,y,w){
+    const tries=[
+      [x+11,y-28],[x-w-11,y-28],[x-w/2,y-46],
+      [x+11,y-46],[x-w-11,y-46]
+    ];
+    for(let level=0;level<7;level++){
+      for(const [rawX,rawY] of tries){
+        const left=Math.max(2,Math.min(width-w-2,rawX));
+        const top=Math.max(3,rawY-level*19);
+        const hit=labelBoxes.some(b=>left<b.right+5&&left+w>b.left-5&&top<b.bottom+3&&top+17>b.top-3);
+        if(!hit){labelBoxes.push({left,right:left+w,top,bottom:top+17});return {left,top};}
+      }
+    }
+    const left=Math.max(2,Math.min(width-w-2,x-w/2)),top=Math.max(3,y-28);
+    labelBoxes.push({left,right:left+w,top,bottom:top+17});
+    return {left,top};
   }
   for(const n of ordered){
     const {x,y}=positions.get(n.sha);
@@ -61,17 +74,16 @@ function graph(){
     const refs=state.refs.filter(r=>r.sha===n.sha).map(r=>r.name);
     const date=n.committed.slice(0,10);
     const title=escape(n.subject+" | "+date+" | "+n.sha+" | "+(refs.join(", ")||"sem referência"));
-    // Keep branch names horizontal and distinct from the rotated commit hash.
+    // Horizontal names beside their corresponding branch/commit.
     for(const ref of refs){
       const label=ref.length>43?ref.slice(0,40)+"…":ref;
       const w=Math.max(55,label.length*6.1+14);
-      const left=Math.min(Math.max(3,x-w/2),width-w-3);
-      const row=labelRow(left-4,left+w+4);
-      const ly=12+row*19;
+      const {left,top}=labelPlacement(x,y,w);
+      const attachX=Math.max(left+5,Math.min(left+w-5,x));
       branchLabels+='<g class="branch-label"><title>'+escape(ref)+'</title>'+
-        '<path d="M'+x+' '+(ly+16)+' L'+x+' '+(y-9)+'" stroke="var(--sub)" stroke-opacity=".45" stroke-dasharray="2 3"/>'+
-        '<rect x="'+left+'" y="'+ly+'" width="'+w+'" height="16" rx="3"/>'+
-        '<text x="'+(left+7)+'" y="'+(ly+11)+'">'+escape(label)+'</text></g>';
+        '<path d="M'+attachX+' '+(top+17)+' L'+x+' '+(y-8)+'" stroke="var(--sub)" stroke-opacity=".45" stroke-dasharray="2 3"/>'+
+        '<rect x="'+left+'" y="'+top+'" width="'+w+'" height="17" rx="3"/>'+
+        '<text x="'+(left+7)+'" y="'+(top+12)+'">'+escape(label)+'</text></g>';
     }
     circles+='<g class="node '+(current?'current':'')+'" role="button" tabindex="0" data-sha="'+n.sha+'" transform="translate('+x+','+y+')"><title>'+title+'</title><circle r="6"/><text x="8" y="14" text-anchor="start" transform="rotate(30 8 14)">'+escape(n.short)+'</text></g>';
   }
