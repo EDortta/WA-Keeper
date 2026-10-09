@@ -9,3 +9,8 @@
 #graph .date-label{fill:var(--sub);font:10px system-ui,sans-serif}
 
 #graph .date-divider-label{fill:var(--sub);font:600 10px system-ui,sans-serif;pointer-events:none}
+
+#graph .branch-inline rect{fill:var(--panel);stroke:var(--accent);stroke-width:.75}
+#graph .branch-inline text{fill:var(--fg);font:10px system-ui,sans-serif}
+#graph .lane-identity text{fill:var(--sub);font:italic 9px system-ui,sans-serif}
+#graph .branch-inline,#graph .lane-identity{pointer-events:none}
