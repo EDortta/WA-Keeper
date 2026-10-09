@@ -65,3 +65,5 @@ body.graph-focus #graph-height{border-color:var(--accent);background:var(--panel
 
 .tabs .tree-actions{margin:0 0 0 auto;display:inline-flex;gap:6px;align-items:center}
 .tabs{flex-wrap:wrap}
+
+.new-instrument{position:relative;display:inline-flex}.new-options{position:absolute;z-index:20;top:100%;left:0;min-width:170px;padding:5px;background:var(--bg);border:1px solid var(--line);box-shadow:0 6px 16px #0002}.new-options:not([hidden]){display:flex;flex-direction:column;gap:3px}.new-options button{text-align:left;border:0}.new-options button:hover{background:var(--panel)}
