@@ -1,12 +1,12 @@
-# WA-Keeper — revisão arquitetural Alpha (2026-10-08)
+# WA-Keeper — baseline de domínios v1 (originada na Alpha, 2026-10-09)
 
-**Status:** Alpha documental, aberta à crítica; nenhuma refatoração, bloqueio ou mudança de produção aprovada. A Alpha está na branch documental `docs/governance-watchdog-domain-baseline`. A expressão **future branch** usada nas discussões designa futuras branches temporárias de implementação de features, não uma branch literal chamada `future`.
+**Status:** baseline arquitetural v1 aprovada para orientar a migração, ainda sem afirmar conformidade do código existente. Migrações e refatorações serão implementadas em feature branches isoladas, com contratos, testes e autorização de domínios afetados. A Alpha está na branch documental `docs/governance-watchdog-domain-baseline`. A expressão **future branch** usada nas discussões designa futuras branches temporárias de implementação de features, não uma branch literal chamada `future`.
 
 **Fonte:** princípios do YB Convênio (`architecture/01-principles.md`, `architecture/02-domain-and-identifiers.md`) adaptados à base Android do WA-Keeper.
 
 **Documento detalhado:** [domain-baseline-watchdog.md](domain-baseline-watchdog.md).
 
-## Compromissos arquiteturais desta Alpha
+## Compromissos arquiteturais adotados
 
 1. **Domínio** é dono reconhecível de responsabilidades, dados, operações, invariantes e contratos. Transversal às classes; não equivale a classe, pacote ou tabela.
 2. **Feature** entrega uma capacidade do produto e pode atravessar vários domínios, sem adquirir suas permissões de escrita.
@@ -54,7 +54,7 @@ Nenhum dos riscos acima é declarado defeito reproduzido sem teste. São hipóte
 
 Não inferir aprovação de mudanças de código ou de regras ainda não discutidas a partir dessas decisões.
 
-## Pontos de crítica conjunta
+## Pontos de crítica contínua
 
 1. **Resolvido para esses três:** Contatos, Conversas e Entidades são domínios distintos; completar seus contratos e pontos de integração.
 2. Como documentar a propriedade segmentada de arquivo/classe/tabela compartilhada sem microgerenciar símbolos?
@@ -65,3 +65,13 @@ Não inferir aprovação de mudanças de código ou de regras ainda não discuti
 7. Há conflitos entre esta Alpha e as regras de `AGENTS.md` ou `validated-features.md` a reconciliar antes do merge?
 
 **Critério de saída da Alpha:** respostas às dúvidas, catálogo de propriedade revisado, invariantes aprovadas e nenhum conflito com contratos PROTECTED. Somente depois planejar mudanças de código.
+
+## Revisão posterior à Alpha: decomposição e semântica
+
+Os nomes aprovados são substantivos; ações são verbos associados aos contratos de cada domínio. A implementação técnica (incluindo banco, interface, classes e bibliotecas) pertence às respectivas responsabilidades de domínio; um arquivo compartilhado não confere acesso amplo.
+
+**Domínios a especificar separadamente:** Contatos; Conversas; Entidades; Memória; Captura; Mídia; Transcrição; Comandos de Voz; Agendamento e Envio; Backup e Restauração. Identidade é recurso estrutural com contrato protegido e proprietário(s) definidos; não uma zona livre de edição. **Memória** possui capacidades separadas de Storage e Query, acessíveis por API interna tipada, sem HTTP ou serialização desnecessária. **Godofredo/Comandos de Voz** consome Transcrição por contrato, sem possuir seu motor.
+
+**Forma dos contratos:** substantivo + verbos + atributos, tipos e parâmetros explícitos, retornos/erros, invariantes e implementação encapsulada. A disciplina semântica configurável foi registrada para o Watchdog na [issue #57](https://github.com/EDortta/WA-Keeper/issues/57); não implementar neste fluxo.
+
+**Critério de migração:** primeiro introduzir contratos e testes de caracterização, depois substituir acessos cruzados passo a passo. Preservar migrações Room, dados locais, backup e features PROTECTED; não criar abstrações genéricas sem uso real. Uma branch/work item por mudança delimitada de feature, com domínio principal e autorizações adicionais escopadas.
