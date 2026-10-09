@@ -47,16 +47,20 @@ function graph(){
   }
   const ordered=visible.slice().reverse();
   const gap=compact?85:64;
-  const laneGap=state.graphFocus?Math.max(54,Math.floor((window.innerHeight-190)/Math.max(1,new Set(visible.map(n=>lane.get(n.sha))).size-1))):(compact?30:34);
+  const availableHeight=state.graphFocus?Math.max(170,$("graph").parentElement.clientHeight-28):0;
+  const visibleLaneCount=new Set(visible.map(n=>lane.get(n.sha))).size;
+  const laneGap=state.graphFocus
+    ?Math.max(12,Math.min(95,Math.floor((availableHeight-84)/Math.max(1,visibleLaneCount-1))))
+    :(compact?30:34);
   // Lane IDs may contain holes because inactive branches were released.
   // Remap only the lanes present in the displayed DAG to contiguous rows.
   const usedLanes=[...new Set(ordered.map(n=>lane.get(n.sha)))].sort((a,b)=>a-b);
   const rowForLane=new Map(usedLanes.map((id,row)=>[id,row]));
   const lastRow=Math.max(0,usedLanes.length-1);
   const width=Math.max(800,ordered.length*gap+70);
-  const topPad=state.graphFocus?54:(compact?27:32);
-  const bottomPad=state.graphFocus?75:(compact?37:42);
-  const height=topPad+lastRow*laneGap+bottomPad;
+  const topPad=state.graphFocus?32:(compact?27:32);
+  const bottomPad=state.graphFocus?52:(compact?37:42);
+  const height=state.graphFocus?Math.max(availableHeight,topPad+lastRow*laneGap+bottomPad):topPad+lastRow*laneGap+bottomPad;
   const positions=new Map(ordered.map((n,i)=>[n.sha,{x:35+i*gap,y:topPad+rowForLane.get(lane.get(n.sha))*laneGap}]));
   const svg=$("graph"), scroll=svg.parentElement, previous=scroll.scrollLeft;
   svg.setAttribute("viewBox",`0 0 ${width} ${height}`);
@@ -132,7 +136,18 @@ function graph(){
       }
       dates+='<text class="date-divider-label" x="'+(left+dateOffset)+'" y="'+labelY+'" text-anchor="middle" transform="rotate(-90 '+(left+dateOffset)+' '+labelY+')">'+escape(date)+'</text>';
     }
-    dates+='<text class="date-label" x="'+((left+right)/2)+'" y="'+bottom+'" text-anchor="middle">'+escape(date)+'</text>';
+    // Repeat the day inside wide segments so the operator always has a date
+    // even when horizontal scrolling hides both boundaries.
+    const viewportWidth=Math.max(300,svg.parentElement.clientWidth);
+    const spacing=Math.max(260,Math.floor(viewportWidth*0.75));
+    const segmentWidth=right-left;
+    if(!compact && segmentWidth>viewportWidth){
+      for(let at=left+spacing/2;at<right;at+=spacing){
+        dates+='<text class="date-label" x="'+at+'" y="'+(height-33)+'" text-anchor="middle">'+escape(date)+'</text>';
+      }
+    }else{
+      dates+='<text class="date-label" x="'+((left+right)/2)+'" y="'+(height-33)+'" text-anchor="middle">'+escape(date)+'</text>';
+    }
     start=end;section++;
   }
   svg.innerHTML='<g class="date-background">'+bands+'</g>'+edges+points+labels+'<g class="date-axis">'+dates+'</g>';
