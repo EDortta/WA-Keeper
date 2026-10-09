@@ -280,7 +280,7 @@ async function scanMarkdown(){
     await revision(state.head);
     const count=kind=>result.items.filter(item=>item.kind===kind).length;
     const diff=result.diff||{};
-    $("notice").textContent="Scan: "+result.documents+" documentos · "+count("domain")+" domínios · "+
+    $("notice").textContent=(result.items.length===0?"Scan concluído, mas nenhuma definição reconhecida. Use títulos como ## Domínio: Nome ou ## Feature: Nome. · ":"")+"Scan: "+result.documents+" documentos · "+count("domain")+" domínios · "+
       count("feature")+" features · "+(diff.added||[]).length+" novos · "+
       (diff.missing||[]).length+" ausentes em relação ao scan anterior (revisar; não excluídos).";
   }catch(error){$("notice").textContent="Falha no scan: "+error.message}
