@@ -34,9 +34,11 @@ def flush():
     repo = STATE/"repo"
     outbox = STATE/"outbox"
     chmod_private(outbox)
+    stage = "lock"
     with (STATE/"publish.lock").open("a+") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         try:
+            stage = "sync"
             if not (repo/".git").exists():
                 git("clone", REMOTE, str(repo))
             else:
@@ -45,6 +47,7 @@ def flush():
                 upstream = git("rev-parse", "--verify", f"refs/remotes/origin/{branch}", cwd=repo, check=False)
                 if upstream.returncode == 0:
                     git("merge", "--ff-only", f"origin/{branch}", cwd=repo)
+            stage = "prepare"
             files = sorted(outbox.glob("*.json"))
             if not files:
                 return 0
@@ -64,12 +67,20 @@ def flush():
                 git("-c", "user.name=Development Evidence", "-c",
                     "user.email=development-evidence@local", "commit",
                     "-m", f"evidence: publish {len(files)} execution(s)", cwd=repo)
+            stage = "push"
             git("push", "origin", "HEAD", cwd=repo)
+            stage = "acknowledge"
             for entry in files:
                 entry.unlink()
             return 0
         except Exception as exc:
-            print(f"evidence upload deferred: {type(exc).__name__}", file=sys.stderr)
+            diagnostic = STATE / "last-publish-error.log"
+            detail = str(exc)
+            if isinstance(exc, subprocess.CalledProcessError):
+                detail = f"command={exc.cmd!r} returncode={exc.returncode} stderr={exc.stderr!r} stdout={exc.stdout!r}"
+            diagnostic.write_text(f"stage={stage}\nerror={detail}\n")
+            diagnostic.chmod(0o600)
+            print(f"evidence upload deferred at stage={stage}; local diagnostic: {diagnostic}", file=sys.stderr)
             return 1
 
 def record(args):
