@@ -62,22 +62,28 @@ BUILD_LOG=""
 record_build() {
   local exit_status=$?
   trap - EXIT
-  if [[ "$EVIDENCE_MODE" != "off" && "$PRINT_ONLY" == 0 ]]; then
+  if [[ "$PRINT_ONLY" == 0 ]]; then
     local elapsed=$(( $(date +%s) - BUILD_START ))
     local sha branch
     sha="$(git rev-parse HEAD)"
     branch="$(git branch --show-current)"
     # The manifest is written only for a successful APK build.
     if (( exit_status == 0 )) && [[ "$MODE" == "apk" && "$TARGET" == "app" ]]; then
+      local artifact="app/build/outputs/apk/$BUILD_TYPE/app-$BUILD_TYPE.apk"
+      [[ -f "$artifact" ]] || { echo "ERRO: APK ausente após compilação" >&2; exit_status=1; }
+      if (( exit_status == 0 )); then
       mkdir -p "$EVIDENCE_DIR"
       local manifest_tmp="$EVIDENCE_DIR/last-success.tmp"
       printf 'profile=%s\ntype=%s\nmode=%s\ntarget=%s\nfeatures=%s\ncommit=%s\n' \
         "$PROFILE" "$BUILD_TYPE" "$MODE" "$TARGET" "$FEATURE_CSV" "$sha" > "$manifest_tmp"
       mv -f "$manifest_tmp" "$EVIDENCE_DIR/last-success"
+      fi
     fi
     local args=(record --project WA-Keeper --feature "$FEATURE_ID" --branch "$branch" --commit "$sha" --target "$TARGET" --profile "$PROFILE" --build-type "$BUILD_TYPE" --mode "$MODE" --exit-code "$exit_status" --duration "$elapsed")
     [[ "$EVIDENCE_MODE" == "remote" ]] && args+=(--remote)
-    python3 "$ROOT/scripts/evidence.py" "${args[@]}" || echo "Aviso: falha ao enfileirar evidência" >&2
+    if [[ "$EVIDENCE_MODE" != "off" ]]; then
+      python3 "$ROOT/scripts/evidence.py" "${args[@]}" || echo "Aviso: falha ao enfileirar evidência" >&2
+    fi
     [[ -n "$BUILD_LOG" ]] && echo "Build log local: $BUILD_LOG"
   fi
   exit "$exit_status"
