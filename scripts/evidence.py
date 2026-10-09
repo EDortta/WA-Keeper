@@ -52,14 +52,17 @@ def flush():
                 payload = json.loads(entry.read_text())
                 dest = repo/payload["relative_path"]
                 dest.parent.mkdir(parents=True, exist_ok=True)
+                rendered = json.dumps(payload["report"], indent=2, ensure_ascii=False)+"\n"
                 if dest.exists():
-                    raise RuntimeError(f"evidence collision: {dest}")
-                dest.write_text(json.dumps(payload["report"], indent=2, ensure_ascii=False)+"\n")
+                    if dest.read_text() != rendered:
+                        raise RuntimeError(f"evidence collision: {dest}")
+                    continue
+                dest.write_text(rendered)
             git("add", "--", ".", cwd=repo)
             diff = git("diff", "--cached", "--quiet", cwd=repo, check=False)
             if diff.returncode == 1:
                 git("-c", "user.name=Development Evidence", "-c",
-                "user.email=development-evidence@local", "commit",
+                    "user.email=development-evidence@local", "commit",
                     "-m", f"evidence: publish {len(files)} execution(s)", cwd=repo)
             git("push", "origin", "HEAD", cwd=repo)
             for entry in files:
