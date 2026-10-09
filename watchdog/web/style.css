@@ -39,3 +39,6 @@ body.graph-focus #graph-height{border-color:var(--accent);background:var(--panel
 .tree details > details{margin-left:23px}
 .tree details > p,.tree details > pre{padding-left:0}
 .tree details summary{padding:2px 0}
+
+.tree-actions{display:flex;justify-content:flex-end;gap:6px;margin:0 0 8px}
+.tree-actions button{font-size:12px}
