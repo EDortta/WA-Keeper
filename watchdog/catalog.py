@@ -1,34 +1,32 @@
 """Domain catalog is an explicit proposal, not proof of implemented behavior."""
 from pathlib import Path
 
-DOMAINS = [
-    ("capture", "Captura", "Receber e filtrar notificações", "Eventos de entrada", "Identidade e transcrição", "Notificações Android", "notification_captured", "Preservar eventos persistidos"),
-    ("identity", "Identidade", "Reconhecer contatos, conversas e entidades", "Chaves de conversa e vínculos", "Envio de mensagens", "Títulos, contatos, números", "conversation_resolved", "Não misturar conversas"),
-    ("storage", "Persistência", "Preservar mensagens e associações", "Registros locais", "Interfaces de apresentação", "Eventos normalizados", "message_persisted", "Integridade das relações"),
-    ("media", "Mídia", "Capturar, reproduzir e reter arquivos", "Mídia e retenção", "Identidade de contatos", "Áudio e imagens", "media_captured", "Arquivo disponível após atualização"),
-    ("voice", "Transcrição e voz", "Transcrever e processar comandos", "Transcrição e métricas", "Identidade do remetente", "Arquivos de áudio", "transcription_completed", "Método aprovado preservado"),
-    ("schedule", "Agendamento", "Persistir e executar envios programados", "Fila, tentativas e falhas", "Cadastro de contatos", "Destino e horário", "message_scheduled, message_sent", "Fila persistente e ordenada"),
-    ("backup", "Backup", "Proteger e restaurar dados", "Cópias e integridade", "Regras de conversa", "Banco, arquivos e preferências", "backup_completed", "Verificação antes da restauração"),
-    ("ui", "Interface", "Apresentar e operar recursos", "Interação e preferências", "Regras dos domínios", "Estado de domínio", "user_action_requested", "Não ocultar controles aprovados"),
-]
-FIELDS = ["id", "domain", "purpose", "owns", "excludes", "inputs", "outputs", "invariants"]
-
+from .scanner import cached
 
 def domains(repo, sha):
-    # Initial proposal predates the historical catalog; historical presence is UNKNOWN, not false.
-    return [dict(zip(FIELDS, row), status="proposto", historicity="unknown") for row in DOMAINS]
-
+    if sha != repo.head():return []
+    snapshot=cached(repo.root)
+    return [dict(id=item["id"],domain=item["name"],purpose="Fonte: "+item["path"],
+                 owns="",excludes="",inputs="",outputs="",invariants="",
+                 status=item["status"],path=item["path"],line=item["line"],
+                 historicity="scan-local") for item in (snapshot or {}).get("items",[])
+            if item["kind"]=="domain"]
 
 def features(repo, sha):
-    path = "docs/validated-features.md"
-    if not repo.exists_at(sha, path):
-        return []
+    if sha == repo.head():
+        snapshot=cached(repo.root)
+        if snapshot is not None:
+            return [dict(id=item["id"],name=item["name"],status=item["status"],
+                         path=item["path"],line=item["line"],historicity="scan-local")
+                    for item in snapshot["items"] if item["kind"]=="feature"]
+    # Historical fallback only: document is loaded from selected Git revision.
+    path="docs/validated-features.md"
+    if not repo.exists_at(sha,path):return []
     import re
-    body = repo.read_at(sha, path)
-    return [dict(id=f"validated-{i}", name=m.group(1).strip(),
-                 status="PROTECTED", path=path, historicity="documented")
-            for i, m in enumerate(re.finditer(r"^###\s+(.+)$", body, re.M), 1)]
-
+    body=repo.read_at(sha,path)
+    return [dict(id=f"historical-{i}",name=m.group(1).strip(),
+                 status="PROTECTED",path=path,historicity="documented")
+            for i,m in enumerate(re.finditer(r"^###\\s+(.+)$",body,re.M),1)]
 
 def markdown_tree(source):
     """Balanced heading hierarchy without losing original Markdown source."""
