@@ -276,13 +276,14 @@ async function scanMarkdown(){
   try{
     const response=await fetch("/api/scan",{method:"POST",headers:{"X-Watchdog-Token":updateToken}});
     const result=await response.json();
-    if(!response.ok)throw Error(result.error||"Falha no scan");
+    if(!response.ok)throw Error((result.error||"Falha no scan")+(result.evidence?.run_id?" · Evidência: "+result.evidence.run_id:""));
     await revision(state.head);
     const count=kind=>result.items.filter(item=>item.kind===kind).length;
     const diff=result.diff||{};
     $("notice").textContent=(result.items.length===0?"Scan concluído, mas nenhuma definição reconhecida. Use títulos como ## Domínio: Nome ou ## Feature: Nome. · ":"")+"Scan: "+result.documents+" documentos · "+count("domain")+" domínios · "+
       count("feature")+" features · "+(diff.added||[]).length+" novos · "+
-      (diff.missing||[]).length+" ausentes em relação ao scan anterior (revisar; não excluídos).";
+      (diff.missing||[]).length+" ausentes em relação ao scan anterior (revisar; não excluídos)."+
+      (result.evidence?.run_id?" · Evidência: "+result.evidence.run_id+(result.evidence.queued?" (na fila local)":""):"");
   }catch(error){$("notice").textContent="Falha no scan: "+error.message}
   finally{button.disabled=false;button.textContent="Scan Markdown"}
 }
