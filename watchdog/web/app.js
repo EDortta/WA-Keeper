@@ -252,6 +252,19 @@ document.addEventListener("keydown",e=>{
     graph();
   }
 });
+async function createDomainMap(){
+  if(state.sha!==state.head){alert("Selecione HEAD para criar documentação.");return}
+  if(!confirm("Criar docs/domains.md como modelo vazio, sem inventar domínios?"))return;
+  try{
+    const response=await fetch("/api/domain-template",{method:"POST",
+      headers:{"X-Watchdog-Token":updateToken}});
+    const result=await response.json();
+    if(!response.ok)throw Error(result.error||"Não foi possível criar o arquivo");
+    $("notice").textContent=(result.created?"Documento criado: ":"Documento já existe: ")+result.path+
+      ". Edite o Markdown e execute Scan Markdown.";
+  }catch(error){$("notice").textContent="Falha ao criar mapa: "+error.message}
+}
+$("create-domain-map").onclick=createDomainMap;
 async function scanMarkdown(){
   const button=$("scan-docs");
   if(!updateToken||button.disabled)return;
