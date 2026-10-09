@@ -109,3 +109,45 @@ def create_domain_template(root):
     )
     with target.open("x",encoding="utf-8") as out:out.write(template)
     return {"created":True,"path":"docs/domains.md"}
+
+
+TEMPLATES = {
+    "domain": ("domains", "Domínio", "Propósito\n\n## Responsabilidades\n\n## Propriedade\n\n## Limites\n\n## Entradas\n\n## Saídas\n\n## Invariantes"),
+    "feature": ("features", "Feature", "Comportamento esperado\n\n## Domínios participantes\n\n## Critérios de aceitação\n\n## Evidências esperadas"),
+    "contract": ("contracts", "Contrato", "Objetivo\n\n## Tipos\n\n## Operações\n\n## Parâmetros e retornos\n\n## Erros\n\n## Pré-condições\n\n## Pós-condições\n\n## Invariantes\n\n## Consumidores"),
+    "policy": ("", "Política de inspeção", "Perfil: advisory\n\n## Regras\n\n## Exceções justificadas\n\n## Evidências"),
+}
+
+def create_instrument(root, kind, name):
+    """Create a deterministic Markdown template; explicit user action only."""
+    if kind not in TEMPLATES:
+        raise ValueError("Invalid instrument kind")
+    if not isinstance(name, str) or not (1 <= len(name.strip()) <= 100):
+        raise ValueError("Provide an instrument name")
+    if any(c in name for c in "\r\n<>"):
+        raise ValueError("Invalid instrument name")
+    slug=re.sub(r"[^a-z0-9]+","-",name.casefold().strip()).strip("-")
+    if not slug:
+        raise ValueError("Invalid instrument name")
+    root=Path(root).resolve()
+    directory=root/"docs"/"governance"
+    subfolder,title,sections=TEMPLATES[kind]
+    dest=directory/subfolder if subfolder else directory
+    if directory.is_symlink() or dest.is_symlink():
+        raise ValueError("Unsafe documentation directory")
+    dest.mkdir(parents=True,exist_ok=True)
+    filename=(slug if kind!="policy" else "policy")+".md"
+    target=dest/filename
+    if target.exists():
+        raise FileExistsError("Document already exists")
+    header=f"# {title}: {name.strip()}\n\n" if kind!="policy" else "# Política de inspeção\n\n"
+    body=header+("## "+sections+"\n" if kind!="policy" else sections+"\n")
+    with target.open("x",encoding="utf-8") as output:
+        output.write(body)
+    index=directory/"index.md"
+    if not index.exists():
+        with index.open("x",encoding="utf-8") as output:
+            output.write("# Governança do projeto\n\n"
+                         "Este índice reúne as definições documentais utilizadas pelo Goals Kit Watchdog.\n\n"
+                         "## Domínios\n\n## Features\n\n## Contratos\n\n## Políticas\n")
+    return {"created":True,"path":target.relative_to(root).as_posix(),"index":"docs/governance/index.md"}
