@@ -1,7 +1,7 @@
 import tempfile
 import unittest
 from pathlib import Path
-from watchdog.scanner import discover, scan, cached, create_domain_template
+from watchdog.scanner import discover, scan, cached, create_domain_template, create_instrument
 
 class ScannerTests(unittest.TestCase):
     def test_mixed_single_and_multiple_documents(self):
@@ -24,6 +24,20 @@ class ScannerTests(unittest.TestCase):
             result=scan(root)
             self.assertEqual([i["name"] for i in result["diff"]["missing"]],["Segurança"])
             self.assertEqual(len(cached(root)["items"]),2)
+
+    def test_created_instruments_are_scannable_and_not_overwritten(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);(root/".git").mkdir()
+            domain=create_instrument(root,"domain","Conversas")
+            feature=create_instrument(root,"feature","Transcrição offline")
+            self.assertEqual(domain["path"],"docs/governance/domains/conversas.md")
+            self.assertTrue((root/"docs/governance/index.md").exists())
+            self.assertEqual(feature["path"],"docs/governance/features/transcricao-offline.md")
+            found=discover(root)["items"]
+            self.assertEqual({(i["kind"],i["name"]) for i in found},
+                             {("domain","Conversas"),("feature","Transcrição offline")})
+            with self.assertRaises(FileExistsError):
+                create_instrument(root,"domain","Conversas")
 
     def test_template_is_non_destructive(self):
         with tempfile.TemporaryDirectory() as tmp:
