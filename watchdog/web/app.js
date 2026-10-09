@@ -8,10 +8,10 @@ const cols=[["domain","Domínio",165],["purpose","Propósito",230],["owns","É d
 let state={view:"map",tab:"description",sha:null,items:[],selected:null,commits:[],refs:[],head:null,domains:[],features:[]};
 async function get(path){const r=await fetch(path);const data=await r.json();if(!r.ok)throw Error(data.error||r.status);return data}
 async function load(){try{const [p,g]=await Promise.all([get("/api/project"),get("/api/commits")]);$("project").textContent=p.name;$("subtitle").textContent="Goals Kit Watchdog · "+p.branch;state.commits=g.commits;state.refs=g.refs;state.head=g.head;state.sha=g.head;readingProject=p.root||p.name;updateToken=p.update_token;await revision(g.head)}catch(e){$("notice").textContent="Falha: "+e.message}}
-async function revision(sha){readingSave();state.sha=sha;try{[state.domains,state.features]=await Promise.all([get("/api/domains?sha="+sha),get("/api/features?sha="+sha)]);render()}catch(e){$("notice").textContent=e.message}}
+async function revision(sha){readingUnMount();state.sha=sha;try{[state.domains,state.features]=await Promise.all([get("/api/domains?sha="+sha),get("/api/features?sha="+sha)]);render()}catch(e){$("notice").textContent=e.message}}
 state.compact=true;
 state.graphFocus=false;
-function navigate(view,selected){readingSave();state.view=view;if(selected)state.selected=selected;state.tab="description";render()}
+function navigate(view,selected){readingUnMount();state.view=view;if(selected)state.selected=selected;state.tab="description";render()}
 function groupedRefs(refs){
   // Collapse a local branch and its origin tracking ref only at the same SHA.
   // Other remotes remain separate unless their exact local counterpart exists.
@@ -172,7 +172,7 @@ function graph(){
 function render(){graph();$("selected-rev").textContent=state.sha.slice(0,8)+" · "+(state.sha===state.head?"HEAD":"histórico");$("map").hidden=state.view!=="map";$("management").hidden=state.view==="map";renderMap();if(state.view!=="map")renderManagement()}
 function renderMap(){let visible=cols.filter(c=>c.visible);$("grid").innerHTML='<colgroup>'+visible.map(c=>'<col style="width:'+c.width+'px">').join("")+'</colgroup><thead><tr>'+visible.map(c=>'<th class="'+(c.id==="domain"?"frozen":"")+'"><div class="column-head">'+escape(c.name)+'<span style="display:flex">'+(c.id==="domain"?"":'<button data-hide="'+c.id+'" title="Ocultar">−</button>')+'<span class="resize" data-size="'+c.id+'"></span></span></div></th>').join("")+'</tr></thead><tbody>'+state.domains.map(d=>'<tr>'+visible.map(c=>'<td class="'+(c.id==="domain"?"frozen":"")+'">'+(c.id==="domain"?'<button class="domain-link" data-domain="'+escape(d.id)+'">'+escape(d.domain)+'</button>':escape(d[c.id]))+'</td>').join("")+'</tr>').join("")+'</tbody>';$("picker").innerHTML=cols.map(c=>'<label><input type="checkbox" data-toggle="'+c.id+'" '+(c.visible?"checked":"")+' '+(c.id==="domain"?"disabled":"")+'> '+escape(c.name)+'</label>').join("");document.querySelectorAll("[data-domain]").forEach(b=>b.onclick=()=>navigate("domains",b.dataset.domain));document.querySelectorAll("[data-hide]").forEach(b=>b.onclick=()=>{cols.find(c=>c.id===b.dataset.hide).visible=false;renderMap()});document.querySelectorAll("[data-toggle]").forEach(b=>b.onchange=()=>{cols.find(c=>c.id===b.dataset.toggle).visible=b.checked;renderMap()});document.querySelectorAll("[data-size]").forEach(el=>el.onpointerdown=e=>{e.preventDefault();const col=cols.find(c=>c.id===el.dataset.size),x=e.clientX,old=col.width;const move=ev=>{col.width=Math.max(80,Math.min(550,old+ev.clientX-x));const idx=cols.filter(c=>c.visible).indexOf(col);$("grid").querySelectorAll("col")[idx].style.width=col.width+"px"};const stop=()=>{window.removeEventListener("pointermove",move);window.removeEventListener("pointerup",stop)};window.addEventListener("pointermove",move);window.addEventListener("pointerup",stop)})}
 // Reading position is local to this browser and unique per project/revision/item.
-let readingProject="unknown", readingEpoch=0, restoringReading=false;
+let readingProject="unknown",readingEpoch=0,activeReadingKey=null,restoringReading=false;
 function readingKey(){
   if(state.view==="map"||!state.selected||state.tab!=="description")return null;
   return "watchdog:reading:v2:"+JSON.stringify([readingProject,state.sha,state.view,state.selected]);
@@ -180,42 +180,41 @@ function readingKey(){
 function readingGet(key){
   try{return JSON.parse(localStorage.getItem(key)||"null")}catch(_){return null}
 }
+function readingStore(key,data){try{localStorage.setItem(key,JSON.stringify(data))}catch(_){}}
 function readingSave(){
-  const key=readingKey(),tree=$("detail").querySelector(".tree");
-  if(!key||!tree||restoringReading)return;
-  const nodes=[...tree.querySelectorAll("details")];
-  const current=readingGet(key)||{};
-  const value={open:nodes.map(n=>n.open),scroll:$("detail").scrollTop};
-  try{localStorage.setItem(key,JSON.stringify(value))}catch(_){}
+  const detail=$("detail"),tree=detail.querySelector(".tree");
+  if(!activeReadingKey||!tree||restoringReading)return;
+  const previous=readingGet(activeReadingKey)||{};
+  readingStore(activeReadingKey,{...previous,open:[...tree.querySelectorAll("details")].map(n=>n.open),scroll:detail.scrollTop});
 }
-function readingScrollSave(){
-  if(restoringReading)return;
-  const key=readingKey();
-  if(!key)return;
-  const value=readingGet(key)||{};
-  value.scroll=$("detail").scrollTop;
-  try{localStorage.setItem(key,JSON.stringify(value))}catch(_){}
-}
-$("detail").addEventListener("scroll",readingScrollSave,{passive:true});
+$("detail").addEventListener("scroll",()=>{
+  if(!activeReadingKey||restoringReading)return;
+  const previous=readingGet(activeReadingKey)||{};
+  readingStore(activeReadingKey,{...previous,scroll:$("detail").scrollTop});
+},{passive:true});
 function readingMount(detail,key){
   const tree=detail.querySelector(".tree");
   if(!tree||!key)return;
-  const saved=readingGet(key);
+  activeReadingKey=key;
+  const epoch=++readingEpoch,saved=readingGet(key);
+  restoringReading=true;
   if(saved&&Array.isArray(saved.open)){
     tree.querySelectorAll("details").forEach((node,i)=>{
       if(typeof saved.open[i]==="boolean")node.open=saved.open[i];
     });
   }
-  tree.addEventListener("toggle",()=>readingSave(),true);
-  const epoch=++readingEpoch;
-  if(!saved)detail.scrollTop=0;
-  if(saved&&Number.isFinite(saved.scroll)){
-    restoringReading=true;
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      if(epoch===readingEpoch&&readingKey()===key)detail.scrollTop=saved.scroll;
-      restoringReading=false;
-    }));
-  }
+  tree.addEventListener("toggle",()=>{if(epoch===readingEpoch)readingSave()},true);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    if(epoch!==readingEpoch||activeReadingKey!==key)return;
+    detail.scrollTop=saved&&Number.isFinite(saved.scroll)?saved.scroll:0;
+    restoringReading=false;
+  }));
+}
+function readingUnMount(){
+  readingSave();
+  activeReadingKey=null;
+  ++readingEpoch;
+  restoringReading=false;
 }
 function renderTree(n){
   const level=Math.max(1,Math.min(6,Number(n.level)||1));
@@ -225,9 +224,10 @@ function renderTree(n){
     (n.children||[]).map(renderTree).join("")+'</details>';
 }
 function treeControls(detail){
-  const tree=detail.querySelector(".tree");
-  if(!tree)return;
-  const bar=document.createElement("div");
+  const tree=detail.querySelector(".tree"),tabs=document.querySelector(".tabs");
+  if(!tree||!tabs)return;
+  tabs.querySelectorAll(".tree-actions").forEach(el=>el.remove());
+  const bar=document.createElement("span");
   bar.className="tree-actions";
   for(const [label,open] of [["Expandir tudo",true],["Recolher tudo",false]]){
     const button=document.createElement("button");
@@ -235,9 +235,9 @@ function treeControls(detail){
     button.onclick=()=>{tree.querySelectorAll("details").forEach(node=>node.open=open);readingSave()};
     bar.append(button);
   }
-  tree.before(bar);
+  tabs.append(bar);
 }
-function renderManagement(){const arr=state.view==="domains"?state.domains.map(d=>({...d,name:d.domain})):state.features;if(!arr.some(i=>i.id===state.selected))state.selected=arr[0]?.id||null;const d=arr.find(i=>i.id===state.selected);$("side-features").classList.toggle("active",state.view==="features");$("side-domains").classList.toggle("active",state.view==="domains");$("items").innerHTML=arr.map(i=>'<button class="item '+(i.id===state.selected?"active":"")+'" data-item="'+escape(i.id)+'"><strong>'+escape(i.name)+'</strong><br><small class="muted">'+escape(i.purpose||i.path||"")+'</small></button>').join("");document.querySelectorAll("[data-item]").forEach(b=>b.onclick=()=>{readingSave();state.selected=b.dataset.item;state.tab="description";renderManagement()});if(!d){$("item-title").textContent="Nenhum item nesta revisão";$("item-description").textContent="";$("item-state").textContent="";$("detail").innerHTML="";return}$("item-title").textContent=d.name;$("item-description").textContent=d.purpose||"";$("item-state").textContent=d.status;document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===state.tab));const detail=$("detail");if(state.tab==="description"&&d.path){detail.textContent="Carregando documentação…";get("/api/document?sha="+state.sha+"&path="+encodeURIComponent(d.path)).then(doc=>{if(state.tab==="description"&&state.selected===d.id){detail.innerHTML='<div class="tree">'+renderTree(doc.tree)+'</div>';treeControls(detail);readingMount(detail,readingKey())}}).catch(e=>detail.textContent=e.message)}else if(state.tab==="description"){detail.innerHTML='<div class="tree"><details open><summary>Propósito</summary><p>'+escape(d.purpose)+'</p></details><details><summary>É dono de</summary><p>'+escape(d.owns)+'</p></details><details><summary>Não pode tocar</summary><p>'+escape(d.excludes)+'</p></details><details><summary>Invariantes</summary><p>'+escape(d.invariants)+'</p></details></div><p class="muted">Catálogo candidato; historicidade não estabelecida.</p>';treeControls(detail);readingMount(detail,readingKey())}else if(state.tab==="events")detail.innerHTML='<div class="tree"><b>Entradas</b><p>'+escape(d.inputs||"Não catalogadas")+'</p><b>Saídas</b><p>'+escape(d.outputs||"Não catalogadas")+'</p><p class="muted">Nomes propostos, não verificados no código.</p></div>';else detail.innerHTML='<p class="muted">'+(state.tab==="code"?"Indexação de código ainda não implementada.":"Nenhum teste executado nesta versão.")+'</p>'}
+function renderManagement(){const arr=state.view==="domains"?state.domains.map(d=>({...d,name:d.domain})):state.features;if(!arr.some(i=>i.id===state.selected))state.selected=arr[0]?.id||null;const d=arr.find(i=>i.id===state.selected);$("side-features").classList.toggle("active",state.view==="features");$("side-domains").classList.toggle("active",state.view==="domains");$("items").innerHTML=arr.map(i=>'<button class="item '+(i.id===state.selected?"active":"")+'" data-item="'+escape(i.id)+'"><strong>'+escape(i.name)+'</strong><br><small class="muted">'+escape(i.purpose||i.path||"")+'</small></button>').join("");document.querySelectorAll("[data-item]").forEach(b=>b.onclick=()=>{readingUnMount();state.selected=b.dataset.item;state.tab="description";renderManagement()});if(!d){$("item-title").textContent="Nenhum item nesta revisão";$("item-description").textContent="";$("item-state").textContent="";$("detail").innerHTML="";return}$("item-title").textContent=d.name;$("item-description").textContent=d.purpose||"";$("item-state").textContent=d.status;document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===state.tab));const detail=$("detail");document.querySelector(".tabs .tree-actions")?.remove();if(state.tab==="description"&&d.path){detail.textContent="Carregando documentação…";get("/api/document?sha="+state.sha+"&path="+encodeURIComponent(d.path)).then(doc=>{if(state.tab==="description"&&state.selected===d.id){detail.innerHTML='<div class="tree">'+renderTree(doc.tree)+'</div>';treeControls(detail);readingMount(detail,readingKey())}}).catch(e=>detail.textContent=e.message)}else if(state.tab==="description"){detail.innerHTML='<div class="tree"><details open><summary>Propósito</summary><p>'+escape(d.purpose)+'</p></details><details><summary>É dono de</summary><p>'+escape(d.owns)+'</p></details><details><summary>Não pode tocar</summary><p>'+escape(d.excludes)+'</p></details><details><summary>Invariantes</summary><p>'+escape(d.invariants)+'</p></details></div><p class="muted">Catálogo candidato; historicidade não estabelecida.</p>';treeControls(detail);readingMount(detail,readingKey())}else if(state.tab==="events")detail.innerHTML='<div class="tree"><b>Entradas</b><p>'+escape(d.inputs||"Não catalogadas")+'</p><b>Saídas</b><p>'+escape(d.outputs||"Não catalogadas")+'</p><p class="muted">Nomes propostos, não verificados no código.</p></div>';else detail.innerHTML='<p class="muted">'+(state.tab==="code"?"Indexação de código ainda não implementada.":"Nenhum teste executado nesta versão.")+'</p>'}
 $("graph-mode").onclick=()=>{state.compact=!state.compact;graph()};
 $("graph-height").onclick=()=>{
   state.graphFocus=!state.graphFocus;
@@ -278,4 +278,4 @@ async function updateAndRestart(){
   finally{button.disabled=false;button.textContent="Atualizar e reiniciar"}
 }
 $("update-restart").onclick=updateAndRestart;
-$("home").onclick=()=>navigate("map");$("side-domains").onclick=()=>navigate("domains");$("side-features").onclick=()=>navigate("features");document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{readingSave();state.tab=b.dataset.tab;renderManagement()});$("columns").onclick=()=>{$("picker").hidden=!$("picker").hidden};$("reset").onclick=()=>{cols.forEach(c=>c.visible=true);renderMap()};$("theme").onclick=()=>{document.body.classList.toggle("dark");localStorage.setItem("wd-theme",document.body.classList.contains("dark")?"dark":"light")};if(localStorage.getItem("wd-theme")==="dark")document.body.classList.add("dark");load();
+$("home").onclick=()=>navigate("map");$("side-domains").onclick=()=>navigate("domains");$("side-features").onclick=()=>navigate("features");document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{readingUnMount();state.tab=b.dataset.tab;renderManagement()});$("columns").onclick=()=>{$("picker").hidden=!$("picker").hidden};$("reset").onclick=()=>{cols.forEach(c=>c.visible=true);renderMap()};$("theme").onclick=()=>{document.body.classList.toggle("dark");localStorage.setItem("wd-theme",document.body.classList.contains("dark")?"dark":"light")};if(localStorage.getItem("wd-theme")==="dark")document.body.classList.add("dark");load();
