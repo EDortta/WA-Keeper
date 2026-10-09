@@ -42,7 +42,9 @@ def flush():
             else:
                 git("fetch", "origin")
                 branch = git("symbolic-ref", "--short", "HEAD", cwd=repo).stdout.strip()
-                git("merge", "--ff-only", f"origin/{branch}", cwd=repo)
+                upstream = git("rev-parse", "--verify", f"refs/remotes/origin/{branch}", cwd=repo, check=False)
+                if upstream.returncode == 0:
+                    git("merge", "--ff-only", f"origin/{branch}", cwd=repo)
             files = sorted(outbox.glob("*.json"))
             if not files:
                 return 0
@@ -80,6 +82,8 @@ def record(args):
         "build_type": args.build_type, "mode": args.mode, "status": "success" if args.exit_code == 0 else "failed",
         "exit_code": args.exit_code, "duration_seconds": args.duration,
         "log_local_only": True,
+        "phase": args.phase,
+        "error_category": args.error_category,
     }
     f=outbox/(uuid.uuid4().hex+".json")
     f.write_text(json.dumps({"relative_path": relative, "report":report},ensure_ascii=False))
@@ -97,6 +101,8 @@ def main():
         rec.add_argument("--"+key,required=True)
     rec.add_argument("--exit-code",required=True,type=int)
     rec.add_argument("--duration",required=True,type=int)
+    rec.add_argument("--phase",choices=("build","deploy"),default="build")
+    rec.add_argument("--error-category",choices=("none","build","signing","install","device","configuration","other"),default="none")
     rec.add_argument("--remote",action="store_true")
     sp.add_parser("flush")
     args=ap.parse_args()
