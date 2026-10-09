@@ -5,7 +5,7 @@ import android.service.notification.StatusBarNotification
 object ConversationIdentity : ConversationNaming {
     private val bidiMarks = Regex("[\\u200e\\u200f\\u202a-\\u202e]")
 
-    override fun canonicalSender(raw: String, packageName: String? = null): String {
+    override fun canonicalSender(raw: String, packageName: String?): String {
         var value = raw
             .replace(bidiMarks, "")
             .removePrefix("WhatsApp: ")
