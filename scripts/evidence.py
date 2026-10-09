@@ -36,20 +36,19 @@ def central_publisher():
     private = STATE
     chmod_private(private)
     checkout = private / "repo"
-    # Lock Git checkout during bootstrap/update; same lock used by the publisher.
-    with (private / "publish.lock").open("a+") as lock:
+    # Only bootstrap/update the public script under a lock. Never merge,
+    # commit or push: those operations belong solely to publisher.py.
+    with (private / "bootstrap.lock").open("a+") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         if not (checkout / ".git").exists():
             git("clone", REMOTE, str(checkout))
         else:
             git("fetch", "origin", cwd=checkout)
-            current = git("symbolic-ref", "--short", "HEAD", cwd=checkout).stdout.strip()
-            git("-c", "user.name=Development Evidence", "-c",
-                "user.email=development-evidence@local",
-                "merge", "--no-edit", f"origin/{current}", cwd=checkout)
-    script = checkout / "publisher.py"
-    if not script.exists():
-        raise RuntimeError("central publisher.py missing; update development-evidences checkout")
+        source = git("show", "origin/main:publisher.py", cwd=checkout).stdout
+        script = private / "publisher.py"
+        temp = private / ".publisher.new"
+        temp.write_text(source)
+        temp.replace(script)
     return script
 
 
