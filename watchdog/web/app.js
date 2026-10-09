@@ -9,6 +9,19 @@ async function revision(sha){state.sha=sha;try{[state.domains,state.features]=aw
 state.compact=true;
 state.graphFocus=false;
 function navigate(view,selected){state.view=view;if(selected)state.selected=selected;state.tab="description";render()}
+function groupedRefs(refs){
+  // Collapse a local branch and its origin tracking ref only at the same SHA.
+  // Other remotes remain separate unless their exact local counterpart exists.
+  const names=[...new Set(refs)];
+  const groups=new Map();
+  for(const name of names){
+    const local=name.startsWith("origin/")?name.slice(7):name;
+    const key=names.includes(local)?local:name;
+    if(!groups.has(key))groups.set(key,[]);
+    groups.get(key).push(name);
+  }
+  return [...groups].map(([label,all])=>({label,all}));
+}
 function graph(){
   const nodes=state.commits.slice(0,250);
   const byId=new Map(nodes.map((n,i)=>[n.sha,i]));
@@ -71,11 +84,11 @@ function graph(){
     if(refs.length){
       // The rightmost tip of each slanted label is attached to its commit.
       // Exact rectangle width is measured after SVG insertion, not guessed.
-      refs.forEach((ref,i)=>{
+      groupedRefs(refs).forEach(({label:ref,all},i)=>{
         const anchorX=x-7, anchorY=y-9-i*17;
         labels+='<g class="branch-inline graph-link" role="button" tabindex="0" data-sha="'+n.sha+'" '+
           'transform="translate('+anchorX+' '+anchorY+') rotate(-30)">'+
-          '<title>'+escape(ref)+'</title>'+
+          '<title>'+escape(all.join(' · '))+'</title>'+
           '<rect x="-14" y="-13" width="14" height="17" rx="2"/>'+
           '<text x="-5" y="0" text-anchor="end">'+escape(ref)+'</text></g>';
       });
