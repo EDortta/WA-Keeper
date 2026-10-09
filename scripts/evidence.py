@@ -56,9 +56,11 @@ def flush():
                     raise RuntimeError(f"evidence collision: {dest}")
                 dest.write_text(json.dumps(payload["report"], indent=2, ensure_ascii=False)+"\n")
             git("add", "--", ".", cwd=repo)
-            git("-c", "user.name=Development Evidence", "-c",
+            diff = git("diff", "--cached", "--quiet", cwd=repo, check=False)
+            if diff.returncode == 1:
+                git("-c", "user.name=Development Evidence", "-c",
                 "user.email=development-evidence@local", "commit",
-                "-m", f"evidence: publish {len(files)} execution(s)", cwd=repo)
+                    "-m", f"evidence: publish {len(files)} execution(s)", cwd=repo)
             git("push", "origin", "HEAD", cwd=repo)
             for entry in files:
                 entry.unlink()
