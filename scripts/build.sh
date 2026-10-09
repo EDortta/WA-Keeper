@@ -20,6 +20,7 @@ PRINT_ONLY=0
 RUN_TESTS=1
 EVIDENCE_MODE="${WA_EVIDENCE_MODE:-local}"
 FEATURE_ID="${WA_FEATURE_ID:-general}"
+FEATURE_CSV=""
 declare -a ENABLE=()
 declare -a DISABLE=()
 
