@@ -1,6 +1,6 @@
 # Goals Kit Watchdog — MVP local
 
-Aplicação Python modular com CLI e navegador, sem dependências de terceiros. **Não altera o WA-Keeper nem o Git.** O protótipo HTML anterior em `watchdog/prototype/` permanece intacto.
+Aplicação Python modular com CLI e navegador, sem dependências de terceiros. **Lê o Git sem modificações, exceto quando o operador solicita explicitamente Atualizar e reiniciar.** O protótipo HTML anterior em `watchdog/prototype/` permanece intacto.
 
 ## Iniciar
 
@@ -33,7 +33,7 @@ python3 -m unittest discover -s watchdog/tests -v
 - Features extraídas de `docs/validated-features.md` **da revisão selecionada**. A presença documental não implica implementação verificada.
 - Leitura de Markdown e árvore de títulos, sem modificar o arquivo.
 - Coluna Domínio fixa, ocultação/redimensionamento de colunas, gestão de domínios/features e tema light/dark com preferência armazenada pelo navegador.
-- API HTTP local em `127.0.0.1`, somente `GET`; respostas a POST = 405. Sem subprocessos com argumentos controlados como shell.
+- API HTTP local em `127.0.0.1`: GET para inspeção e POST autenticado local para atualização explicitamente solicitada. Sem subprocessos com argumentos controlados como shell.
 
 ## Limites conhecidos
 
@@ -44,3 +44,12 @@ python3 -m unittest discover -s watchdog/tests -v
 - `localStorage` armazena somente o tema visual. Nenhuma credencial vai para a interface.
 
 O contrato de CLI/API fica no núcleo Python em `watchdog/`; a UI em `watchdog/web/` não replica regras de Git.
+
+
+## Atualizar e reiniciar pelo navegador
+
+O botão **Atualizar e reiniciar** executa `git pull --ff-only` no checkout local e reinicia o processo Python na **mesma porta**, sem precisar usar Ctrl+C. A aplicação aguarda a nova instância e recarrega a página.
+
+A ação requer um token de sessão, host e origem locais. Em caso de erro do Git, o servidor atual continua no ar e apresenta o erro, sem forçar merge. O reinício somente é solicitado depois de um pull bem-sucedido. Não substitui `git fetch` manual quando é necessário atualizar informações de outros ramos sem pull.
+
+A API continua somente leitura para documentação e histórico; a única ação mutável é a atualização explícita do checkout por esse botão. O botão não é destinado a repositórios com mudanças locais que impeçam o avanço simples.
