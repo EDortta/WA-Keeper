@@ -9,8 +9,6 @@ LAUNCH_APP=1
 TARGET_BRANCH=""
 STAGE="inicialização"
 LOG_FILE=""
-DIAGNOSTICS_BRANCH="diagnostics/android-deploy"
-DIAGNOSTICS_FILE="diagnostics/android-deploy/last-failure.md"
 
 usage() {
   cat <<'EOF'
@@ -114,72 +112,6 @@ signature_diagnostics() {
   } | tee -a "$LOG_FILE"
 
   rm -rf "$tmp_dir"
-}
-
-publish_failure() {
-  local status="${1:-1}"
-  [[ -n "${REPO_ROOT:-}" && -n "${LOG_FILE:-}" && -f "$LOG_FILE" ]] || return 0
-
-  local current_branch tested_branch tested_sha timestamp tmp_root diag_worktree safe_log publish_status
-  current_branch="$(git branch --show-current 2>/dev/null || true)"
-  tested_branch="${TARGET_BRANCH:-${current_branch:-desconhecida}}"
-  tested_sha="$(git rev-parse HEAD 2>/dev/null || echo desconhecido)"
-  timestamp="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-  tmp_root="$(mktemp -d "${TMPDIR:-/tmp}/wa-keeper-diagnostics.XXXXXX")"
-  diag_worktree="$tmp_root/repo"
-  safe_log="$tmp_root/output.log"
-
-  sed "s#${HOME:-/home/unknown}#~#g" "$LOG_FILE" > "$safe_log" || cp "$LOG_FILE" "$safe_log"
-  if [[ -n "${ANDROID_SERIAL:-}" ]]; then
-    sed -i "s#${ANDROID_SERIAL}#<ANDROID_SERIAL>#g" "$safe_log" || true
-  fi
-
-  set +e
-  git fetch origin "$DIAGNOSTICS_BRANCH" >/dev/null 2>&1
-  git worktree add --detach "$diag_worktree" "origin/$DIAGNOSTICS_BRANCH" >/dev/null 2>&1
-  publish_status=$?
-
-  if (( publish_status == 0 )); then
-    mkdir -p "$diag_worktree/$(dirname "$DIAGNOSTICS_FILE")"
-    {
-      printf '# Última falha do android-deploy\n\n'
-      printf -- '- Data UTC: `%s`\n' "$timestamp"
-      printf -- '- Branch testada: `%s`\n' "$tested_branch"
-      printf -- '- Commit testado: `%s`\n' "$tested_sha"
-      printf -- '- Variante: `%s`\n' "$VARIANT"
-      printf -- '- Etapa: `%s`\n' "$STAGE"
-      printf -- '- Código de saída: `%s`\n' "$status"
-      printf -- '- Android: `%s`\n\n' "${DEVICE:-desconhecido}"
-      printf '```text\n'
-      tail -n 1200 "$safe_log"
-      printf '\n```\n'
-    } > "$diag_worktree/$DIAGNOSTICS_FILE"
-
-    (
-      cd "$diag_worktree" || exit 1
-      git add "$DIAGNOSTICS_FILE" || exit 1
-      if git diff --cached --quiet; then
-        exit 0
-      fi
-      git -c user.name='WA-Keeper Deploy' \
-          -c user.email='wa-keeper-deploy@local' \
-          commit -m "diagnostics: registrar falha do android-deploy" >/dev/null || exit 1
-      git push origin "HEAD:refs/heads/$DIAGNOSTICS_BRANCH" >/dev/null 2>&1
-    )
-    publish_status=$?
-  fi
-
-  git worktree remove --force "$diag_worktree" >/dev/null 2>&1 || true
-  rm -rf "$tmp_root"
-  set -e
-
-  if (( publish_status == 0 )); then
-    printf '\nDiagnóstico publicado no GitHub: %s / %s\n' "$DIAGNOSTICS_BRANCH" "$DIAGNOSTICS_FILE" >&2
-  else
-    printf '\nAVISO: não consegui publicar o diagnóstico no GitHub. O erro original foi preservado apenas no terminal.\n' >&2
-  fi
-
-  return 0
 }
 
 fail() {
