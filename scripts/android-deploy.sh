@@ -207,6 +207,7 @@ case "$TARGET_BRANCH" in
 esac
 
 [[ -n "$TARGET_BRANCH" ]] || fail "não consegui determinar a branch atual"
+[[ "$TARGET_BRANCH" == "$(git branch --show-current)" ]] || fail "branch solicitada não é a branch deste worktree"
 
 # Reuse the successful build recipe for this worktree, not another checkout.
 GIT_HEAD_FILE="$(git rev-parse --git-path HEAD)"
@@ -218,6 +219,12 @@ MANIFEST_TYPE="$(read_manifest type)"
 MANIFEST_MODE="$(read_manifest mode)"
 MANIFEST_TARGET="$(read_manifest target)"
 MANIFEST_FEATURES="$(read_manifest features)"
+MANIFEST_ARTIFACT="$(read_manifest artifact)"
+MANIFEST_DIGEST="$(read_manifest sha256)"
+[[ "$MANIFEST_ARTIFACT" == "app/build/outputs/apk/debug/app-debug.apk" || "$MANIFEST_ARTIFACT" == "app/build/outputs/apk/release/app-release.apk" ]] || fail "artefato inválido no manifesto"
+[[ "$MANIFEST_DIGEST" =~ ^[0-9a-f]{64}$ ]] || fail "hash SHA-256 inválido no manifesto"
+[[ -f "$MANIFEST_ARTIFACT" ]] || fail "APK não encontrado"
+[[ "$(sha256sum "$MANIFEST_ARTIFACT" | awk '{print $1}')" == "$MANIFEST_DIGEST" ]] || fail "APK alterado após o último build"
 [[ "$MANIFEST_MODE" == "apk" && "$MANIFEST_TARGET" == "app" ]] || fail "último build não corresponde a APK do aplicativo"
 [[ "$MANIFEST_PROFILE" == "lab" || "$MANIFEST_PROFILE" == "store" ]] || fail "perfil inválido no manifesto"
 [[ "$MANIFEST_TYPE" == "debug" || "$MANIFEST_TYPE" == "release" ]] || fail "tipo inválido no manifesto"
