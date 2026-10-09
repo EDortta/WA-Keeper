@@ -46,7 +46,9 @@ def flush():
                 branch = git("symbolic-ref", "--short", "HEAD", cwd=repo).stdout.strip()
                 upstream = git("rev-parse", "--verify", f"refs/remotes/origin/{branch}", cwd=repo, check=False)
                 if upstream.returncode == 0:
-                    git("merge", "--ff-only", f"origin/{branch}", cwd=repo)
+                    git("-c", "user.name=Development Evidence", "-c",
+                        "user.email=development-evidence@local",
+                        "merge", "--no-edit", f"origin/{branch}", cwd=repo)
             stage = "prepare"
             files = sorted(outbox.glob("*.json"))
             if not files:
