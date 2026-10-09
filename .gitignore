@@ -44,3 +44,7 @@ wa-keeper-diagnose-*/
 
 # Godofredo benchmark: transcrições brutas são somente locais
 diagnostics/godofredo-device-benchmark/**/raw/
+
+# Python test bytecode must never make a worktree appear dirty
+__pycache__/
+*.py[cod]

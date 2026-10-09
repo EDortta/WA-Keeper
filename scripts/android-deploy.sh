@@ -2,15 +2,15 @@
 set -Eeuo pipefail
 
 APP_ID="br.com.wanotifkeeper"
-VARIANT="release"
+VARIANT="auto"
 PROFILE="auto"
 RUN_TESTS=1
 LAUNCH_APP=1
 TARGET_BRANCH=""
 STAGE="inicialização"
+DEPLOY_START="$(date +%s)"
+WA_EVIDENCE_MODE="${WA_EVIDENCE_MODE:-local}"
 LOG_FILE=""
-DIAGNOSTICS_BRANCH="diagnostics/android-deploy"
-DIAGNOSTICS_FILE="diagnostics/android-deploy/last-failure.md"
 
 usage() {
   cat <<'EOF'
@@ -27,11 +27,11 @@ Aliases:
   development development
 
 Opções:
-  --release      compila/instala release (padrão; preserva a assinatura esperada do app)
-  --debug        compila/instala debug
-  --lab          usa perfil experimental
-  --store        usa perfil Google Play
-  --skip-tests   não roda testes unitários antes do build
+  --release      força compilação release (exige assinatura configurada)
+  --debug        força compilação debug
+  --lab          força perfil experimental
+  --store        força perfil Google Play
+  --skip-tests   não roda testes unitários antes do build\n  --evidence=remote  publica metadados sanitizados no repositório central
   --no-launch    instala mas não abre o app
   -h, --help     mostra esta ajuda
 
@@ -44,9 +44,7 @@ Exemplos:
 Se houver mais de um Android conectado:
   ANDROID_SERIAL=<serial> bash scripts/android-deploy.sh audio
 
-Em caso de falha nos testes, build ou instalação, o último erro é publicado em:
-  branch: diagnostics/android-deploy
-  arquivo: diagnostics/android-deploy/last-failure.md
+Logs brutos ficam locais. Evidências publicadas são somente metadados sanitizados.
 EOF
 }
 
@@ -118,76 +116,10 @@ signature_diagnostics() {
   rm -rf "$tmp_dir"
 }
 
-publish_failure() {
-  local status="${1:-1}"
-  [[ -n "${REPO_ROOT:-}" && -n "${LOG_FILE:-}" && -f "$LOG_FILE" ]] || return 0
-
-  local current_branch tested_branch tested_sha timestamp tmp_root diag_worktree safe_log publish_status
-  current_branch="$(git branch --show-current 2>/dev/null || true)"
-  tested_branch="${TARGET_BRANCH:-${current_branch:-desconhecida}}"
-  tested_sha="$(git rev-parse HEAD 2>/dev/null || echo desconhecido)"
-  timestamp="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-  tmp_root="$(mktemp -d "${TMPDIR:-/tmp}/wa-keeper-diagnostics.XXXXXX")"
-  diag_worktree="$tmp_root/repo"
-  safe_log="$tmp_root/output.log"
-
-  sed "s#${HOME:-/home/unknown}#~#g" "$LOG_FILE" > "$safe_log" || cp "$LOG_FILE" "$safe_log"
-  if [[ -n "${ANDROID_SERIAL:-}" ]]; then
-    sed -i "s#${ANDROID_SERIAL}#<ANDROID_SERIAL>#g" "$safe_log" || true
-  fi
-
-  set +e
-  git fetch origin "$DIAGNOSTICS_BRANCH" >/dev/null 2>&1
-  git worktree add --detach "$diag_worktree" "origin/$DIAGNOSTICS_BRANCH" >/dev/null 2>&1
-  publish_status=$?
-
-  if (( publish_status == 0 )); then
-    mkdir -p "$diag_worktree/$(dirname "$DIAGNOSTICS_FILE")"
-    {
-      printf '# Última falha do android-deploy\n\n'
-      printf -- '- Data UTC: `%s`\n' "$timestamp"
-      printf -- '- Branch testada: `%s`\n' "$tested_branch"
-      printf -- '- Commit testado: `%s`\n' "$tested_sha"
-      printf -- '- Variante: `%s`\n' "$VARIANT"
-      printf -- '- Etapa: `%s`\n' "$STAGE"
-      printf -- '- Código de saída: `%s`\n' "$status"
-      printf -- '- Android: `%s`\n\n' "${DEVICE:-desconhecido}"
-      printf '```text\n'
-      tail -n 1200 "$safe_log"
-      printf '\n```\n'
-    } > "$diag_worktree/$DIAGNOSTICS_FILE"
-
-    (
-      cd "$diag_worktree" || exit 1
-      git add "$DIAGNOSTICS_FILE" || exit 1
-      if git diff --cached --quiet; then
-        exit 0
-      fi
-      git -c user.name='WA-Keeper Deploy' \
-          -c user.email='wa-keeper-deploy@local' \
-          commit -m "diagnostics: registrar falha do android-deploy" >/dev/null || exit 1
-      git push origin "HEAD:refs/heads/$DIAGNOSTICS_BRANCH" >/dev/null 2>&1
-    )
-    publish_status=$?
-  fi
-
-  git worktree remove --force "$diag_worktree" >/dev/null 2>&1 || true
-  rm -rf "$tmp_root"
-  set -e
-
-  if (( publish_status == 0 )); then
-    printf '\nDiagnóstico publicado no GitHub: %s / %s\n' "$DIAGNOSTICS_BRANCH" "$DIAGNOSTICS_FILE" >&2
-  else
-    printf '\nAVISO: não consegui publicar o diagnóstico no GitHub. O erro original foi preservado apenas no terminal.\n' >&2
-  fi
-
-  return 0
-}
-
 fail() {
   if [[ -n "${LOG_FILE:-}" ]]; then
     printf 'ERRO: %s\n' "$*" | tee -a "$LOG_FILE" >&2
-    publish_failure 1
+    log_line "Diagnóstico local: $LOG_FILE"
   else
     printf 'ERRO: %s\n' "$*" >&2
   fi
@@ -207,7 +139,7 @@ run_logged() {
   set -e
 
   if (( status != 0 )); then
-    publish_failure "$status"
+    log_line "Falha registrada localmente: $LOG_FILE"
     exit "$status"
   fi
 }
@@ -220,6 +152,8 @@ while (($#)); do
     --store) PROFILE="store" ;;
     --skip-tests) RUN_TESTS=0 ;;
     --no-launch) LAUNCH_APP=0 ;;
+    --evidence=remote) WA_EVIDENCE_MODE=remote ;;
+    --evidence=local) WA_EVIDENCE_MODE=local ;;
     -h|--help) usage; exit 0 ;;
     -*) fail "opção desconhecida: $1" ;;
     *)
@@ -231,6 +165,29 @@ while (($#)); do
 done
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || fail "execute dentro do repositório WA-Keeper"
+record_deploy() {
+  local code=$?
+  trap - EXIT
+  [[ "$WA_EVIDENCE_MODE" == "off" ]] && return "$code"
+  local branch sha category
+  branch="$(git branch --show-current)"
+  sha="$(git rev-parse HEAD)"
+  category="none"
+  if (( code != 0 )); then
+    case "$STAGE" in
+      *Compila*) category="build" ;;
+      *assinatura*|*Assinatura*) category="signing" ;;
+      *Instala*) category="install" ;;
+      *Android*|*dispositivo*) category="device" ;;
+      *) category="configuration" ;;
+    esac
+  fi
+  local args=(record --project WA-Keeper --feature "${WA_FEATURE_ID:-general}" --branch "$branch" --commit "$sha" --target app --profile "$PROFILE" --build-type "$VARIANT" --mode apk --exit-code "$code" --duration "$(( $(date +%s) - DEPLOY_START ))" --phase deploy --error-category "$category")
+  [[ "$WA_EVIDENCE_MODE" == "remote" ]] && args+=(--remote)
+  python3 "$REPO_ROOT/scripts/evidence.py" "${args[@]}" || echo "Aviso: evidência de deploy não registrada" >&2
+  return "$code"
+}
+trap record_deploy EXIT
 cd "$REPO_ROOT"
 LOG_FILE="$(mktemp "${TMPDIR:-/tmp}/wa-keeper-android-deploy.XXXXXX.log")"
 
@@ -250,29 +207,30 @@ case "$TARGET_BRANCH" in
 esac
 
 [[ -n "$TARGET_BRANCH" ]] || fail "não consegui determinar a branch atual"
+[[ "$TARGET_BRANCH" == "$(git branch --show-current)" ]] || fail "branch solicitada não é a branch deste worktree"
 
-if [[ "$PROFILE" == "auto" ]]; then
-  case "$TARGET_BRANCH" in
-    play|main) PROFILE="store" ;;
-    *) PROFILE="lab" ;;
-  esac
-fi
-
+# Reuse the successful build recipe for this worktree, not another checkout.
+GIT_HEAD_FILE="$(git rev-parse --git-path HEAD)"
+MANIFEST="$(dirname "$GIT_HEAD_FILE")/wa-build/last-success"
+[[ -f "$MANIFEST" ]] || fail "nenhum build APK bem-sucedido neste worktree; execute scripts/build.sh primeiro"
+read_manifest() { sed -n "s/^$1=//p" "$MANIFEST" | tail -n1; }
+MANIFEST_PROFILE="$(read_manifest profile)"
+MANIFEST_TYPE="$(read_manifest type)"
+MANIFEST_MODE="$(read_manifest mode)"
+MANIFEST_TARGET="$(read_manifest target)"
+MANIFEST_FEATURES="$(read_manifest features)"
+MANIFEST_ARTIFACT="$(read_manifest artifact)"
+MANIFEST_DIGEST="$(read_manifest sha256)"
+[[ "$MANIFEST_ARTIFACT" == "app/build/outputs/apk/debug/app-debug.apk" || "$MANIFEST_ARTIFACT" == "app/build/outputs/apk/release/app-release.apk" ]] || fail "artefato inválido no manifesto"
+[[ "$MANIFEST_DIGEST" =~ ^[0-9a-f]{64}$ ]] || fail "hash SHA-256 inválido no manifesto"
+[[ "$MANIFEST_MODE" == "apk" && "$MANIFEST_TARGET" == "app" ]] || fail "último build não corresponde a APK do aplicativo"
+[[ "$MANIFEST_PROFILE" == "lab" || "$MANIFEST_PROFILE" == "store" ]] || fail "perfil inválido no manifesto"
+[[ "$MANIFEST_TYPE" == "debug" || "$MANIFEST_TYPE" == "release" ]] || fail "tipo inválido no manifesto"
+[[ "$PROFILE" == "auto" ]] && PROFILE="$MANIFEST_PROFILE"
+[[ "$VARIANT" == "auto" ]] && VARIANT="$MANIFEST_TYPE"
 if [[ "$PROFILE" == "store" && "$TARGET_BRANCH" != "play" && "$TARGET_BRANCH" != "main" ]]; then
   fail "perfil store só pode ser usado nas branches play ou main"
 fi
-
-log_line "==> Atualizando origin/$TARGET_BRANCH"
-git fetch origin "$TARGET_BRANCH"
-
-if git show-ref --verify --quiet "refs/heads/$TARGET_BRANCH"; then
-  git switch "$TARGET_BRANCH"
-else
-  git switch --track -c "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
-fi
-
-git pull --ff-only origin "$TARGET_BRANCH"
-
 if [[ "$VARIANT" == "release" ]]; then
   STORE_FILE="$(sed -n 's/^RELEASE_STORE_FILE=//p' gradle.properties 2>/dev/null | tail -n 1 || true)"
   if [[ -n "$STORE_FILE" && ! -f "app/$STORE_FILE" && ! -f "$STORE_FILE" ]]; then
@@ -303,8 +261,14 @@ log_line "==> Variante: $VARIANT"
 log_line "==> Perfil: $PROFILE"
 
 BUILD_ARGS=( "--$PROFILE" )
+if [[ -n "$MANIFEST_FEATURES" ]]; then
+  BUILD_ARGS+=( --only "$MANIFEST_FEATURES" )
+else
+  BUILD_ARGS+=( --only "" )
+fi
 [[ "$VARIANT" == "release" ]] && BUILD_ARGS+=( --release ) || BUILD_ARGS+=( --debug )
 (( RUN_TESTS )) || BUILD_ARGS+=( --skip-tests )
+BUILD_ARGS+=( "--evidence=${WA_EVIDENCE_MODE:-local}" )
 
 run_logged "Compilação via scripts/build.sh" bash scripts/build.sh "${BUILD_ARGS[@]}"
 
@@ -315,6 +279,8 @@ else
 fi
 
 [[ -f "$APK" ]] || fail "APK não encontrado em $APK"
+LATEST_DIGEST="$(read_manifest sha256)"
+[[ -n "$LATEST_DIGEST" && "$(sha256sum "$APK" | awk '{print $1}')" == "$LATEST_DIGEST" ]] || fail "APK final não corresponde ao manifesto gerado pelo build"
 
 STAGE="Instalação ADB"
 log_line "==> Instalando sem apagar dados"
@@ -333,7 +299,7 @@ if (( INSTALL_STATUS != 0 )); then
 A instalação falhou. NÃO desinstale o WA-Keeper para "resolver" assinatura incompatível:
 a desinstalação apagaria o banco local. Corrija a assinatura/keystore e rode novamente.
 EOF
-  publish_failure "$INSTALL_STATUS"
+  log_line "Instalação falhou; log permanece local: $LOG_FILE"
   exit "$INSTALL_STATUS"
 fi
 
@@ -351,4 +317,4 @@ printf 'OK: %s instalado no Android a partir de %s (%s).\n' "$APP_ID" "$TARGET_B
   | head -n 2 \
   | sed 's/^/  /' || true
 
-rm -f "$LOG_FILE"
+echo "Log de deploy local: $LOG_FILE"
