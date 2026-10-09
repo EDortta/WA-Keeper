@@ -91,3 +91,21 @@ def cached(root):
     if not path.exists():return None
     try:return json.loads(path.read_text("utf-8"))
     except (ValueError,OSError):return None
+
+def create_domain_template(root):
+    """Explicitly create a standard Markdown entry point; never overwrite."""
+    root=Path(root).resolve()
+    directory=root/"docs"
+    target=directory/"domains.md"
+    if target.exists():return {"created":False,"path":"docs/domains.md"}
+    directory.mkdir(parents=True,exist_ok=True)
+    if directory.is_symlink():raise ValueError("Unsafe documentation directory")
+    template=("# Mapa de domínios\\n\\n"
+              "Este documento declara os domínios oficiais deste projeto.\\n"
+              "Substitua os exemplos de sintaxe abaixo por seções reais.\\n\\n"
+              "Formato: cada domínio deve começar por um título de nível 2, "
+              "por exemplo, \\x60\\x60## Domínio: Nome\\x60\\x60.\\n"
+              "Inclua propósito, responsabilidades, exclusões, entradas, saídas e invariantes.\\n"
+              "Não declare um domínio enquanto ele não for validado pelo projeto.\\n")
+    with target.open("x",encoding="utf-8") as out:out.write(template)
+    return {"created":True,"path":"docs/domains.md"}
