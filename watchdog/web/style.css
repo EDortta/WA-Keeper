@@ -24,3 +24,6 @@ body.graph-focus #graph-height{border-color:var(--accent);background:var(--panel
 
 #graph .branch-inline rect{fill:var(--panel);fill-opacity:.94;stroke:var(--accent);stroke-opacity:.7}
 #graph .branch-inline text{font:10px system-ui,sans-serif}
+
+#graph .date-divider-block{fill:var(--sub);font:600 10px system-ui,sans-serif;pointer-events:none}
+#update-restart:disabled{opacity:.55}
