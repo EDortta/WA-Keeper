@@ -221,4 +221,20 @@ class ConversationIdentityTest {
             buckets[1].single().conversationKey
         )
     }
+    @Test
+    fun groupingAndMatchingAvailableViaDomainContract() {
+        val contract: ConversationNaming = ConversationIdentity
+        val first = NotifEntity(
+            sender = "Equipe", text = "a", timestamp = 1L,
+            packageName = "com.whatsapp", conversationKey = "shortcut:group-1"
+        )
+        val second = NotifEntity(
+            sender = "Equipe", text = "b", timestamp = 2L,
+            packageName = "com.whatsapp", conversationKey = "shortcut:group-2"
+        )
+        assertEquals(2, contract.conversationBuckets(listOf(first, second)).size)
+        assertTrue(contract.sameConversation(first, "com.whatsapp", "Equipe", "shortcut:group-1"))
+        assertFalse(contract.sameConversation(second, "com.whatsapp", "Equipe", "shortcut:group-1"))
+    }
+
 }
