@@ -39,3 +39,11 @@ Fazer de **Entidade** um agrupamento lógico escolhido pelo usuário, distinto d
 Não misturar conversas nem contatos de pessoas distintas, não perder associação ou dados históricos, não degradar operações existentes, preservar ou explicitar corretamente a capacidade de desfazer, registrar evidências seguras. Sem aprovação expressa, não modificar comportamento de ações destrutivas.
 
 **Nota:** este documento é inventário preliminar, não certificação de que todos os consumidores foram encontrados.
+
+## Primeiro incremento: catálogo de entidades (2026-10-16)
+
+Introduzido `EntityCatalog` com `entitiesFlow()` e `createEntity(name, kind)`; `MemoryRepository` implementa o contrato delegando ao mesmo `MemoryDao` utilizado antes. `EntitiesActivity` migrou somente listagem e criação para o contrato, sem alterações de UI ou persistência.
+
+Nenhuma modificação em vínculos, associação, mesclagem, exclusão, banco, backup ou Watchdog. O primeiro consumidor não acessa mais `db.memory()` para listagem.
+
+**Estado: IMPLEMENTED**, ainda não BUILD-GREEN nem DEVICE-VALIDATED. É necessária compilação via `scripts/build.sh`, testes existentes e smoke test no Android (listar, criar e reabrir entidade, sem efetuar exclusão ou merge).
