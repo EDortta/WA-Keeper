@@ -20,8 +20,7 @@ import kotlinx.coroutines.launch
 
 class EntitiesActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEntitiesBinding
-    private val memory by lazy { MemoryRepository(this) }
-    private val db by lazy { NotifDatabase.get(this) }
+    private val entities: EntityCatalog by lazy { MemoryRepository(this) }
     private lateinit var adapter: EntityAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,7 +38,7 @@ class EntitiesActivity : AppCompatActivity() {
         binding.recyclerEntities.adapter = adapter
 
         lifecycleScope.launch {
-            db.memory().entitiesFlow().collectLatest { entities ->
+            entities.entitiesFlow().collectLatest { entities ->
                 adapter.submitList(entities)
                 binding.emptyEntities.visibility =
                     if (entities.isEmpty()) android.view.View.VISIBLE else android.view.View.GONE
@@ -63,7 +62,7 @@ class EntitiesActivity : AppCompatActivity() {
                 val name = input.text.toString().trim()
                 if (name.isNotEmpty()) {
                     lifecycleScope.launch {
-                        val id = memory.createEntity(name)
+                        val id = entities.createEntity(name)
                         startActivity(EntityDetailActivity.intent(this@EntitiesActivity, id))
                     }
                 }
