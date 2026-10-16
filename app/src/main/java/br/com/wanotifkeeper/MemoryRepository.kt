@@ -1,15 +1,18 @@
 package br.com.wanotifkeeper
 
 import android.content.Context
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Camada de memória local. O LLM nunca é a fonte de verdade: ele recebe apenas
  * contexto recuperado daqui, sempre rastreável até NotifEntity.id/sourceRef.
  */
-class MemoryRepository(context: Context) {
+class MemoryRepository(context: Context) : EntityCatalog {
     private val db = NotifDatabase.get(context.applicationContext)
 
-    suspend fun createEntity(name: String, kind: String = "PERSON"): Long =
+    override fun entitiesFlow(): Flow<List<MemoryEntity>> = db.memory().entitiesFlow()
+
+    override suspend fun createEntity(name: String, kind: String): Long =
         db.memory().insertEntity(MemoryEntity(name = name.trim(), kind = kind.trim().uppercase()))
 
     suspend fun linkConversation(
