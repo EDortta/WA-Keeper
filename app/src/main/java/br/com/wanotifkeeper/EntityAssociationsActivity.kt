@@ -43,6 +43,7 @@ class EntityAssociationsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEntityAssociationsBinding
     private val db by lazy { NotifDatabase.get(this) }
     private val memory by lazy { MemoryRepository(this) }
+    private val entities: EntityCatalog by lazy { memory }
     private var entityId: Long = 0L
 
     private val allCandidates = mutableListOf<AssociationCandidate>()
@@ -122,10 +123,10 @@ class EntityAssociationsActivity : AppCompatActivity() {
     }
 
     private suspend fun reloadCandidates() {
-        val entity = db.memory().entityById(entityId)
+        val entity = entities.entityById(entityId)
         binding.tvEntityName.text = entity?.name ?: "Entidade"
 
-        val links = db.memory().linksForEntity(entityId)
+        val links = entities.linksForEntity(entityId)
         selectedKeys.clear()
 
         val conversations = withContext(Dispatchers.IO) {
@@ -299,7 +300,7 @@ class EntityAssociationsActivity : AppCompatActivity() {
 
     private fun saveAndFinish() {
         lifecycleScope.launch {
-            val existing = db.memory().linksForEntity(entityId)
+            val existing = entities.linksForEntity(entityId)
 
             for (candidate in allCandidates) {
                 val selected = selectedKeys.contains(candidate.key)
