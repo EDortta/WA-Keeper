@@ -27,3 +27,24 @@ Não há alteração intencional no comportamento nem nos dados persistidos. A i
 ## Histórico e rollback
 Commits: `b373a427`, `6cbce99d`.
 Ao integrar, registrar SHA final; caso contrário, preservar o registro como não integrado. Reverter por commit rastreável, não descartar histórico da branch sem validação.
+
+## Retomada após alinhamento com development (2026-10-16)
+
+Levantamento preliminar do código da branch:
+
+- `ConversationNaming.kt` define dois métodos (`canonicalSender` e `groupKey`) com parâmetros legados `String`.
+- `ConversationIdentity.kt` implementa o contrato e conserva também `stableKey`, `sameConversation`, `conversationBuckets` e regras de visibilidade.
+- `MainActivity.kt` consome diretamente `ConversationIdentity.conversationBuckets` e `canonicalSender`.
+- `ConversationActivity.kt` consome diretamente `ConversationIdentity.sameConversation`.
+- `ConversationImportActivity.kt` não contém referências textuais a essas chamadas na inspeção inicial.
+
+Este é um inventário **parcial**, não uma afirmação sobre todos os consumidores do repositório. Antes de ampliar contratos ou migrar outros domínios, executar varredura integral, conferir o contrato de cada consumidor e estabelecer testes de compatibilidade.
+
+### Próxima etapa proposta (não implementada nesta atualização)
+
+1. Completar inventário de referências e chamadas duplicadas de normalização/agrupamento.
+2. Separar API de domínio da implementação, sem mudar persistência nem IDs existentes.
+3. Migrar um consumidor por vez, com testes específicos de homônimos, grupos, chaves estáveis, fallback legado e importações.
+4. Registrar build debug/release, smoke test e evidências antes de declarar a migração validada.
+
+A incorporação da `development` ocorreu pelo merge `25ee765`. Os testes Python das infraestruturas de evidências e assinatura foram executados com sucesso, conforme informado pelo usuário; esses resultados **não comprovam** ainda os gates Android da CONV-001.
