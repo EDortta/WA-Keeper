@@ -62,3 +62,9 @@ Estado: IMPLEMENTED. Teste Android/JVM e build pendentes de execução em devel3
 Após aprovação do teste `ConversationIdentityTest` informada pelo usuário (`BUILD SUCCESSFUL`), `MainActivity` passou a declarar uma referência `ConversationNaming` para as chamadas `conversationBuckets` e `canonicalSender`. A composição ainda instancia a implementação `ConversationIdentity`, mas o consumo de suas operações ocorre pela interface. Nenhum algoritmo ou critério de agrupamento foi alterado.
 
 Estado deste incremento: IMPLEMENTED, ainda requer novo teste JVM/build e smoke test da tela inicial com conversas homônimas, chaves distintas e registros legados. Não alterar o domínio de Entidades/Contatos nesta feature.
+
+## Segundo consumidor (2026-10-16)
+
+`ConversationActivity` passou a declarar `conversationNaming: ConversationNaming = ConversationIdentity` e a usar `conversationNaming.sameConversation` ao filtrar as notificações da conversa aberta. Nenhum algoritmo de comparação, persistência, agendamento, transcrição ou UI foi modificado. Commit: `2067c7be`.
+
+Estado: IMPLEMENTED, pendente de build e validação em dispositivo dos consumidores Home e Detalhe. Especial atenção a nomes iguais com chaves distintas e a linhas antigas sem chave.
