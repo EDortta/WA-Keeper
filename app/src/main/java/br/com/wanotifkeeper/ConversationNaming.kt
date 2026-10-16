@@ -16,4 +16,15 @@ interface ConversationNaming {
 
     /** Chave de agrupamento para a representação de conversa já persistida. */
     fun groupKey(packageName: String, sender: String, conversationKey: String?): String
+
+    /** Groups visible notifications, retaining legacy fallback behavior. */
+    fun conversationBuckets(items: Iterable<NotifEntity>): List<List<NotifEntity>>
+
+    /** Matches a stored item against a selected conversation. */
+    fun sameConversation(
+        item: NotifEntity,
+        packageName: String,
+        sender: String,
+        conversationKey: String?
+    ): Boolean
 }
