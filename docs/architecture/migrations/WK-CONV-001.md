@@ -1,6 +1,6 @@
 # Migração de domínios — alteração WK-CONV-001
 
-Estado: IMPLEMENTED / ainda não BUILD-GREEN nem DEVICE-VALIDATED.
+Estado: BUILD-GREEN / DEVICE-VALIDATED (confirmação do usuário em 2026-10-16); integração em development pendente.
 Origem: `development`. Branch isolada: `feature/conversations-typed-api-contract`.
 Feature afetada: representação/identificação de conversas. Domínio principal: Conversas.
 Escopo de escrita autorizado: Conversas. Outros domínios: leitura somente.
@@ -68,3 +68,12 @@ Estado deste incremento: IMPLEMENTED, ainda requer novo teste JVM/build e smoke 
 `ConversationActivity` passou a declarar `conversationNaming: ConversationNaming = ConversationIdentity` e a usar `conversationNaming.sameConversation` ao filtrar as notificações da conversa aberta. Nenhum algoritmo de comparação, persistência, agendamento, transcrição ou UI foi modificado. Commit: `2067c7be`.
 
 Estado: IMPLEMENTED, pendente de build e validação em dispositivo dos consumidores Home e Detalhe. Especial atenção a nomes iguais com chaves distintas e a linhas antigas sem chave.
+
+## Validação final informada pelo usuário (2026-10-16)
+
+- Teste `ConversationIdentityTest`: `BUILD SUCCESSFUL`.
+- Build debug via `scripts/build.sh`: concluído com sucesso.
+- Build release: concluído após disponibilizar a configuração de assinatura local neste worktree.
+- Deploy release: executado; usuário informou que testou no Android e que está tudo OK.
+- As evidências de build são publicadas pelo pipeline central; a confirmação de comportamento em aparelho foi informada no chat, não substitui um relatório detalhado de cada cenário de homônimos.
+- Escopo final: contrato `ConversationNaming`, implementação `ConversationIdentity`, dois consumidores (`MainActivity`, `ConversationActivity`), teste e documentação. Não houve alteração intencional de algoritmos, banco ou outros domínios.
