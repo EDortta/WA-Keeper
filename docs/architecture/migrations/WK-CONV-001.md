@@ -56,3 +56,9 @@ O contrato `ConversationNaming` agora também expõe `conversationBuckets` e `sa
 Adicionado teste `groupingAndMatchingAvailableViaDomainContract` para assegurar que agrupamento e distinção entre conversas homônimas com chaves diferentes funcionam quando o acesso ocorre pela interface.
 
 Estado: IMPLEMENTED. Teste Android/JVM e build pendentes de execução em devel3. Não houve migração de `MainActivity` ou `ConversationActivity`, pois pertencem aos consumidores e exigem validação própria.
+
+## Primeiro consumidor (2026-10-16)
+
+Após aprovação do teste `ConversationIdentityTest` informada pelo usuário (`BUILD SUCCESSFUL`), `MainActivity` passou a declarar uma referência `ConversationNaming` para as chamadas `conversationBuckets` e `canonicalSender`. A composição ainda instancia a implementação `ConversationIdentity`, mas o consumo de suas operações ocorre pela interface. Nenhum algoritmo ou critério de agrupamento foi alterado.
+
+Estado deste incremento: IMPLEMENTED, ainda requer novo teste JVM/build e smoke test da tela inicial com conversas homônimas, chaves distintas e registros legados. Não alterar o domínio de Entidades/Contatos nesta feature.
