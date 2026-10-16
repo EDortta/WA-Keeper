@@ -64,7 +64,7 @@ object ConversationIdentity : ConversationNaming {
 
     fun isVisibleHomeConversation(item: NotifEntity): Boolean = isVisibleConversation(item)
 
-    fun conversationBuckets(items: Iterable<NotifEntity>): List<List<NotifEntity>> =
+    override fun conversationBuckets(items: Iterable<NotifEntity>): List<List<NotifEntity>> =
         items
             .filter(::isVisibleConversation)
             .groupBy { item ->
@@ -87,7 +87,7 @@ object ConversationIdentity : ConversationNaming {
             }
             .filter { it.isNotEmpty() }
 
-    fun sameConversation(
+    override fun sameConversation(
         item: NotifEntity,
         packageName: String,
         sender: String,
