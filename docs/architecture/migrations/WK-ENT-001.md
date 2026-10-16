@@ -1,0 +1,41 @@
+# ENT-001 — Inventário e limites do domínio Entidades
+
+Issue de referência: #64. Super-issue: #62.
+Branch: `feature/entities-typed-api-contract`.
+Estado: **INVENTÁRIO**, sem modificações de comportamento.
+
+## Objetivo
+
+Fazer de **Entidade** um agrupamento lógico escolhido pelo usuário, distinto de contato do aparelho, conversa WhatsApp/Business e número de telefone. Introduzir contrato interno de domínio sem reescrever dados existentes.
+
+## Implementação encontrada em development (levantamento inicial)
+
+- `EntitiesActivity.kt`: lista entidades e cria entidades chamando `MemoryRepository.createEntity`.
+- `EntityDetailActivity.kt`: visualiza vínculos, renomeia, inicia mesclagem e exclusão, aciona backup e preferências de transcrição.
+- `EntityAssociationsActivity.kt`: reúne candidatas de conversas via `ConversationIdentity.conversationBuckets` e contatos locais via `ContactsContract`; deduplica contatos por número normalizado, seleciona associações e persiste links.
+- `MemoryRepository.kt`: concentra operações `createEntity`, `linkConversation`, `ensureEntityForConversation`, `resolveConversation`, `renameEntity`, `deleteEntity` e `mergeEntities`, além de rotinas de memória.
+- `NotifDatabase.kt`: define `MemoryEntity`, `EntityLinkEntity` e os DAOs; a camada de apresentação também acessa `db.memory()` diretamente.
+
+## Riscos e fronteiras
+
+1. `MemoryRepository.deleteEntity` remove vínculos e entidade; `mergeEntities` transfere vínculos e remove a origem. **Não mudar nem executar essas operações durante o inventário.** Avaliar transação, preservação de dados e desfazer antes de tocar nesses fluxos.
+2. O vínculo atualmente utiliza `packageName`, `sender` e `role`; não assumir que nome visível ou telefone representa identidade estável.
+3. A tela de associações produz chaves derivadas e deduplica contatos; esse trabalho é limítrofe entre **Entidades**, **Conversas** e **Identidade**. Não migrar resolução de destinatários da ID-001 nesta etapa.
+4. `MemoryRepository` cruza responsabilidades de Entidades e Memória. Não mover o armazenamento de memória (MEM-001) nesta feature.
+5. Evitar alterações destrutivas de Room, DAOs, backups, filas, transcrição ou Watchdog.
+
+## Plano de implementação
+
+- [ ] Completar levantamento das referências a `db.memory()`, `MemoryRepository` e entidades/vínculos em todo o código.
+- [ ] Documentar semântica atual de criar, associar, desassociar, mesclar e excluir, incluindo comportamento e limites de desfazer.
+- [ ] Definir interface interna mínima do domínio para operações já existentes, preservando assinaturas e comportamento legado.
+- [ ] Fazer `MemoryRepository` implementar o contrato sem reescrever algoritmos.
+- [ ] Migrar **um consumidor por vez**, começando por leitura/criação; não começar por mesclagem/exclusão.
+- [ ] Adicionar testes de vínculo, homônimos, contatos duplicados, erros e integridade; recolher evidências.
+- [ ] Builds debug e release, testes protegidos, smoke test no Android e revisão de diff antes do PR.
+
+## Aceitação
+
+Não misturar conversas nem contatos de pessoas distintas, não perder associação ou dados históricos, não degradar operações existentes, preservar ou explicitar corretamente a capacidade de desfazer, registrar evidências seguras. Sem aprovação expressa, não modificar comportamento de ações destrutivas.
+
+**Nota:** este documento é inventário preliminar, não certificação de que todos os consumidores foram encontrados.
