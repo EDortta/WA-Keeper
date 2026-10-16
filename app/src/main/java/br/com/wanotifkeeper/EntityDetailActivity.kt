@@ -20,6 +20,7 @@ class EntityDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEntityDetailBinding
     private val db by lazy { NotifDatabase.get(this) }
     private val memory by lazy { MemoryRepository(this) }
+    private val entities: EntityCatalog by lazy { memory }
     private val fmt = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
     private var entityId: Long = 0L
 
@@ -74,14 +75,14 @@ class EntityDetailActivity : AppCompatActivity() {
 
     private fun loadEntity() {
         lifecycleScope.launch {
-            val entity = db.memory().entityById(entityId) ?: return@launch
+            val entity = entities.entityById(entityId) ?: return@launch
             binding.tvEntityTitle.text = entity.name
             renderLinks()
         }
     }
 
     private suspend fun renderLinks() {
-        val links = db.memory().linksForEntity(entityId)
+        val links = entities.linksForEntity(entityId)
         binding.tvLinkedConversations.text =
             if (links.isEmpty()) {
                 "Nenhuma conversa associada ainda."
@@ -119,7 +120,7 @@ class EntityDetailActivity : AppCompatActivity() {
 
     private fun renameEntity() {
         lifecycleScope.launch {
-            val entity = db.memory().entityById(entityId) ?: return@launch
+            val entity = entities.entityById(entityId) ?: return@launch
             val input = EditText(this@EntityDetailActivity).apply {
                 setText(entity.name)
                 selectAll()
@@ -146,7 +147,7 @@ class EntityDetailActivity : AppCompatActivity() {
 
     private fun mergeEntity() {
         lifecycleScope.launch {
-            val entities = db.memory().entitiesFlow().first()
+            val entities = entities.entitiesFlow().first()
                 .filter { it.id != entityId }
 
             if (entities.isEmpty()) {
@@ -181,7 +182,7 @@ class EntityDetailActivity : AppCompatActivity() {
 
     private fun deleteEntity() {
         lifecycleScope.launch {
-            val entity = db.memory().entityById(entityId) ?: return@launch
+            val entity = entities.entityById(entityId) ?: return@launch
             AlertDialog.Builder(this@EntityDetailActivity)
                 .setTitle("Excluir entidade?")
                 .setMessage("A entidade “${entity.name}” será removida. As mensagens e conversas não serão apagadas; apenas deixarão de pertencer a este macrogrupo.")
