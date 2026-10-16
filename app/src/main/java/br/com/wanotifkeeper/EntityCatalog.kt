@@ -10,5 +10,7 @@ import kotlinx.coroutines.flow.Flow
  */
 interface EntityCatalog {
     fun entitiesFlow(): Flow<List<MemoryEntity>>
+    suspend fun entityById(entityId: Long): MemoryEntity?
+    suspend fun linksForEntity(entityId: Long): List<EntityLinkEntity>
     suspend fun createEntity(name: String, kind: String = "PERSON"): Long
 }
