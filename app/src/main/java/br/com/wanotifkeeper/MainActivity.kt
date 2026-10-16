@@ -45,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: NotifAdapter
     private val db by lazy { NotifDatabase.get(this) }
+    private val conversationNaming: ConversationNaming = ConversationIdentity
     private val audio by lazy { AudioArbiter.get(applicationContext) }
     private val fmt = SimpleDateFormat("dd/MM HH:mm", Locale.getDefault())
 
@@ -264,11 +265,11 @@ class MainActivity : AppCompatActivity() {
                 // A home representa conversas, não mensagens: históricos importados ficam
                 // no contexto da entidade; conversas reais agrupam por título legado + chave
                 // técnica quando ela existe, juntando rows antigas sem conversationKey.
-                val conversations = ConversationIdentity.conversationBuckets(list)
+                val conversations = conversationNaming.conversationBuckets(list)
                     .mapNotNull { items ->
                         val newest = items.maxByOrNull { it.timestamp } ?: return@mapNotNull null
                         newest.copy(
-                            sender = ConversationIdentity.canonicalSender(
+                            sender = conversationNaming.canonicalSender(
                                 newest.sender,
                                 newest.packageName
                             )
