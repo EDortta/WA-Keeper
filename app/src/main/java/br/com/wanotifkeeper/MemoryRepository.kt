@@ -12,6 +12,10 @@ class MemoryRepository(context: Context) : EntityCatalog {
 
     override fun entitiesFlow(): Flow<List<MemoryEntity>> = db.memory().entitiesFlow()
 
+    override suspend fun entityById(entityId: Long): MemoryEntity? = db.memory().entityById(entityId)
+
+    override suspend fun linksForEntity(entityId: Long): List<EntityLinkEntity> = db.memory().linksForEntity(entityId)
+
     override suspend fun createEntity(name: String, kind: String): Long =
         db.memory().insertEntity(MemoryEntity(name = name.trim(), kind = kind.trim().uppercase()))
 
