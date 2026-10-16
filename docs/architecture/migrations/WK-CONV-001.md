@@ -48,3 +48,11 @@ Este é um inventário **parcial**, não uma afirmação sobre todos os consumid
 4. Registrar build debug/release, smoke test e evidências antes de declarar a migração validada.
 
 A incorporação da `development` ocorreu pelo merge `25ee765`. Os testes Python das infraestruturas de evidências e assinatura foram executados com sucesso, conforme informado pelo usuário; esses resultados **não comprovam** ainda os gates Android da CONV-001.
+
+## Incremento de contrato (2026-10-16)
+
+O contrato `ConversationNaming` agora também expõe `conversationBuckets` e `sameConversation`. `ConversationIdentity` continua sendo a implementação existente; apenas declara `override` nesses métodos. A alteração não modifica algoritmos, dados ou consumidores.
+
+Adicionado teste `groupingAndMatchingAvailableViaDomainContract` para assegurar que agrupamento e distinção entre conversas homônimas com chaves diferentes funcionam quando o acesso ocorre pela interface.
+
+Estado: IMPLEMENTED. Teste Android/JVM e build pendentes de execução em devel3. Não houve migração de `MainActivity` ou `ConversationActivity`, pois pertencem aos consumidores e exigem validação própria.
