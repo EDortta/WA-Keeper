@@ -55,3 +55,7 @@ O usuário informou `BUILD SUCCESSFUL` para o release, com evidência publicada 
 Segundo incremento: `EntityCatalog` também expõe `entityById` e `linksForEntity`. A implementação delega às consultas atuais do `MemoryDao`; `EntityDetailActivity` e `EntityAssociationsActivity` utilizam o contrato para essas leituras (e listagem na seleção de mesclagem). Os caminhos de escrita, `saveAndFinish`, renomear, unir, excluir e operações do DAO não foram alterados.
 
 **Estado do segundo incremento: IMPLEMENTED, aguardando BUILD-GREEN e DEVICE-VALIDATED.** Verificar título, links existentes, seleção de vínculos e abertura das telas, sem persistir alterações nem realizar mesclagem ou exclusão nesta rodada.
+
+## Correção de busca com diacríticos (2026-10-16)
+
+Relato do usuário: nomes de contatos com acentos não eram encontrados quando a consulta era digitada sem acentos. Identificado filtro da `EntityAssociationsActivity` baseado somente em `lowercase().contains()`. Criada `EntitySearch` com normalização Unicode NFD, remoção das marcas diacríticas e comparação sem distinguir caixa; aplicado apenas ao filtro visual de títulos e subtítulos. Os nomes, identificadores, números e links persistidos não são alterados. Testes de `João/joao`, `José/Jose`, `Márcia/marcia`, pesquisa por subtítulo e não correspondência adicionados. **Pendente de build e teste no dispositivo.**
