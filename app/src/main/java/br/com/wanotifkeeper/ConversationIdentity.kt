@@ -2,10 +2,10 @@ package br.com.wanotifkeeper
 
 import android.service.notification.StatusBarNotification
 
-object ConversationIdentity {
+object ConversationIdentity : ConversationNaming {
     private val bidiMarks = Regex("[\\u200e\\u200f\\u202a-\\u202e]")
 
-    fun canonicalSender(raw: String, packageName: String? = null): String {
+    override fun canonicalSender(raw: String, packageName: String?): String {
         var value = raw
             .replace(bidiMarks, "")
             .removePrefix("WhatsApp: ")
@@ -46,7 +46,7 @@ object ConversationIdentity {
         return "title:${sbn.packageName}:${canonicalTitle.lowercase()}"
     }
 
-    fun groupKey(packageName: String, sender: String, conversationKey: String?): String {
+    override fun groupKey(packageName: String, sender: String, conversationKey: String?): String {
         val storedKey = conversationKey?.trim().orEmpty()
         return if (storedKey.isNotBlank()) {
             "conversation:$packageName:$storedKey"
@@ -64,7 +64,7 @@ object ConversationIdentity {
 
     fun isVisibleHomeConversation(item: NotifEntity): Boolean = isVisibleConversation(item)
 
-    fun conversationBuckets(items: Iterable<NotifEntity>): List<List<NotifEntity>> =
+    override fun conversationBuckets(items: Iterable<NotifEntity>): List<List<NotifEntity>> =
         items
             .filter(::isVisibleConversation)
             .groupBy { item ->
@@ -87,7 +87,7 @@ object ConversationIdentity {
             }
             .filter { it.isNotEmpty() }
 
-    fun sameConversation(
+    override fun sameConversation(
         item: NotifEntity,
         packageName: String,
         sender: String,

@@ -30,6 +30,7 @@ class ConversationActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityConversationBinding
     private val audio by lazy { AudioArbiter.get(applicationContext) }
+    private val conversationNaming: ConversationNaming = ConversationIdentity
     private val fmt = SimpleDateFormat("dd/MM HH:mm", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -136,7 +137,7 @@ class ConversationActivity : AppCompatActivity() {
                     val messages = allMessages
                         .asSequence()
                         .filter {
-                            ConversationIdentity.sameConversation(
+                            conversationNaming.sameConversation(
                                 item = it,
                                 packageName = pkg,
                                 sender = sender,
