@@ -47,3 +47,11 @@ Introduzido `EntityCatalog` com `entitiesFlow()` e `createEntity(name, kind)`; `
 Nenhuma modificação em vínculos, associação, mesclagem, exclusão, banco, backup ou Watchdog. O primeiro consumidor não acessa mais `db.memory()` para listagem.
 
 **Estado: IMPLEMENTED**, ainda não BUILD-GREEN nem DEVICE-VALIDATED. É necessária compilação via `scripts/build.sh`, testes existentes e smoke test no Android (listar, criar e reabrir entidade, sem efetuar exclusão ou merge).
+
+## Validação do primeiro incremento e segundo incremento (2026-10-16)
+
+O usuário informou `BUILD SUCCESSFUL` para o release, com evidência publicada em `WA-Keeper/general/feature-entities-typed-api-contract/2026-10-16/153200-9f6632b2/manifest.json`, e confirmou em seguida que os testes no aparelho deram certo. Primeiro incremento: **BUILD-GREEN / DEVICE-VALIDATED** (relato do usuário).
+
+Segundo incremento: `EntityCatalog` também expõe `entityById` e `linksForEntity`. A implementação delega às consultas atuais do `MemoryDao`; `EntityDetailActivity` e `EntityAssociationsActivity` utilizam o contrato para essas leituras (e listagem na seleção de mesclagem). Os caminhos de escrita, `saveAndFinish`, renomear, unir, excluir e operações do DAO não foram alterados.
+
+**Estado do segundo incremento: IMPLEMENTED, aguardando BUILD-GREEN e DEVICE-VALIDATED.** Verificar título, links existentes, seleção de vínculos e abertura das telas, sem persistir alterações nem realizar mesclagem ou exclusão nesta rodada.
