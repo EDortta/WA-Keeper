@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
  * Camada de memória local. O LLM nunca é a fonte de verdade: ele recebe apenas
  * contexto recuperado daqui, sempre rastreável até NotifEntity.id/sourceRef.
  */
-class MemoryRepository(context: Context) : EntityCatalog {
+class MemoryRepository(context: Context) : EntityCatalog, EntityLinks {
     private val db = NotifDatabase.get(context.applicationContext)
 
     override fun entitiesFlow(): Flow<List<MemoryEntity>> = db.memory().entitiesFlow()
@@ -19,11 +19,11 @@ class MemoryRepository(context: Context) : EntityCatalog {
     override suspend fun createEntity(name: String, kind: String): Long =
         db.memory().insertEntity(MemoryEntity(name = name.trim(), kind = kind.trim().uppercase()))
 
-    suspend fun linkConversation(
+    override suspend fun linkConversation(
         entityId: Long,
         packageName: String,
         sender: String,
-        role: String = "CONVERSATION"
+        role: String
     ): Long {
         val normalizedSender = sender.trim()
         val previous = db.memory().linkForConversation(packageName, normalizedSender)
@@ -46,6 +46,10 @@ class MemoryRepository(context: Context) : EntityCatalog {
         }
 
         return linkId
+    }
+
+    override suspend fun unlink(entityId: Long, packageName: String, sender: String) {
+        db.memory().unlink(entityId, packageName, sender)
     }
 
     suspend fun resolveConversation(packageName: String, sender: String): MemoryEntity? {
