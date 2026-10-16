@@ -273,16 +273,14 @@ class EntityAssociationsActivity : AppCompatActivity() {
     }
 
     private fun applyFilter() {
-        val q = currentQuery.lowercase()
+        val q = currentQuery
         val filtered = allCandidates.filter { item ->
             val tabMatches = when (currentTab) {
                 1 -> item.kind == AssociationCandidate.Kind.CONVERSATION
                 2 -> item.kind == AssociationCandidate.Kind.CONTACT
                 else -> true
             }
-            val textMatches = q.isBlank() ||
-                item.title.lowercase().contains(q) ||
-                item.subtitle.lowercase().contains(q)
+            val textMatches = EntitySearch.matches(q, item.title, item.subtitle)
             tabMatches && textMatches
         }.sortedWith(
             compareBy<AssociationCandidate> { it.kind.ordinal }
