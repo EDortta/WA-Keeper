@@ -44,6 +44,7 @@ class EntityAssociationsActivity : AppCompatActivity() {
     private val db by lazy { NotifDatabase.get(this) }
     private val memory by lazy { MemoryRepository(this) }
     private val entities: EntityCatalog by lazy { memory }
+    private val entityLinks: EntityLinks by lazy { memory }
     private var entityId: Long = 0L
 
     private val allCandidates = mutableListOf<AssociationCandidate>()
@@ -314,10 +315,10 @@ class EntityAssociationsActivity : AppCompatActivity() {
                     if (candidate.kind == AssociationCandidate.Kind.CONTACT) {
                         for (link in existingForCandidate) {
                             if (link.sender != candidate.sender) {
-                                db.memory().unlink(entityId, link.packageName, link.sender)
+                                entityLinks.unlink(entityId, link.packageName, link.sender)
                             }
                         }
-                        memory.linkConversation(
+                        entityLinks.linkConversation(
                             entityId,
                             candidate.packageName,
                             candidate.sender,
@@ -325,7 +326,7 @@ class EntityAssociationsActivity : AppCompatActivity() {
                         )
                     } else {
                         for (sender in candidate.memberSenders) {
-                            memory.linkConversation(
+                            entityLinks.linkConversation(
                                 entityId,
                                 candidate.packageName,
                                 sender,
@@ -335,7 +336,7 @@ class EntityAssociationsActivity : AppCompatActivity() {
                     }
                 } else {
                     for (link in existingForCandidate) {
-                        db.memory().unlink(entityId, link.packageName, link.sender)
+                        entityLinks.unlink(entityId, link.packageName, link.sender)
                     }
                 }
             }
