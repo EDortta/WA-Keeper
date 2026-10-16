@@ -59,3 +59,12 @@ Segundo incremento: `EntityCatalog` também expõe `entityById` e `linksForEntit
 ## Correção de busca com diacríticos (2026-10-16)
 
 Relato do usuário: nomes de contatos com acentos não eram encontrados quando a consulta era digitada sem acentos. Identificado filtro da `EntityAssociationsActivity` baseado somente em `lowercase().contains()`. Criada `EntitySearch` com normalização Unicode NFD, remoção das marcas diacríticas e comparação sem distinguir caixa; aplicado apenas ao filtro visual de títulos e subtítulos. Os nomes, identificadores, números e links persistidos não são alterados. Testes de `João/joao`, `José/Jose`, `Márcia/marcia`, pesquisa por subtítulo e não correspondência adicionados. **Pendente de build e teste no dispositivo.**
+
+## Terceiro incremento: escrita de associações (2026-10-16)
+
+- Criado `EntityLinks` com `linkConversation` e `unlink`, refletindo as operações existentes.
+- `MemoryRepository` implementa o contrato; a política legada de transferência de vínculos, inclusive a possível remoção de entidade órfã, **permanece inalterada**.
+- `EntityAssociationsActivity.saveAndFinish` agora usa `EntityLinks` para gravar e remover vínculos; regras de seleção, aliases e manutenção de variantes históricas permanecem idênticas.
+- **Atenção:** apesar do nome, `linkConversation` também recebe vínculos com role `CONTACT`; a renomeação semântica é tarefa posterior.
+- Nenhuma mudança em Room, mesclagem ou exclusão explícita de entidades. Não presumir atomicidade entre vários vínculos.
+- Estado: **IMPLEMENTED, ainda não BUILD-GREEN/DEVICE-VALIDATED** para este incremento. Validar associação e desassociação somente com dados descartáveis ou previamente respaldados, porque a política legada pode remover automaticamente entidade de origem sem membros.
